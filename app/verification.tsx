@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,62 +7,98 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../src/constants/theme';
+import { lookupNIN, NINLookupError } from '../src/services/ninVerification';
+import type { NINRecord } from '../src/services/ninVerification';
 
-type ScreenState = 'form' | 'loading' | 'success' | 'failure';
+type SubmitState = 'idle' | 'submitting' | 'success' | 'failure';
 
 const HERO_BG = '#003828';
-
-const STEPS = [
-  { icon: 'person-outline' as const,     label: 'Full Name' },
-  { icon: 'card-outline' as const,       label: 'NIN' },
-  { icon: 'document-outline' as const,   label: 'Document' },
-];
 
 export default function VerificationScreen() {
   const router  = useRouter();
   const insets  = useSafeAreaInsets();
   const params  = useLocalSearchParams<{ returnTo?: string }>();
 
-  const [screenState, setScreenState] = useState<ScreenState>('form');
-  const [fullName, setFullName]       = useState('');
-  const [nin, setNin]                 = useState('');
-  const [documentName, setDocName]    = useState('');
+  const [nin, setNin]               = useState('');
+  const [ninLoading, setNinLoading] = useState(false);
+  const [ninError, setNinError]     = useState('');
+  const [ninRecord, setNinRecord]   = useState<NINRecord | null>(null);
 
-  const canSubmit = fullName.trim().length > 0 && nin.trim().length === 11;
+  const [documentName, setDocName]  = useState('');
+  const [submitState, setSubmit]    = useState<SubmitState>('idle');
 
-  const handleVerify = () => {
+  const fadeAnim   = useRef(new Animated.Value(0)).current;
+  const slideAnim  = useRef(new Animated.Value(16)).current;
+  const lookupRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-lookup when NIN reaches 11 digits
+  useEffect(() => {
+    if (nin.length < 11) {
+      setNinRecord(null);
+      setNinError('');
+      fadeAnim.setValue(0);
+      slideAnim.setValue(16);
+      return;
+    }
+
+    if (lookupRef.current) clearTimeout(lookupRef.current);
+    lookupRef.current = setTimeout(async () => {
+      setNinLoading(true);
+      setNinError('');
+      setNinRecord(null);
+      try {
+        const record = await lookupNIN(nin);
+        setNinRecord(record);
+        // Animate name card in
+        Animated.parallel([
+          Animated.timing(fadeAnim,  { toValue: 1, duration: 320, useNativeDriver: true }),
+          Animated.timing(slideAnim, { toValue: 0, duration: 320, useNativeDriver: true }),
+        ]).start();
+      } catch (err) {
+        setNinError(err instanceof NINLookupError ? err.message : 'Lookup failed. Try again.');
+      } finally {
+        setNinLoading(false);
+      }
+    }, 300);
+
+    return () => { if (lookupRef.current) clearTimeout(lookupRef.current); };
+  }, [nin]);
+
+  const canSubmit = ninRecord !== null;
+
+  const handleSubmit = () => {
     if (!canSubmit) return;
-    setScreenState('loading');
+    setSubmit('submitting');
     setTimeout(() => {
-      setScreenState(Math.random() > 0.2 ? 'success' : 'failure');
+      setSubmit(Math.random() > 0.2 ? 'success' : 'failure');
     }, 2500);
   };
 
   const handleContinue = () => {
-    const returnTo = params.returnTo ?? '/(tabs)';
-    router.replace(returnTo as any);
+    router.replace((params.returnTo ?? '/(tabs)') as any);
   };
 
-  // ── Loading ───────────────────────────────────────────────────
-  if (screenState === 'loading') {
+  // ── Submitting ────────────────────────────────────────────────
+  if (submitState === 'submitting') {
     return (
       <View style={s.fullCenter}>
         <View style={s.loadingCard}>
           <ActivityIndicator size="large" color={Colors.lime} />
-          <Text style={s.loadingTitle}>Verifying identity…</Text>
-          <Text style={s.loadingSub}>This usually takes a few seconds</Text>
+          <Text style={s.loadingTitle}>Submitting for review…</Text>
+          <Text style={s.loadingSub}>Cross-checking with NIMC database</Text>
         </View>
       </View>
     );
   }
 
   // ── Success ───────────────────────────────────────────────────
-  if (screenState === 'success') {
+  if (submitState === 'success') {
     return (
       <View style={[s.fullCenter, { paddingTop: insets.top }]}>
         <View style={s.resultIconWrap}>
@@ -76,11 +112,9 @@ export default function VerificationScreen() {
           Your Landrush account is now verified. You can publish listings, receive inspection
           requests, and access agent features.
         </Text>
-        <View style={s.resultBadgeRow}>
-          <View style={s.resultBadge}>
-            <Ionicons name="shield-checkmark" size={14} color={Colors.primary} />
-            <Text style={s.resultBadgeText}>Verified Member</Text>
-          </View>
+        <View style={s.verifiedBadge}>
+          <Ionicons name="shield-checkmark" size={14} color={Colors.primary} />
+          <Text style={s.verifiedBadgeText}>Verified Member</Text>
         </View>
         <TouchableOpacity style={s.primaryBtn} onPress={handleContinue}>
           <Text style={s.primaryBtnText}>Continue</Text>
@@ -91,7 +125,7 @@ export default function VerificationScreen() {
   }
 
   // ── Failure ───────────────────────────────────────────────────
-  if (screenState === 'failure') {
+  if (submitState === 'failure') {
     return (
       <View style={[s.fullCenter, { paddingTop: insets.top }]}>
         <View style={[s.resultCircle, { backgroundColor: '#FFEBEE', marginBottom: Spacing.xl }]}>
@@ -99,10 +133,10 @@ export default function VerificationScreen() {
         </View>
         <Text style={s.resultTitle}>Verification Failed</Text>
         <Text style={s.resultSub}>
-          We couldn't verify the details provided. Please check your NIN and try again, or contact
-          support if the issue persists.
+          We couldn't complete your verification. Please check your details and try again, or
+          contact support if the issue persists.
         </Text>
-        <TouchableOpacity style={s.primaryBtn} onPress={() => setScreenState('form')}>
+        <TouchableOpacity style={s.primaryBtn} onPress={() => setSubmit('idle')}>
           <Text style={s.primaryBtnText}>Try Again</Text>
         </TouchableOpacity>
         <TouchableOpacity style={s.ghostBtn} onPress={() => router.push('/help')}>
@@ -113,6 +147,10 @@ export default function VerificationScreen() {
   }
 
   // ── Form ──────────────────────────────────────────────────────
+  const fullName = ninRecord
+    ? [ninRecord.firstName, ninRecord.middleName, ninRecord.lastName].filter(Boolean).join(' ')
+    : '';
+
   return (
     <View style={s.root}>
       {/* Dark header */}
@@ -128,16 +166,6 @@ export default function VerificationScreen() {
           </View>
           <View style={{ width: 36 }} />
         </View>
-
-        {/* Step chips */}
-        <View style={s.stepRow}>
-          {STEPS.map((st, i) => (
-            <View key={st.label} style={s.stepChip}>
-              <Ionicons name={st.icon} size={13} color={Colors.lime} />
-              <Text style={s.stepChipText}>{st.label}</Text>
-            </View>
-          ))}
-        </View>
       </View>
 
       <ScrollView
@@ -147,49 +175,102 @@ export default function VerificationScreen() {
       >
         {/* Info banner */}
         <View style={s.infoBanner}>
-          <Ionicons name="information-circle-outline" size={18} color={Colors.info} />
+          <Ionicons name="lock-closed-outline" size={16} color={Colors.info} />
           <Text style={s.infoText}>
-            Your details are encrypted and used only to verify your identity. We never sell your
-            data.
+            Your NIN is encrypted in transit and used only to verify your identity. We never
+            store or share it.
           </Text>
         </View>
 
-        {/* Full Name */}
-        <Text style={s.label}>Legal Full Name <Text style={s.required}>*</Text></Text>
-        <View style={s.inputWrap}>
-          <Ionicons name="person-outline" size={17} color={Colors.textTertiary} style={s.inputIcon} />
-          <TextInput
-            style={s.input}
-            value={fullName}
-            onChangeText={setFullName}
-            placeholder="As it appears on your ID"
-            placeholderTextColor={Colors.textTertiary}
-            autoCapitalize="words"
+        {/* NIN input */}
+        <Text style={s.label}>
+          National Identification Number (NIN){' '}
+          <Text style={s.required}>*</Text>
+        </Text>
+        <View style={[s.inputWrap, ninError ? s.inputWrapError : ninRecord ? s.inputWrapSuccess : undefined]}>
+          <Ionicons
+            name="card-outline"
+            size={17}
+            color={ninError ? Colors.error : ninRecord ? Colors.success : Colors.textTertiary}
+            style={s.inputIcon}
           />
-        </View>
-
-        {/* NIN */}
-        <Text style={s.label}>National Identification Number (NIN) <Text style={s.required}>*</Text></Text>
-        <View style={s.inputWrap}>
-          <Ionicons name="card-outline" size={17} color={Colors.textTertiary} style={s.inputIcon} />
           <TextInput
             style={s.input}
             value={nin}
-            onChangeText={setNin}
-            placeholder="11-digit NIN"
+            onChangeText={(t) => setNin(t.replace(/\D/g, '').slice(0, 11))}
+            placeholder="Enter your 11-digit NIN"
             placeholderTextColor={Colors.textTertiary}
             keyboardType="numeric"
             maxLength={11}
           />
-          {nin.length > 0 && (
-            <Text style={[s.ninCount, nin.length === 11 && s.ninCountDone]}>
+          {ninLoading ? (
+            <ActivityIndicator size="small" color={Colors.primary} />
+          ) : nin.length > 0 ? (
+            <Text style={[s.ninCount, ninRecord ? s.ninCountOk : nin.length === 11 && ninError ? s.ninCountErr : undefined]}>
               {nin.length}/11
             </Text>
-          )}
+          ) : null}
         </View>
 
+        {/* NIN error */}
+        {ninError ? (
+          <View style={s.ninErrorRow}>
+            <Ionicons name="alert-circle-outline" size={14} color={Colors.error} />
+            <Text style={s.ninErrorText}>{ninError}</Text>
+          </View>
+        ) : null}
+
+        {/* Lookup loading hint */}
+        {ninLoading && (
+          <Text style={s.lookingUpText}>Looking up NIN in NIMC database…</Text>
+        )}
+
+        {/* Verified name card — animates in after lookup */}
+        {ninRecord && (
+          <Animated.View
+            style={[s.nameCard, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
+          >
+            <View style={s.nameCardHeader}>
+              <View style={s.nameCardBadge}>
+                <Ionicons name="shield-checkmark" size={13} color={Colors.primary} />
+                <Text style={s.nameCardBadgeText}>Verified from NIMC</Text>
+              </View>
+            </View>
+
+            <Text style={s.nameCardName}>{fullName}</Text>
+
+            <View style={s.nameCardDetails}>
+              {ninRecord.gender ? (
+                <View style={s.nameCardChip}>
+                  <Ionicons name="person-outline" size={12} color={Colors.textSecondary} />
+                  <Text style={s.nameCardChipText}>{ninRecord.gender}</Text>
+                </View>
+              ) : null}
+              {ninRecord.dob ? (
+                <View style={s.nameCardChip}>
+                  <Ionicons name="calendar-outline" size={12} color={Colors.textSecondary} />
+                  <Text style={s.nameCardChipText}>{ninRecord.dob}</Text>
+                </View>
+              ) : null}
+              {ninRecord.phone ? (
+                <View style={s.nameCardChip}>
+                  <Ionicons name="call-outline" size={12} color={Colors.textSecondary} />
+                  <Text style={s.nameCardChipText}>{ninRecord.phone}</Text>
+                </View>
+              ) : null}
+            </View>
+
+            <Text style={s.nameCardNote}>
+              This name will be shown on your verified Landrush profile and cannot be changed.
+            </Text>
+          </Animated.View>
+        )}
+
         {/* Document upload */}
-        <Text style={s.label}>Redan Certificate <Text style={s.optional}>(Optional)</Text></Text>
+        <Text style={s.label}>
+          Redan Certificate{' '}
+          <Text style={s.optional}>(Optional)</Text>
+        </Text>
         <TouchableOpacity
           style={[s.uploadZone, documentName ? s.uploadZoneFilled : undefined]}
           onPress={() => setDocName(documentName ? '' : 'ReDAAN_Certificate.pdf')}
@@ -211,10 +292,13 @@ export default function VerificationScreen() {
           ) : (
             <>
               <View style={s.uploadIconCircle}>
-                <Ionicons name="cloud-upload-outline" size={28} color={Colors.textTertiary} />
+                <Ionicons name="cloud-upload-outline" size={26} color={Colors.textTertiary} />
               </View>
-              <Text style={s.uploadLabel}>Tap to upload document</Text>
-              <Text style={s.uploadHint}>PDF, JPG or PNG · Max 50 MB</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={s.uploadLabel}>Upload Redan Certificate</Text>
+                <Text style={s.uploadHint}>PDF, JPG or PNG · Max 50 MB</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={Colors.textTertiary} />
             </>
           )}
         </TouchableOpacity>
@@ -222,16 +306,22 @@ export default function VerificationScreen() {
         {/* Submit */}
         <TouchableOpacity
           style={[s.submitBtn, !canSubmit && s.submitBtnDisabled]}
-          onPress={handleVerify}
+          onPress={handleSubmit}
           disabled={!canSubmit}
+          activeOpacity={canSubmit ? 0.85 : 1}
         >
           <Ionicons name="shield-checkmark-outline" size={18} color={Colors.textPrimary} />
           <Text style={s.submitBtnText}>Submit for Verification</Text>
         </TouchableOpacity>
 
-        <Text style={s.disclaimer}>
-          Verification is usually completed within 24–48 hours. You'll receive a notification when done.
-        </Text>
+        {!canSubmit && nin.length < 11 && (
+          <Text style={s.disclaimer}>Enter your 11-digit NIN to continue</Text>
+        )}
+        {canSubmit && (
+          <Text style={s.disclaimer}>
+            Review is typically completed within 24–48 hours. You'll be notified.
+          </Text>
+        )}
 
         <View style={{ height: 60 }} />
       </ScrollView>
@@ -249,7 +339,7 @@ const s = StyleSheet.create({
   header: {
     backgroundColor: HERO_BG,
     paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.lg,
+    paddingBottom: Spacing.xl,
     overflow: 'hidden',
   },
   headerDecoA: {
@@ -266,7 +356,6 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: Spacing.md,
-    marginBottom: Spacing.md,
   },
   backBtn: {
     width: 36,
@@ -286,26 +375,8 @@ const s = StyleSheet.create({
     color: 'rgba(255,255,255,0.6)',
     marginTop: 1,
   },
-  stepRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  stepChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(159,187,68,0.15)',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 5,
-    borderRadius: BorderRadius.full,
-  },
-  stepChipText: {
-    fontSize: FontSize.xs,
-    color: Colors.lime,
-    fontWeight: '600',
-  },
 
-  // ── Scroll form ───────────────────────────────────────────────
+  // ── Scroll ────────────────────────────────────────────────────
   scroll: {
     paddingHorizontal: Spacing.xl,
     paddingTop: Spacing.xl,
@@ -329,43 +400,125 @@ const s = StyleSheet.create({
     fontSize: FontSize.sm,
     fontWeight: '700',
     color: Colors.textPrimary,
-    marginBottom: 6,
+    marginBottom: 8,
     marginTop: Spacing.lg,
   },
-  required: {
-    color: Colors.error,
-  },
-  optional: {
-    color: Colors.textTertiary,
-    fontWeight: '400',
-  },
+  required: { color: Colors.error },
+  optional: { color: Colors.textTertiary, fontWeight: '400' },
+
+  // NIN input
   inputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
-    height: 52,
+    height: 54,
     backgroundColor: Colors.white,
     borderRadius: BorderRadius.xl,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: Colors.border,
     paddingHorizontal: Spacing.lg,
   },
-  inputIcon: {
-    flexShrink: 0,
-  },
+  inputWrapError:   { borderColor: Colors.error },
+  inputWrapSuccess: { borderColor: Colors.success },
+  inputIcon: { flexShrink: 0 },
   input: {
     flex: 1,
-    fontSize: FontSize.md,
+    fontSize: FontSize.lg,
+    fontWeight: '600',
     color: Colors.textPrimary,
+    letterSpacing: 2,
   },
   ninCount: {
+    fontSize: FontSize.sm,
+    fontWeight: '700',
+    color: Colors.textTertiary,
+  },
+  ninCountOk:  { color: Colors.success },
+  ninCountErr: { color: Colors.error },
+
+  ninErrorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: Spacing.sm,
+  },
+  ninErrorText: {
+    fontSize: FontSize.sm,
+    color: Colors.error,
+    flex: 1,
+    lineHeight: 18,
+  },
+  lookingUpText: {
+    fontSize: FontSize.sm,
+    color: Colors.primary,
+    marginTop: Spacing.sm,
+    fontStyle: 'italic',
+  },
+
+  // ── Verified name card ────────────────────────────────────────
+  nameCard: {
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.xl,
+    marginTop: Spacing.lg,
+    borderWidth: 1.5,
+    borderColor: Colors.lime,
+    gap: Spacing.md,
+    ...Shadow.sm,
+  },
+  nameCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  nameCardBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: `${Colors.lime}22`,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.full,
+  },
+  nameCardBadgeText: {
+    fontSize: FontSize.xs,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
+  nameCardName: {
+    fontSize: FontSize.xxl,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    letterSpacing: 0.5,
+  },
+  nameCardDetails: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  nameCardChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: Colors.background,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 5,
+    borderRadius: BorderRadius.full,
+  },
+  nameCardChipText: {
+    fontSize: FontSize.xs,
+    color: Colors.textSecondary,
+    fontWeight: '500',
+  },
+  nameCardNote: {
     fontSize: FontSize.xs,
     color: Colors.textTertiary,
-    fontWeight: '600',
+    lineHeight: 18,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
+    paddingTop: Spacing.md,
   },
-  ninCountDone: {
-    color: Colors.success,
-  },
+
+  // ── Document upload ───────────────────────────────────────────
   uploadZone: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -374,7 +527,7 @@ const s = StyleSheet.create({
     borderColor: Colors.border,
     borderStyle: 'dashed',
     borderRadius: BorderRadius.xl,
-    padding: Spacing.xl,
+    padding: Spacing.lg,
     backgroundColor: Colors.white,
     marginTop: 4,
   },
@@ -384,9 +537,9 @@ const s = StyleSheet.create({
     backgroundColor: `${Colors.lime}08`,
   },
   uploadIconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: Colors.background,
     alignItems: 'center',
     justifyContent: 'center',
@@ -409,9 +562,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  uploadedInfo: {
-    flex: 1,
-  },
+  uploadedInfo: { flex: 1 },
   uploadedName: {
     fontSize: FontSize.md,
     fontWeight: '600',
@@ -422,6 +573,8 @@ const s = StyleSheet.create({
     color: Colors.textTertiary,
     marginTop: 1,
   },
+
+  // ── Submit ────────────────────────────────────────────────────
   submitBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -432,9 +585,7 @@ const s = StyleSheet.create({
     borderRadius: BorderRadius.xl,
     marginTop: Spacing.xxl,
   },
-  submitBtnDisabled: {
-    opacity: 0.45,
-  },
+  submitBtnDisabled: { opacity: 0.4 },
   submitBtnText: {
     fontSize: FontSize.lg,
     fontWeight: '700',
@@ -476,10 +627,7 @@ const s = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
   },
-  resultIconWrap: {
-    position: 'relative',
-    marginBottom: Spacing.sm,
-  },
+  resultIconWrap: { position: 'relative', marginBottom: Spacing.sm },
   resultCircle: {
     width: 100,
     height: 100,
@@ -510,11 +658,7 @@ const s = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 22,
   },
-  resultBadgeRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  resultBadge: {
+  verifiedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
@@ -523,7 +667,7 @@ const s = StyleSheet.create({
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.full,
   },
-  resultBadgeText: {
+  verifiedBadgeText: {
     fontSize: FontSize.sm,
     fontWeight: '700',
     color: Colors.primary,
