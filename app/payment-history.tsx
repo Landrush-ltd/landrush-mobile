@@ -11,6 +11,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../src/constants/theme';
 
+const HERO_BG = '#003828';
+
 type PaymentType = 'access_fee' | 'listing_fee';
 type PaymentStatus = 'success' | 'failed' | 'pending';
 
@@ -74,21 +76,24 @@ export default function PaymentHistoryScreen() {
     .reduce((sum, p) => sum + p.amount, 0);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.title}>Payment History</Text>
-        <View style={{ width: 40 }} />
-      </View>
+    <View style={styles.container}>
+      {/* Dark header + summary merged */}
+      <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
+        <View style={styles.headerDecoA} />
+        <View style={styles.headerRow}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={20} color={Colors.white} />
+          </TouchableOpacity>
+          <Text style={styles.title}>Payment History</Text>
+          <View style={{ width: 36 }} />
+        </View>
 
-      {/* Summary card */}
-      <View style={styles.summaryCard}>
-        <Text style={styles.summaryLabel}>Total spent</Text>
-        <Text style={styles.summaryAmount}>₦{total.toLocaleString()}</Text>
-        <Text style={styles.summaryNote}>Platform fees only · Land transaction payments not included</Text>
+        {/* Summary card inline in dark header */}
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryLabel}>Total spent</Text>
+          <Text style={styles.summaryAmount}>₦{total.toLocaleString()}</Text>
+          <Text style={styles.summaryNote}>Platform fees only · Land transaction payments not included</Text>
+        </View>
       </View>
 
       <FlatList
@@ -141,34 +146,47 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
+    backgroundColor: HERO_BG,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.xl,
+    overflow: 'hidden',
+  },
+  headerDecoA: {
+    position: 'absolute',
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: 'rgba(159,187,68,0.07)',
+    top: -60,
+    right: -40,
+  },
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.lg,
-    backgroundColor: Colors.white,
-    borderBottomWidth: 0.5,
-    borderBottomColor: Colors.borderLight,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.lg,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.chipInactive,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
     fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
+    fontWeight: '800',
+    color: Colors.white,
   },
   summaryCard: {
-    backgroundColor: Colors.splashBg,
-    margin: Spacing.xl,
+    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: BorderRadius.xl,
-    padding: Spacing.xxl,
+    padding: Spacing.xl,
     gap: Spacing.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
   },
   summaryLabel: {
     fontSize: FontSize.sm,

@@ -20,6 +20,8 @@ if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
 }
 
+const HERO_BG = '#003828';
+
 interface FAQItem {
   q: string;
   a: string;
@@ -105,41 +107,42 @@ export default function HelpScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.title}>Help & Support</Text>
-        <View style={{ width: 40 }} />
-      </View>
-
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        {/* Hero banner */}
-        <View style={styles.heroBanner}>
-          <Ionicons name="headset-outline" size={36} color={Colors.lime} />
-          <Text style={styles.heroTitle}>How can we help?</Text>
-          <Text style={styles.heroSub}>Search our FAQ or reach us directly below.</Text>
+    <View style={styles.container}>
+      {/* Dark header */}
+      <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
+        <View style={styles.headerDecoA} />
+        <View style={styles.headerRow}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={20} color={Colors.white} />
+          </TouchableOpacity>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={styles.title}>Help & Support</Text>
+            <Text style={styles.headerSub}>We're here to help</Text>
+          </View>
+          <View style={[styles.headsetCircle]}>
+            <Ionicons name="headset-outline" size={18} color={Colors.lime} />
+          </View>
         </View>
 
-        {/* FAQ search */}
+        {/* Inline search */}
         <View style={styles.searchBox}>
-          <Ionicons name="search-outline" size={18} color={Colors.textTertiary} />
+          <Ionicons name="search-outline" size={18} color="rgba(255,255,255,0.5)" />
           <TextInput
             style={styles.searchInput}
             value={search}
             onChangeText={setSearch}
-            placeholder="Search questions..."
-            placeholderTextColor={Colors.textTertiary}
+            placeholder="Search questions…"
+            placeholderTextColor="rgba(255,255,255,0.4)"
           />
           {search.length > 0 && (
             <TouchableOpacity onPress={() => setSearch('')}>
-              <Ionicons name="close-circle" size={18} color={Colors.textTertiary} />
+              <Ionicons name="close-circle" size={18} color="rgba(255,255,255,0.5)" />
             </TouchableOpacity>
           )}
         </View>
+      </View>
 
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         {/* FAQ accordion */}
         <Text style={styles.sectionTitle}>Frequently Asked Questions</Text>
 
@@ -217,68 +220,72 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
+    backgroundColor: HERO_BG,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.lg,
+    overflow: 'hidden',
+  },
+  headerDecoA: {
+    position: 'absolute',
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: 'rgba(159,187,68,0.07)',
+    top: -60,
+    right: -40,
+  },
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.lg,
-    backgroundColor: Colors.white,
-    borderBottomWidth: 0.5,
-    borderBottomColor: Colors.borderLight,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.lg,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.chipInactive,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headsetCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(159,187,68,0.18)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
     fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
+    fontWeight: '800',
+    color: Colors.white,
+  },
+  headerSub: {
+    fontSize: FontSize.xs,
+    color: 'rgba(255,255,255,0.6)',
+    marginTop: 1,
   },
   content: {
     paddingHorizontal: Spacing.xl,
     paddingTop: Spacing.xl,
   },
-  heroBanner: {
-    backgroundColor: Colors.splashBg,
-    borderRadius: BorderRadius.xl,
-    padding: Spacing.xxl,
-    alignItems: 'center',
-    gap: Spacing.sm,
-    marginBottom: Spacing.xl,
-  },
-  heroTitle: {
-    fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.white,
-    marginTop: Spacing.sm,
-  },
-  heroSub: {
-    fontSize: FontSize.md,
-    color: 'rgba(255,255,255,0.65)',
-    textAlign: 'center',
-  },
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.lg,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderRadius: BorderRadius.xl,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: 'rgba(255,255,255,0.15)',
     paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    marginBottom: Spacing.xl,
-    ...Shadow.sm,
+    height: 44,
   },
   searchInput: {
     flex: 1,
     fontSize: FontSize.md,
-    color: Colors.textPrimary,
+    color: Colors.white,
   },
   sectionTitle: {
     fontSize: FontSize.lg,

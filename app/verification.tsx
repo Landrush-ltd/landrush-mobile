@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  Animated,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,310 +15,547 @@ import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../src/constant
 
 type ScreenState = 'form' | 'loading' | 'success' | 'failure';
 
+const HERO_BG = '#003828';
+
+const STEPS = [
+  { icon: 'person-outline' as const,     label: 'Full Name' },
+  { icon: 'card-outline' as const,       label: 'NIN' },
+  { icon: 'document-outline' as const,   label: 'Document' },
+];
+
 export default function VerificationScreen() {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ returnTo?: string }>();
+  const router  = useRouter();
+  const insets  = useSafeAreaInsets();
+  const params  = useLocalSearchParams<{ returnTo?: string }>();
 
   const [screenState, setScreenState] = useState<ScreenState>('form');
-  const [fullName, setFullName] = useState('');
-  const [nin, setNin] = useState('');
-  const [documentName, setDocumentName] = useState('');
+  const [fullName, setFullName]       = useState('');
+  const [nin, setNin]                 = useState('');
+  const [documentName, setDocName]    = useState('');
+
+  const canSubmit = fullName.trim().length > 0 && nin.trim().length === 11;
 
   const handleVerify = () => {
-    if (!fullName || !nin) return;
+    if (!canSubmit) return;
     setScreenState('loading');
     setTimeout(() => {
-      // Simulate API response — 80% success
       setScreenState(Math.random() > 0.2 ? 'success' : 'failure');
     }, 2500);
   };
 
   const handleContinue = () => {
-    const returnTo = params.returnTo ?? '/(tabs)/create';
+    const returnTo = params.returnTo ?? '/(tabs)';
     router.replace(returnTo as any);
   };
 
+  // ── Loading ───────────────────────────────────────────────────
   if (screenState === 'loading') {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={Colors.lime} />
-        <Text style={styles.loadingText}>Verifying...</Text>
+      <View style={s.fullCenter}>
+        <View style={s.loadingCard}>
+          <ActivityIndicator size="large" color={Colors.lime} />
+          <Text style={s.loadingTitle}>Verifying identity…</Text>
+          <Text style={s.loadingSub}>This usually takes a few seconds</Text>
+        </View>
       </View>
     );
   }
 
+  // ── Success ───────────────────────────────────────────────────
   if (screenState === 'success') {
     return (
-      <View style={[styles.centered, { paddingTop: insets.top }]}>
-        <View style={styles.successCircle}>
-          <Ionicons name="checkmark" size={52} color={Colors.white} />
+      <View style={[s.fullCenter, { paddingTop: insets.top }]}>
+        <View style={s.resultIconWrap}>
+          <View style={[s.resultCircle, { backgroundColor: Colors.success }]}>
+            <Ionicons name="checkmark" size={48} color={Colors.white} />
+          </View>
+          <View style={s.resultDecoDot} />
         </View>
-        <Text style={styles.resultTitle}>Verification Complete</Text>
-        <Text style={styles.resultSubtitle}>
-          Your identity has been successfully verified. You can now publish listings and receive
-          inspection requests on Landrush.
+        <Text style={s.resultTitle}>Identity Verified!</Text>
+        <Text style={s.resultSub}>
+          Your Landrush account is now verified. You can publish listings, receive inspection
+          requests, and access agent features.
         </Text>
-        <TouchableOpacity style={styles.primaryButton} onPress={handleContinue}>
-          <Text style={styles.primaryButtonText}>Continue Listing</Text>
+        <View style={s.resultBadgeRow}>
+          <View style={s.resultBadge}>
+            <Ionicons name="shield-checkmark" size={14} color={Colors.primary} />
+            <Text style={s.resultBadgeText}>Verified Member</Text>
+          </View>
+        </View>
+        <TouchableOpacity style={s.primaryBtn} onPress={handleContinue}>
+          <Text style={s.primaryBtnText}>Continue</Text>
+          <Ionicons name="arrow-forward" size={18} color={Colors.textPrimary} />
         </TouchableOpacity>
       </View>
     );
   }
 
+  // ── Failure ───────────────────────────────────────────────────
   if (screenState === 'failure') {
     return (
-      <View style={[styles.centered, { paddingTop: insets.top }]}>
-        <View style={styles.failureCircle}>
-          <Ionicons name="globe-outline" size={52} color={Colors.textSecondary} />
+      <View style={[s.fullCenter, { paddingTop: insets.top }]}>
+        <View style={[s.resultCircle, { backgroundColor: '#FFEBEE', marginBottom: Spacing.xl }]}>
+          <Ionicons name="alert-circle-outline" size={48} color={Colors.error} />
         </View>
-        <Text style={styles.resultTitle}>We Couldn't Verify Your Information</Text>
-        <Text style={styles.resultSubtitle}>
-          We were unable to verify the details provided. Please review your information and try
-          again.
+        <Text style={s.resultTitle}>Verification Failed</Text>
+        <Text style={s.resultSub}>
+          We couldn't verify the details provided. Please check your NIN and try again, or contact
+          support if the issue persists.
         </Text>
-        <TouchableOpacity style={styles.primaryButton} onPress={() => setScreenState('form')}>
-          <Text style={styles.primaryButtonText}>Try again</Text>
+        <TouchableOpacity style={s.primaryBtn} onPress={() => setScreenState('form')}>
+          <Text style={s.primaryBtnText}>Try Again</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={s.ghostBtn} onPress={() => router.push('/help')}>
+          <Text style={s.ghostBtnText}>Contact Support</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
+  // ── Form ──────────────────────────────────────────────────────
   return (
-    <ScrollView
-      style={[styles.container, { paddingTop: insets.top }]}
-      contentContainerStyle={styles.scrollContent}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Header */}
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
-      </TouchableOpacity>
-
-      <Text style={styles.title}>Verify Your Identity</Text>
-      <Text style={styles.subtitle}>
-        Provide your information to complete your agent profile.
-      </Text>
-
-      {/* Full Name */}
-      <Text style={styles.label}>Full Name</Text>
-      <TextInput
-        style={styles.input}
-        value={fullName}
-        onChangeText={setFullName}
-        placeholder="Enter Full Name"
-        placeholderTextColor={Colors.textTertiary}
-        autoCapitalize="words"
-      />
-
-      {/* NIN */}
-      <Text style={styles.label}>NIN</Text>
-      <TextInput
-        style={styles.input}
-        value={nin}
-        onChangeText={setNin}
-        placeholder="Enter NIN"
-        placeholderTextColor={Colors.textTertiary}
-        keyboardType="numeric"
-        maxLength={11}
-      />
-
-      {/* Document upload */}
-      <TouchableOpacity
-        style={styles.uploadZone}
-        onPress={() => setDocumentName('ReDAAN_Certificate.pdf')}
-        activeOpacity={0.8}
-      >
-        <View style={styles.uploadIcon}>
-          <Ionicons name="cloud-upload-outline" size={32} color={Colors.textTertiary} />
-        </View>
-        {documentName ? (
-          <View style={styles.uploadedRow}>
-            <Ionicons name="document-outline" size={18} color={Colors.primary} />
-            <Text style={styles.uploadedName} numberOfLines={1}>{documentName}</Text>
-            <TouchableOpacity onPress={() => setDocumentName('')}>
-              <Ionicons name="close-circle" size={18} color={Colors.textTertiary} />
-            </TouchableOpacity>
+    <View style={s.root}>
+      {/* Dark header */}
+      <View style={[s.header, { paddingTop: insets.top + Spacing.sm }]}>
+        <View style={s.headerDecoA} />
+        <View style={s.headerRow}>
+          <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={20} color={Colors.white} />
+          </TouchableOpacity>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={s.headerTitle}>Identity Verification</Text>
+            <Text style={s.headerSub}>Unlock full agent features</Text>
           </View>
-        ) : (
-          <>
-            <Text style={styles.uploadLabel}>Upload Redan Certificate (Optional)</Text>
-            <Text style={styles.uploadHint}>PDF, JPG, PNG · Max 50mb</Text>
-          </>
-        )}
-      </TouchableOpacity>
+          <View style={{ width: 36 }} />
+        </View>
 
-      <TouchableOpacity
-        style={[styles.verifyButton, (!fullName || !nin) && styles.verifyButtonDisabled]}
-        onPress={handleVerify}
-        disabled={!fullName || !nin}
+        {/* Step chips */}
+        <View style={s.stepRow}>
+          {STEPS.map((st, i) => (
+            <View key={st.label} style={s.stepChip}>
+              <Ionicons name={st.icon} size={13} color={Colors.lime} />
+              <Text style={s.stepChipText}>{st.label}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={s.scroll}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.verifyButtonText}>Verify</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        {/* Info banner */}
+        <View style={s.infoBanner}>
+          <Ionicons name="information-circle-outline" size={18} color={Colors.info} />
+          <Text style={s.infoText}>
+            Your details are encrypted and used only to verify your identity. We never sell your
+            data.
+          </Text>
+        </View>
+
+        {/* Full Name */}
+        <Text style={s.label}>Legal Full Name <Text style={s.required}>*</Text></Text>
+        <View style={s.inputWrap}>
+          <Ionicons name="person-outline" size={17} color={Colors.textTertiary} style={s.inputIcon} />
+          <TextInput
+            style={s.input}
+            value={fullName}
+            onChangeText={setFullName}
+            placeholder="As it appears on your ID"
+            placeholderTextColor={Colors.textTertiary}
+            autoCapitalize="words"
+          />
+        </View>
+
+        {/* NIN */}
+        <Text style={s.label}>National Identification Number (NIN) <Text style={s.required}>*</Text></Text>
+        <View style={s.inputWrap}>
+          <Ionicons name="card-outline" size={17} color={Colors.textTertiary} style={s.inputIcon} />
+          <TextInput
+            style={s.input}
+            value={nin}
+            onChangeText={setNin}
+            placeholder="11-digit NIN"
+            placeholderTextColor={Colors.textTertiary}
+            keyboardType="numeric"
+            maxLength={11}
+          />
+          {nin.length > 0 && (
+            <Text style={[s.ninCount, nin.length === 11 && s.ninCountDone]}>
+              {nin.length}/11
+            </Text>
+          )}
+        </View>
+
+        {/* Document upload */}
+        <Text style={s.label}>Redan Certificate <Text style={s.optional}>(Optional)</Text></Text>
+        <TouchableOpacity
+          style={[s.uploadZone, documentName ? s.uploadZoneFilled : undefined]}
+          onPress={() => setDocName(documentName ? '' : 'ReDAAN_Certificate.pdf')}
+          activeOpacity={0.8}
+        >
+          {documentName ? (
+            <>
+              <View style={s.uploadedIconWrap}>
+                <Ionicons name="document-text" size={24} color={Colors.primary} />
+              </View>
+              <View style={s.uploadedInfo}>
+                <Text style={s.uploadedName} numberOfLines={1}>{documentName}</Text>
+                <Text style={s.uploadedSize}>245 KB · PDF</Text>
+              </View>
+              <TouchableOpacity onPress={() => setDocName('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Ionicons name="close-circle" size={20} color={Colors.error} />
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <View style={s.uploadIconCircle}>
+                <Ionicons name="cloud-upload-outline" size={28} color={Colors.textTertiary} />
+              </View>
+              <Text style={s.uploadLabel}>Tap to upload document</Text>
+              <Text style={s.uploadHint}>PDF, JPG or PNG · Max 50 MB</Text>
+            </>
+          )}
+        </TouchableOpacity>
+
+        {/* Submit */}
+        <TouchableOpacity
+          style={[s.submitBtn, !canSubmit && s.submitBtnDisabled]}
+          onPress={handleVerify}
+          disabled={!canSubmit}
+        >
+          <Ionicons name="shield-checkmark-outline" size={18} color={Colors.textPrimary} />
+          <Text style={s.submitBtnText}>Submit for Verification</Text>
+        </TouchableOpacity>
+
+        <Text style={s.disclaimer}>
+          Verification is usually completed within 24–48 hours. You'll receive a notification when done.
+        </Text>
+
+        <View style={{ height: 60 }} />
+      </ScrollView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
+const s = StyleSheet.create({
+  root: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.background,
   },
-  scrollContent: {
-    paddingHorizontal: Spacing.xxl,
-    paddingBottom: Spacing.huge,
+
+  // ── Header ────────────────────────────────────────────────────
+  header: {
+    backgroundColor: HERO_BG,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.lg,
+    overflow: 'hidden',
   },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.chipInactive,
+  headerDecoA: {
+    position: 'absolute',
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: 'rgba(159,187,68,0.07)',
+    top: -60,
+    right: -40,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.xxl,
-    marginTop: Spacing.md,
   },
-  title: {
-    fontSize: FontSize.xxl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.sm,
+  headerTitle: {
+    fontSize: FontSize.lg,
+    fontWeight: '800',
+    color: Colors.white,
   },
-  subtitle: {
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-    lineHeight: 22,
-    marginBottom: Spacing.xxxl,
+  headerSub: {
+    fontSize: FontSize.xs,
+    color: 'rgba(255,255,255,0.6)',
+    marginTop: 1,
+  },
+  stepRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  stepChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(159,187,68,0.15)',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 5,
+    borderRadius: BorderRadius.full,
+  },
+  stepChipText: {
+    fontSize: FontSize.xs,
+    color: Colors.lime,
+    fontWeight: '600',
+  },
+
+  // ── Scroll form ───────────────────────────────────────────────
+  scroll: {
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.xl,
+  },
+  infoBanner: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    alignItems: 'flex-start',
+    backgroundColor: '#E3F2FD',
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.lg,
+    marginBottom: Spacing.xl,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: FontSize.sm,
+    color: Colors.info,
+    lineHeight: 20,
   },
   label: {
-    fontSize: FontSize.md,
-    fontWeight: '600',
+    fontSize: FontSize.sm,
+    fontWeight: '700',
     color: Colors.textPrimary,
-    marginBottom: Spacing.sm,
+    marginBottom: 6,
     marginTop: Spacing.lg,
   },
-  input: {
+  required: {
+    color: Colors.error,
+  },
+  optional: {
+    color: Colors.textTertiary,
+    fontWeight: '400',
+  },
+  inputWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
     height: 52,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.white,
     borderRadius: BorderRadius.xl,
-    paddingHorizontal: Spacing.xl,
-    fontSize: FontSize.md,
-    color: Colors.textPrimary,
     borderWidth: 1,
     borderColor: Colors.border,
+    paddingHorizontal: Spacing.lg,
+  },
+  inputIcon: {
+    flexShrink: 0,
+  },
+  input: {
+    flex: 1,
+    fontSize: FontSize.md,
+    color: Colors.textPrimary,
+  },
+  ninCount: {
+    fontSize: FontSize.xs,
+    color: Colors.textTertiary,
+    fontWeight: '600',
+  },
+  ninCountDone: {
+    color: Colors.success,
   },
   uploadZone: {
-    marginTop: Spacing.xl,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
     borderWidth: 1.5,
     borderColor: Colors.border,
     borderStyle: 'dashed',
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.xxl,
-    alignItems: 'center',
-    gap: Spacing.sm,
-    backgroundColor: Colors.background,
-    marginBottom: Spacing.xxxl,
-  },
-  uploadIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.xl,
     backgroundColor: Colors.white,
+    marginTop: 4,
+  },
+  uploadZoneFilled: {
+    borderStyle: 'solid',
+    borderColor: Colors.lime,
+    backgroundColor: `${Colors.lime}08`,
+  },
+  uploadIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: Colors.background,
     alignItems: 'center',
     justifyContent: 'center',
-    ...Shadow.sm,
   },
   uploadLabel: {
     fontSize: FontSize.md,
     fontWeight: '600',
     color: Colors.textPrimary,
-    textAlign: 'center',
   },
   uploadHint: {
-    fontSize: FontSize.sm,
+    fontSize: FontSize.xs,
     color: Colors.textTertiary,
-    textAlign: 'center',
+    marginTop: 2,
   },
-  uploadedRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  uploadedName: {
-    flex: 1,
-    fontSize: FontSize.sm,
-    color: Colors.primary,
-    fontWeight: '500',
-  },
-  verifyButton: {
-    backgroundColor: Colors.lime,
-    height: 54,
-    borderRadius: BorderRadius.full,
+  uploadedIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.md,
+    backgroundColor: `${Colors.lime}18`,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  verifyButtonDisabled: {
-    opacity: 0.5,
+  uploadedInfo: {
+    flex: 1,
   },
-  verifyButtonText: {
+  uploadedName: {
+    fontSize: FontSize.md,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
+  uploadedSize: {
+    fontSize: FontSize.xs,
+    color: Colors.textTertiary,
+    marginTop: 1,
+  },
+  submitBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    height: 54,
+    backgroundColor: Colors.lime,
+    borderRadius: BorderRadius.xl,
+    marginTop: Spacing.xxl,
+  },
+  submitBtnDisabled: {
+    opacity: 0.45,
+  },
+  submitBtnText: {
     fontSize: FontSize.lg,
     fontWeight: '700',
     color: Colors.textPrimary,
   },
-  centered: {
+  disclaimer: {
+    fontSize: FontSize.sm,
+    color: Colors.textTertiary,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginTop: Spacing.lg,
+  },
+
+  // ── Full-screen states ────────────────────────────────────────
+  fullCenter: {
     flex: 1,
     backgroundColor: Colors.white,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: Spacing.xxxl,
-    gap: Spacing.xl,
+    paddingHorizontal: Spacing.xxl,
+    gap: Spacing.lg,
   },
-  loadingText: {
-    fontSize: FontSize.lg,
-    color: Colors.textSecondary,
-    fontWeight: '500',
-  },
-  successCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: Colors.success,
+  loadingCard: {
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.md,
+    gap: Spacing.lg,
+    backgroundColor: Colors.background,
+    borderRadius: BorderRadius.xxl,
+    padding: Spacing.xxxl,
+    width: '100%',
   },
-  failureCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: Colors.chipInactive,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.md,
-  },
-  resultTitle: {
-    fontSize: FontSize.xxl,
+  loadingTitle: {
+    fontSize: FontSize.xl,
     fontWeight: '700',
     color: Colors.textPrimary,
     textAlign: 'center',
   },
-  resultSubtitle: {
+  loadingSub: {
+    fontSize: FontSize.md,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+  },
+  resultIconWrap: {
+    position: 'relative',
+    marginBottom: Spacing.sm,
+  },
+  resultCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resultDecoDot: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: Colors.lime,
+    top: -4,
+    right: -4,
+    borderWidth: 3,
+    borderColor: Colors.white,
+  },
+  resultTitle: {
+    fontSize: FontSize.xxl,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    textAlign: 'center',
+  },
+  resultSub: {
     fontSize: FontSize.md,
     color: Colors.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
   },
-  primaryButton: {
-    backgroundColor: Colors.lime,
-    paddingVertical: Spacing.lg,
-    paddingHorizontal: Spacing.huge,
-    borderRadius: BorderRadius.full,
-    marginTop: Spacing.md,
+  resultBadgeRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
-  primaryButtonText: {
+  resultBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: `${Colors.lime}22`,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
+  },
+  resultBadgeText: {
+    fontSize: FontSize.sm,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
+  primaryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    width: '100%',
+    height: 54,
+    backgroundColor: Colors.lime,
+    borderRadius: BorderRadius.xl,
+    marginTop: Spacing.sm,
+  },
+  primaryBtnText: {
     fontSize: FontSize.lg,
     fontWeight: '700',
     color: Colors.textPrimary,
+  },
+  ghostBtn: {
+    width: '100%',
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  ghostBtnText: {
+    fontSize: FontSize.md,
+    fontWeight: '600',
+    color: Colors.textSecondary,
   },
 });
