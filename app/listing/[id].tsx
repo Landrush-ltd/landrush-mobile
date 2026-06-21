@@ -43,7 +43,6 @@ export default function ListingDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
-  const [showPaywall, setShowPaywall]   = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
   const [isSaved, setIsSaved]           = useState(false);
   const [selectedDate, setSelDate]      = useState('');
@@ -61,11 +60,6 @@ export default function ListingDetailScreen() {
   }
 
   const handleBookInspection = () => {
-    setShowPaywall(true);
-  };
-
-  const handlePayAccess = () => {
-    setShowPaywall(false);
     setShowSchedule(true);
   };
 
@@ -226,63 +220,6 @@ export default function ListingDetailScreen() {
           <Text style={styles.bookInspectionText}>Book Inspection</Text>
         </TouchableOpacity>
       </View>
-
-      <Modal visible={showPaywall} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.paywallModal}>
-            <TouchableOpacity
-              style={styles.modalClose}
-              onPress={() => setShowPaywall(false)}
-            >
-              <Ionicons name="close" size={24} color={Colors.textPrimary} />
-            </TouchableOpacity>
-
-            <View style={styles.paywallIcon}>
-              <Ionicons name="lock-open-outline" size={48} color={Colors.primary} />
-            </View>
-
-            <Text style={styles.paywallTitle}>Unlock inspection access</Text>
-            <Text style={styles.paywallDescription}>
-              A one-time access fee gives you access to inspection bookings and
-              helps maintain a trusted marketplace for serious participants.
-            </Text>
-
-            <View style={styles.paywallFeatures}>
-              <View style={styles.paywallFeatureRow}>
-                <Ionicons name="checkmark-circle" size={20} color={Colors.success} />
-                <Text style={styles.paywallFeatureText}>Book inspections</Text>
-              </View>
-              <View style={styles.paywallFeatureRow}>
-                <Ionicons name="checkmark-circle" size={20} color={Colors.success} />
-                <Text style={styles.paywallFeatureText}>
-                  Connect with agents and landowners
-                </Text>
-              </View>
-              <View style={styles.paywallFeatureRow}>
-                <Ionicons name="checkmark-circle" size={20} color={Colors.success} />
-                <Text style={styles.paywallFeatureText}>
-                  Access future inspection requests
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.feeContainer}>
-              <Text style={styles.feeLabel}>Fee</Text>
-              <View style={styles.feeRight}>
-                <Text style={styles.feeTag}>One-time payment</Text>
-              </View>
-            </View>
-            <Text style={styles.feeAmount}>{'\u20A6'}5000</Text>
-
-            <TouchableOpacity
-              style={styles.payButton}
-              onPress={handlePayAccess}
-            >
-              <Text style={styles.payButtonText}>Pay Access Fee</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
 
       <Modal visible={showSchedule} transparent animationType="slide">
         <KeyboardAvoidingView
@@ -667,85 +604,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.overlay,
     justifyContent: 'flex-end',
-  },
-  paywallModal: {
-    backgroundColor: Colors.white,
-    borderTopLeftRadius: BorderRadius.xxl,
-    borderTopRightRadius: BorderRadius.xxl,
-    padding: Spacing.xxl,
-    paddingBottom: 40,
-  },
-  modalClose: {
-    alignSelf: 'flex-end',
-    padding: Spacing.sm,
-  },
-  paywallIcon: {
-    alignSelf: 'center',
-    marginBottom: Spacing.xl,
-  },
-  paywallTitle: {
-    fontSize: FontSize.xxl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    textAlign: 'center',
-    marginBottom: Spacing.md,
-  },
-  paywallDescription: {
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: Spacing.xxl,
-  },
-  paywallFeatures: {
-    gap: Spacing.md,
-    marginBottom: Spacing.xxl,
-  },
-  paywallFeatureRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-  },
-  paywallFeatureText: {
-    fontSize: FontSize.md,
-    color: Colors.textPrimary,
-  },
-  feeContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.xs,
-  },
-  feeLabel: {
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-  },
-  feeRight: {},
-  feeTag: {
-    fontSize: FontSize.xs,
-    color: Colors.primary,
-    fontWeight: '600',
-    backgroundColor: `${Colors.primary}15`,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
-    borderRadius: BorderRadius.sm,
-  },
-  feeAmount: {
-    fontSize: FontSize.xxl,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.xxl,
-  },
-  payButton: {
-    backgroundColor: Colors.lime,
-    paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    alignItems: 'center',
-  },
-  payButtonText: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    color: Colors.textPrimary,
   },
   scheduleModal: {
     backgroundColor: Colors.white,
