@@ -4,11 +4,13 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  FlatList,
   TextInput,
   TouchableOpacity,
   Alert,
   Animated,
   Image,
+  Modal,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
@@ -63,6 +65,8 @@ export default function CreateListingScreen() {
   const [isUploading, setUploading] = useState(false);
   const [uploadPct, setUploadPct]   = useState(0);
   const [draftSaved, setDraft]  = useState(false);
+  const [stateModalOpen, setStateModalOpen] = useState(false);
+  const [stateQuery, setStateQuery] = useState('');
   const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Animate progress bar on step change
@@ -242,17 +246,17 @@ export default function CreateListingScreen() {
       <Text style={s.stepSub}>Help buyers find your land</Text>
 
       <Text style={s.label}>State *</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.stateRow}>
-        {NG_STATES.map((st) => (
-          <TouchableOpacity
-            key={st}
-            style={[s.stateChip, state === st && s.stateChipActive]}
-            onPress={() => setState(st)}
-          >
-            <Text style={[s.stateText, state === st && s.stateTextActive]}>{st}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      <TouchableOpacity
+        style={[s.statePickerBtn, state ? s.statePickerBtnFilled : undefined]}
+        onPress={() => setStateModalOpen(true)}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="map-outline" size={18} color={state ? Colors.primary : Colors.textTertiary} />
+        <Text style={[s.statePickerText, state ? s.statePickerTextFilled : undefined]}>
+          {state || 'Select a state'}
+        </Text>
+        <Ionicons name="chevron-down" size={16} color={Colors.textTertiary} />
+      </TouchableOpacity>
 
       <Text style={s.label}>Area / Address</Text>
       <TextInput
@@ -529,6 +533,55 @@ export default function CreateListingScreen() {
           />
         </TouchableOpacity>
       </View>
+
+      {/* State picker modal */}
+      <Modal visible={stateModalOpen} animationType="slide" transparent onRequestClose={() => setStateModalOpen(false)}>
+        <View style={s.modalOverlay}>
+          <View style={s.modalSheet}>
+            <View style={s.modalHeader}>
+              <Text style={s.modalTitle}>Select State</Text>
+              <TouchableOpacity onPress={() => { setStateModalOpen(false); setStateQuery(''); }}>
+                <Ionicons name="close" size={22} color={Colors.textPrimary} />
+              </TouchableOpacity>
+            </View>
+            <View style={s.modalSearch}>
+              <Ionicons name="search-outline" size={16} color={Colors.textTertiary} />
+              <TextInput
+                style={s.modalSearchInput}
+                placeholder="Search states…"
+                placeholderTextColor={Colors.textTertiary}
+                value={stateQuery}
+                onChangeText={setStateQuery}
+                autoFocus
+              />
+              {stateQuery.length > 0 && (
+                <TouchableOpacity onPress={() => setStateQuery('')}>
+                  <Ionicons name="close-circle" size={16} color={Colors.textTertiary} />
+                </TouchableOpacity>
+              )}
+            </View>
+            <FlatList
+              data={NG_STATES.filter((st) => st.toLowerCase().includes(stateQuery.toLowerCase()))}
+              keyExtractor={(item) => item}
+              keyboardShouldPersistTaps="handled"
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={s.stateOption}
+                  onPress={() => { setState(item); setStateModalOpen(false); setStateQuery(''); }}
+                >
+                  <Text style={[s.stateOptionText, state === item && s.stateOptionActive]}>
+                    {item}
+                  </Text>
+                  {state === item && (
+                    <Ionicons name="checkmark-circle" size={18} color={Colors.lime} />
+                  )}
+                </TouchableOpacity>
+              )}
+              ItemSeparatorComponent={() => <View style={s.stateOptionSep} />}
+            />
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -712,18 +765,94 @@ const s = StyleSheet.create({
   unitTextActive: { color: Colors.primary, fontWeight: '700' },
 
   // ── Location ──────────────────────────────────────────────────
-  stateRow: { gap: Spacing.sm, marginBottom: Spacing.md },
-  stateChip: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 7,
-    borderRadius: BorderRadius.full,
+  // State picker button
+  statePickerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    height: 52,
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.xl,
     borderWidth: 1,
     borderColor: Colors.border,
-    backgroundColor: Colors.white,
+    paddingHorizontal: Spacing.lg,
   },
-  stateChipActive: { borderColor: Colors.lime, backgroundColor: `${Colors.lime}18` },
-  stateText:       { fontSize: FontSize.sm, color: Colors.textSecondary },
-  stateTextActive: { color: Colors.primary, fontWeight: '700' },
+  statePickerBtnFilled: {
+    borderColor: Colors.lime,
+  },
+  statePickerText: {
+    flex: 1,
+    fontSize: FontSize.md,
+    color: Colors.textTertiary,
+  },
+  statePickerTextFilled: {
+    color: Colors.textPrimary,
+    fontWeight: '600',
+  },
+  // State picker modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'flex-end',
+  },
+  modalSheet: {
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '80%',
+    paddingTop: Spacing.lg,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderLight,
+  },
+  modalTitle: {
+    fontSize: FontSize.lg,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+  },
+  modalSearch: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    margin: Spacing.lg,
+    paddingHorizontal: Spacing.md,
+    height: 44,
+    backgroundColor: Colors.background,
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  modalSearchInput: {
+    flex: 1,
+    fontSize: FontSize.md,
+    color: Colors.textPrimary,
+  },
+  stateOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+  },
+  stateOptionText: {
+    fontSize: FontSize.md,
+    color: Colors.textPrimary,
+  },
+  stateOptionActive: {
+    color: Colors.primary,
+    fontWeight: '700',
+  },
+  stateOptionSep: {
+    height: 1,
+    backgroundColor: Colors.borderLight,
+    marginLeft: Spacing.xl,
+  },
   mapPickBtn: {
     flexDirection: 'row',
     alignItems: 'center',

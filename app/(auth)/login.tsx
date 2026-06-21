@@ -15,13 +15,16 @@ import { Ionicons } from '@expo/vector-icons';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 import { LandrushLogo } from '../../src/components/LandrushLogo';
+import { useAuthStore } from '../../src/store/auth';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { setUser } = useAuthStore();
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSocialLoading, setIsSocialLoading] = useState<'google' | 'apple' | null>(null);
   const [biometricType, setBiometricType] = useState<'face' | 'fingerprint' | null>(null);
 
   useEffect(() => {
@@ -45,6 +48,28 @@ export default function LoginScreen() {
       cancelLabel: 'Cancel',
     });
     if (result.success) router.replace('/(tabs)');
+  };
+
+  const handleSocialSignIn = (provider: 'google' | 'apple') => {
+    setIsSocialLoading(provider);
+    setTimeout(() => {
+      setUser(
+        {
+          id: '1',
+          firstName: 'Kenneth',
+          lastName: 'Umoekpe',
+          email: 'kennethumoekpe@gmail.com',
+          phone: '',
+          avatar: 'https://i.pravatar.cc/150?img=11',
+          role: 'seeker',
+          isVerified: true,
+          createdAt: new Date().toISOString(),
+        },
+        'mock-jwt-token',
+      );
+      setIsSocialLoading(null);
+      router.replace('/(tabs)');
+    }, 1200);
   };
 
   const handleLogin = () => {
@@ -103,13 +128,25 @@ export default function LoginScreen() {
 
         {/* Social buttons */}
         <View style={styles.socialRow}>
-          <TouchableOpacity style={styles.socialBtn}>
+          <TouchableOpacity
+            style={[styles.socialBtn, isSocialLoading === 'google' && styles.socialBtnLoading]}
+            onPress={() => handleSocialSignIn('google')}
+            disabled={isSocialLoading !== null}
+          >
             <Ionicons name="logo-google" size={18} color={Colors.textPrimary} />
-            <Text style={styles.socialText}>Google</Text>
+            <Text style={styles.socialText}>
+              {isSocialLoading === 'google' ? 'Connecting…' : 'Google'}
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.socialBtn}>
+          <TouchableOpacity
+            style={[styles.socialBtn, isSocialLoading === 'apple' && styles.socialBtnLoading]}
+            onPress={() => handleSocialSignIn('apple')}
+            disabled={isSocialLoading !== null}
+          >
             <Ionicons name="logo-apple" size={18} color={Colors.textPrimary} />
-            <Text style={styles.socialText}>Apple</Text>
+            <Text style={styles.socialText}>
+              {isSocialLoading === 'apple' ? 'Connecting…' : 'Apple'}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -312,6 +349,10 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     fontWeight: '600',
     color: Colors.textPrimary,
+  },
+  socialBtnLoading: {
+    opacity: 0.65,
+    borderColor: Colors.lime,
   },
   dividerRow: {
     flexDirection: 'row',
