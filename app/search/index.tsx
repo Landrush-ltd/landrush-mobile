@@ -323,15 +323,15 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   filterChipActive: {
-    borderColor: Colors.primary,
-    backgroundColor: Colors.chipActive,
+    borderColor: Colors.lime,
+    backgroundColor: `${Colors.lime}20`,
   },
   filterChipText: {
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
   },
   filterChipTextActive: {
-    color: Colors.primary,
+    color: Colors.textPrimary,
     fontWeight: '600',
   },
   sizeInputRow: {
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.borderLight,
   },
   showResultsButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.lime,
     paddingVertical: Spacing.lg,
     borderRadius: BorderRadius.lg,
     alignItems: 'center',
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   showResultsText: {
     fontSize: FontSize.lg,
     fontWeight: '700',
-    color: Colors.white,
+    color: Colors.textPrimary,
   },
   resultsHeader: {
     flexDirection: 'row',

@@ -48,9 +48,9 @@ export default function ProfileScreen() {
   };
 
   const menuItems: MenuItem[] = [
-    { icon: 'person-outline', label: 'Personal Information', onPress: () => {} },
-    { icon: 'list-outline', label: 'My Listings', onPress: () => {} },
-    { icon: 'bookmark-outline', label: 'Saved Listings', onPress: () => {} },
+    { icon: 'person-outline', label: 'Personal Information', onPress: () => router.push('/personal-information') },
+    { icon: 'list-outline', label: 'My Listings', onPress: () => router.push('/my-listings') },
+    { icon: 'bookmark-outline', label: 'Saved Listings', onPress: () => router.push('/saved-listings') },
     { icon: 'calendar-outline', label: 'Bookings', onPress: () => router.push('/(tabs)/bookings') },
     { icon: 'notifications-outline', label: 'Notifications', onPress: () => router.push('/notifications') },
     { icon: 'shield-checkmark-outline', label: 'Verification', onPress: () => router.push('/verification') },

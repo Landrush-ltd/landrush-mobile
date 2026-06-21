@@ -182,13 +182,13 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   otpInputFilled: {
-    borderColor: Colors.primary,
-    backgroundColor: `${Colors.primary}08`,
+    borderColor: Colors.lime,
+    backgroundColor: `${Colors.lime}12`,
   },
   verifyingText: {
     textAlign: 'center',
     fontSize: FontSize.md,
-    color: Colors.primary,
+    color: Colors.textSecondary,
     fontWeight: '600',
     marginBottom: Spacing.xl,
   },
