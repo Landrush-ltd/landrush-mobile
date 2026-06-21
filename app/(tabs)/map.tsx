@@ -7,7 +7,18 @@ import {
   Image,
   Platform,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+
+// react-native-maps is not supported on web
+const IS_WEB = Platform.OS === 'web';
+let MapView: any = null;
+let Marker: any = null;
+let PROVIDER_GOOGLE: any = null;
+if (!IS_WEB) {
+  const maps = require('react-native-maps');
+  MapView = maps.default;
+  Marker = maps.Marker;
+  PROVIDER_GOOGLE = maps.PROVIDER_GOOGLE;
+}
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -47,7 +58,7 @@ const INITIAL_REGION = {
 export default function MapScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<any>(null);
   const [activeCategory, setActiveCategory] = useState<ListingCategory | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
@@ -73,6 +84,16 @@ export default function MapScreen() {
       400,
     );
   };
+
+  if (IS_WEB) {
+    return (
+      <View style={styles.webFallback}>
+        <Ionicons name="map-outline" size={48} color={Colors.textTertiary} />
+        <Text style={styles.webFallbackTitle}>Map View</Text>
+        <Text style={styles.webFallbackSub}>Map is available on the iOS and Android app.</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -214,6 +235,24 @@ export default function MapScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  webFallback: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    backgroundColor: Colors.background,
+  },
+  webFallbackTitle: {
+    fontSize: FontSize.xl,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  webFallbackSub: {
+    fontSize: FontSize.md,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    paddingHorizontal: 40,
   },
   topOverlay: {
     position: 'absolute',
