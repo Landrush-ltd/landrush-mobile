@@ -1,15 +1,24 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Animated } from 'react-native';
 
 const MARK_DARK = '#1A5C3A';
 const MARK_LIGHT = '#8DC63F';
 const TEXT_GREEN = '#7B8A2E';
+
+export interface LandrushLogoAnimatedProps {
+  topLeftAnim?: Animated.Value;
+  bottomLeftAnim?: Animated.Value;
+  rightAnim?: Animated.Value;
+  textOpacity?: Animated.Value;
+  textTranslateX?: Animated.Value;
+}
 
 interface Props {
   size?: number;
   showText?: boolean;
   textColor?: string;
   orientation?: 'horizontal' | 'vertical';
+  animated?: LandrushLogoAnimatedProps;
 }
 
 export function LandrushLogo({
@@ -17,69 +26,101 @@ export function LandrushLogo({
   showText = true,
   textColor = TEXT_GREEN,
   orientation = 'horizontal',
+  animated,
 }: Props) {
   const cell = size / 2;
   const gap = Math.round(size * 0.08);
   const radius = Math.round(cell * 0.22);
 
+  const TopLeft = animated?.topLeftAnim ? Animated.View : View;
+  const BottomLeftWrapper = animated?.bottomLeftAnim ? Animated.View : View;
+  const RightCol = animated?.rightAnim ? Animated.View : View;
+  const TextWrapper = animated?.textOpacity ? Animated.View : View;
+
+  const topLeftStyle = animated?.topLeftAnim
+    ? { transform: [{ translateY: animated.topLeftAnim }] }
+    : {};
+  const bottomLeftStyle = animated?.bottomLeftAnim
+    ? { transform: [{ translateX: animated.bottomLeftAnim }] }
+    : {};
+  const rightStyle = animated?.rightAnim
+    ? { transform: [{ translateX: animated.rightAnim }] }
+    : {};
+  const textStyle =
+    animated?.textOpacity
+      ? {
+          opacity: animated.textOpacity,
+          transform: animated.textTranslateX
+            ? [{ translateX: animated.textTranslateX }]
+            : undefined,
+        }
+      : {};
+
   const mark = (
     <View style={{ flexDirection: 'row', gap }}>
-      {/* Left column: two stacked squares */}
+      {/* Left column */}
       <View style={{ gap }}>
-        {/* Top-left dark green square */}
-        <View
-          style={{
-            width: cell,
-            height: cell,
-            backgroundColor: MARK_DARK,
-            borderRadius: radius,
-          }}
+        {/* Top-left: dark green */}
+        <TopLeft
+          style={[
+            {
+              width: cell,
+              height: cell,
+              backgroundColor: MARK_DARK,
+              borderRadius: radius,
+            },
+            topLeftStyle,
+          ]}
         />
-        {/* Bottom-left light green with curved wave lines */}
-        <View
-          style={{
-            width: cell,
-            height: cell,
-            backgroundColor: MARK_LIGHT,
-            borderRadius: radius,
-            overflow: 'hidden',
-          }}
-        >
-          {/* Wave arc 1 */}
+
+        {/* Bottom-left: lime green with wave lines */}
+        <BottomLeftWrapper style={bottomLeftStyle}>
           <View
             style={{
-              position: 'absolute',
-              bottom: cell * 0.35,
-              left: -cell * 0.15,
-              width: cell * 1.3,
-              height: cell * 0.55,
-              backgroundColor: 'rgba(255,255,255,0.28)',
-              borderRadius: cell * 0.8,
+              width: cell,
+              height: cell,
+              backgroundColor: MARK_LIGHT,
+              borderRadius: radius,
+              overflow: 'hidden',
             }}
-          />
-          {/* Wave arc 2 */}
-          <View
-            style={{
-              position: 'absolute',
-              bottom: cell * 0.15,
-              left: -cell * 0.15,
-              width: cell * 1.3,
-              height: cell * 0.55,
-              backgroundColor: 'rgba(255,255,255,0.18)',
-              borderRadius: cell * 0.8,
-            }}
-          />
-        </View>
+          >
+            <View
+              style={{
+                position: 'absolute',
+                bottom: cell * 0.35,
+                left: -cell * 0.15,
+                width: cell * 1.3,
+                height: cell * 0.55,
+                backgroundColor: 'rgba(255,255,255,0.28)',
+                borderRadius: cell * 0.8,
+              }}
+            />
+            <View
+              style={{
+                position: 'absolute',
+                bottom: cell * 0.15,
+                left: -cell * 0.15,
+                width: cell * 1.3,
+                height: cell * 0.55,
+                backgroundColor: 'rgba(255,255,255,0.18)',
+                borderRadius: cell * 0.8,
+              }}
+            />
+          </View>
+        </BottomLeftWrapper>
       </View>
 
-      {/* Right column: single tall dark green rectangle */}
-      <View
-        style={{
-          width: cell,
-          height: cell * 2 + gap,
-          backgroundColor: MARK_DARK,
-          borderRadius: radius,
-        }}
+      {/* Right column: tall rectangle */}
+      <RightCol
+        style={[
+          {
+            width: cell,
+            height: cell * 2 + gap,
+            backgroundColor: MARK_DARK,
+            borderRadius: radius,
+          },
+          rightStyle,
+        ]}
       />
     </View>
   );
@@ -146,7 +187,7 @@ export function LandrushLogo({
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: size * 0.22 }}>
       {mark}
-      {textBlock}
+      <TextWrapper style={textStyle}>{textBlock}</TextWrapper>
     </View>
   );
 }

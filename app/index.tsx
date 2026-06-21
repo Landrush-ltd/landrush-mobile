@@ -1,51 +1,38 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Easing, Dimensions } from 'react-native';
+import { View, StyleSheet, Animated, Easing } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../src/store/auth';
+import { LandrushLogo } from '../src/components/LandrushLogo';
 
-const { width } = Dimensions.get('window');
-
-const MARK_DARK = '#1A5C3A';
-const MARK_LIGHT = '#8DC63F';
 const SPLASH_BG = '#004230';
-const TEXT_COLOR = '#9FBB44';
-
-const SIZE = 80;
-const CELL = SIZE / 2;
-const GAP = Math.round(SIZE * 0.08);
-const RADIUS = Math.round(CELL * 0.22);
-
 const SPRING = { tension: 65, friction: 8, useNativeDriver: true };
+const LOGO_SIZE = 80;
+const CELL = LOGO_SIZE / 2;
 
 export default function SplashScreen() {
   const router = useRouter();
   const { isAuthenticated, hasCompletedOnboarding } = useAuthStore();
 
-  // Each block has its own translate value
-  const topLeftY    = useRef(new Animated.Value(-(CELL * 3))).current;
-  const bottomLeftX = useRef(new Animated.Value(-(CELL * 3))).current;
-  const rightX      = useRef(new Animated.Value(CELL * 3)).current;
-
-  // Text
-  const textOpacity = useRef(new Animated.Value(0)).current;
-  const textX       = useRef(new Animated.Value(20)).current;
-
-  // Tagline
-  const tagOpacity = useRef(new Animated.Value(0)).current;
+  // Per-block animated values — passed into LandrushLogo
+  const topLeftAnim    = useRef(new Animated.Value(-(CELL * 3))).current;
+  const bottomLeftAnim = useRef(new Animated.Value(-(CELL * 3))).current;
+  const rightAnim      = useRef(new Animated.Value(CELL * 3)).current;
+  const textOpacity    = useRef(new Animated.Value(0)).current;
+  const textTranslateX = useRef(new Animated.Value(20)).current;
+  const tagOpacity     = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    // Blocks assemble with stagger
     Animated.sequence([
       Animated.delay(250),
-
-      // Three blocks stagger in
       Animated.stagger(130, [
-        Animated.spring(topLeftY,    { toValue: 0, ...SPRING }),
-        Animated.spring(bottomLeftX, { toValue: 0, ...SPRING }),
-        Animated.spring(rightX,      { toValue: 0, ...SPRING }),
+        Animated.spring(topLeftAnim,    { toValue: 0, ...SPRING }),
+        Animated.spring(bottomLeftAnim, { toValue: 0, ...SPRING }),
+        Animated.spring(rightAnim,      { toValue: 0, ...SPRING }),
       ]),
     ]).start();
 
-    // Text slides in slightly after blocks land
+    // Text slides in after blocks land
     Animated.sequence([
       Animated.delay(820),
       Animated.parallel([
@@ -55,7 +42,7 @@ export default function SplashScreen() {
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
-        Animated.spring(textX, {
+        Animated.spring(textTranslateX, {
           toValue: 0,
           tension: 80,
           friction: 10,
@@ -64,7 +51,7 @@ export default function SplashScreen() {
       ]),
     ]).start();
 
-    // Tagline appears last
+    // Tagline fades in last
     Animated.sequence([
       Animated.delay(1260),
       Animated.timing(tagOpacity, {
@@ -90,90 +77,18 @@ export default function SplashScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.logoRow}>
-        {/* Left column */}
-        <View style={{ gap: GAP }}>
-          {/* Top-left block — slides in from top */}
-          <Animated.View
-            style={{
-              width: CELL,
-              height: CELL,
-              backgroundColor: MARK_DARK,
-              borderRadius: RADIUS,
-              transform: [{ translateY: topLeftY }],
-            }}
-          />
+      <LandrushLogo
+        size={LOGO_SIZE}
+        textColor="#9FBB44"
+        animated={{
+          topLeftAnim,
+          bottomLeftAnim,
+          rightAnim,
+          textOpacity,
+          textTranslateX,
+        }}
+      />
 
-          {/* Bottom-left block — slides in from left */}
-          <Animated.View
-            style={{ transform: [{ translateX: bottomLeftX }] }}
-          >
-            <View
-              style={{
-                width: CELL,
-                height: CELL,
-                backgroundColor: MARK_LIGHT,
-                borderRadius: RADIUS,
-                overflow: 'hidden',
-              }}
-            >
-              <View
-                style={{
-                  position: 'absolute',
-                  bottom: CELL * 0.35,
-                  left: -CELL * 0.15,
-                  width: CELL * 1.3,
-                  height: CELL * 0.55,
-                  backgroundColor: 'rgba(255,255,255,0.28)',
-                  borderRadius: CELL * 0.8,
-                }}
-              />
-              <View
-                style={{
-                  position: 'absolute',
-                  bottom: CELL * 0.15,
-                  left: -CELL * 0.15,
-                  width: CELL * 1.3,
-                  height: CELL * 0.55,
-                  backgroundColor: 'rgba(255,255,255,0.18)',
-                  borderRadius: CELL * 0.8,
-                }}
-              />
-            </View>
-          </Animated.View>
-        </View>
-
-        {/* Right tall block — slides in from right */}
-        <Animated.View
-          style={{
-            width: CELL,
-            height: CELL * 2 + GAP,
-            backgroundColor: MARK_DARK,
-            borderRadius: RADIUS,
-            transform: [{ translateX: rightX }],
-          }}
-        />
-
-        {/* Text block — fades + slides in */}
-        <Animated.View
-          style={[
-            styles.textBlock,
-            {
-              opacity: textOpacity,
-              transform: [{ translateX: textX }],
-            },
-          ]}
-        >
-          <Text style={[styles.wordText, { fontSize: SIZE * 0.36, lineHeight: SIZE * 0.44 }]}>
-            LAND
-          </Text>
-          <Text style={[styles.wordText, { fontSize: SIZE * 0.36, lineHeight: SIZE * 0.44 }]}>
-            RUSH
-          </Text>
-        </Animated.View>
-      </View>
-
-      {/* Tagline */}
       <Animated.Text style={[styles.tagline, { opacity: tagOpacity }]}>
         Your land. Your future.
       </Animated.Text>
@@ -188,19 +103,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 28,
-  },
-  logoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: GAP,
-  },
-  textBlock: {
-    marginLeft: SIZE * 0.14,
-  },
-  wordText: {
-    fontWeight: '800',
-    color: TEXT_COLOR,
-    letterSpacing: SIZE * 0.018,
   },
   tagline: {
     fontSize: 13,
