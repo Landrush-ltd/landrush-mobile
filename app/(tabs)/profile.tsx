@@ -28,7 +28,9 @@ interface MenuItem {
 export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { logout } = useAuthStore();
+  const { logout, user } = useAuthStore();
+  const displayName = user ? `${user.firstName} ${user.lastName}` : 'Landrush User';
+  const displayRole = user?.role === 'agent' ? 'Landrush Agent' : user?.role === 'landowner' ? 'Landowner' : 'Land Seeker';
   const [notifications, setNotifications] = useState(true);
 
   const handleLogout = () => {
@@ -50,7 +52,8 @@ export default function ProfileScreen() {
     { icon: 'list-outline', label: 'My Listings', onPress: () => {} },
     { icon: 'bookmark-outline', label: 'Saved Listings', onPress: () => {} },
     { icon: 'calendar-outline', label: 'Bookings', onPress: () => router.push('/(tabs)/bookings') },
-    { icon: 'notifications-outline', label: 'Notifications', onPress: () => {} },
+    { icon: 'notifications-outline', label: 'Notifications', onPress: () => router.push('/notifications') },
+    { icon: 'shield-checkmark-outline', label: 'Verification', onPress: () => router.push('/verification') },
     { icon: 'help-circle-outline', label: 'Help & Support', onPress: () => {} },
   ];
 
@@ -81,15 +84,15 @@ export default function ProfileScreen() {
       <View style={[styles.profileHeader, { paddingTop: insets.top + Spacing.xl }]}>
         <View style={styles.avatarWrapper}>
           <Image
-            source={{ uri: 'https://i.pravatar.cc/150?img=11' }}
+            source={{ uri: user?.avatar ?? 'https://i.pravatar.cc/150?img=11' }}
             style={styles.avatar}
           />
           <TouchableOpacity style={styles.editAvatarButton}>
             <Ionicons name="camera-outline" size={14} color={Colors.white} />
           </TouchableOpacity>
         </View>
-        <Text style={styles.profileName}>Kenneth Umoekpe</Text>
-        <Text style={styles.profileRole}>Landrush Agent, since 2020</Text>
+        <Text style={styles.profileName}>{displayName}</Text>
+        <Text style={styles.profileRole}>{displayRole}</Text>
       </View>
 
       {/* Menu card */}

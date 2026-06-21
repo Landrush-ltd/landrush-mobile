@@ -84,15 +84,17 @@ export default function ListingDetailScreen() {
 
         <View style={styles.content}>
           <TouchableOpacity
-            style={styles.saveButton}
+            style={[styles.saveButton, isSaved && styles.saveButtonActive]}
             onPress={() => setIsSaved(!isSaved)}
           >
             <Ionicons
               name={isSaved ? 'bookmark' : 'bookmark-outline'}
-              size={18}
+              size={16}
               color={isSaved ? Colors.primary : Colors.textSecondary}
             />
-            <Text style={styles.saveText}>Save</Text>
+            <Text style={[styles.saveText, isSaved && styles.saveTextActive]}>
+              {isSaved ? 'Saved' : 'Save'}
+            </Text>
           </TouchableOpacity>
 
           <Text style={styles.listingTitle}>{listing.title}</Text>
@@ -321,15 +323,23 @@ const styles = StyleSheet.create({
     gap: Spacing.xs,
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.xl,
+    borderRadius: BorderRadius.full,
     borderWidth: 1,
     borderColor: Colors.border,
     marginBottom: Spacing.md,
+  },
+  saveButtonActive: {
+    backgroundColor: `${Colors.lime}25`,
+    borderColor: Colors.primary,
   },
   saveText: {
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
     fontWeight: '500',
+  },
+  saveTextActive: {
+    color: Colors.primary,
+    fontWeight: '600',
   },
   listingTitle: {
     fontSize: FontSize.xxl,
@@ -463,7 +473,7 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.borderLight,
   },
   bookInspectionButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.lime,
     paddingVertical: Spacing.lg,
     borderRadius: BorderRadius.lg,
     alignItems: 'center',
@@ -471,7 +481,7 @@ const styles = StyleSheet.create({
   bookInspectionText: {
     fontSize: FontSize.lg,
     fontWeight: '700',
-    color: Colors.white,
+    color: Colors.textPrimary,
   },
   modalOverlay: {
     flex: 1,
@@ -547,7 +557,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xxl,
   },
   payButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.lime,
     paddingVertical: Spacing.lg,
     borderRadius: BorderRadius.lg,
     alignItems: 'center',
@@ -555,7 +565,7 @@ const styles = StyleSheet.create({
   payButtonText: {
     fontSize: FontSize.lg,
     fontWeight: '700',
-    color: Colors.white,
+    color: Colors.textPrimary,
   },
   scheduleModal: {
     backgroundColor: Colors.white,
@@ -628,7 +638,7 @@ const styles = StyleSheet.create({
     color: Colors.textTertiary,
   },
   doneButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.lime,
     paddingVertical: Spacing.lg,
     borderRadius: BorderRadius.lg,
     alignItems: 'center',
@@ -636,6 +646,6 @@ const styles = StyleSheet.create({
   doneButtonText: {
     fontSize: FontSize.lg,
     fontWeight: '700',
-    color: Colors.white,
+    color: Colors.textPrimary,
   },
 });
