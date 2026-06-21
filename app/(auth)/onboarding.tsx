@@ -4,26 +4,18 @@ import {
   Text,
   StyleSheet,
   Dimensions,
-  FlatList,
   TouchableOpacity,
   Image,
-  type ViewToken,
+  Animated,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 import { useAuthStore } from '../../src/store/auth';
 
 const { width, height } = Dimensions.get('window');
 
-interface OnboardingSlide {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-}
-
-const slides: OnboardingSlide[] = [
+const slides = [
   {
     id: '1',
     title: 'Find land that fits your vision',
@@ -51,19 +43,26 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const { setOnboardingComplete } = useAuthStore();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const flatListRef = useRef<FlatList>(null);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
 
-  const onViewableItemsChanged = useRef(
-    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      if (viewableItems.length > 0 && viewableItems[0].index != null) {
-        setCurrentIndex(viewableItems[0].index);
-      }
-    },
-  ).current;
+  const goToSlide = (nextIndex: number) => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, { toValue: 0, duration: 180, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: -30, duration: 180, useNativeDriver: true }),
+    ]).start(() => {
+      setCurrentIndex(nextIndex);
+      slideAnim.setValue(30);
+      Animated.parallel([
+        Animated.timing(fadeAnim, { toValue: 1, duration: 220, useNativeDriver: true }),
+        Animated.timing(slideAnim, { toValue: 0, duration: 220, useNativeDriver: true }),
+      ]).start();
+    });
+  };
 
   const handleNext = () => {
     if (currentIndex < slides.length - 1) {
-      flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
+      goToSlide(currentIndex + 1);
     } else {
       handleGetStarted();
     }
@@ -74,47 +73,54 @@ export default function OnboardingScreen() {
     router.replace('/(auth)/login');
   };
 
-  const renderSlide = ({ item }: { item: OnboardingSlide }) => (
-    <View style={styles.slide}>
-      <View style={styles.imageSection}>
-        <Image source={{ uri: item.image }} style={styles.slideImage} />
-      </View>
-      <View style={styles.textSection}>
-        <View style={styles.pagination}>
-          {slides.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.dot,
-                index === currentIndex ? styles.activeDot : styles.inactiveDot,
-              ]}
-            />
-          ))}
-        </View>
-        <Text style={styles.slideTitle}>{item.title}</Text>
-        <Text style={styles.slideDescription}>{item.description}</Text>
-      </View>
-    </View>
-  );
+  const slide = slides[currentIndex];
 
   return (
     <View style={styles.container}>
+      {/* Skip */}
       <TouchableOpacity style={styles.skipButton} onPress={handleGetStarted}>
         <Text style={styles.skipText}>Skip</Text>
       </TouchableOpacity>
 
-      <FlatList
-        ref={flatListRef}
-        data={slides}
-        renderItem={renderSlide}
-        keyExtractor={(item) => item.id}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
-      />
+      {/* Image */}
+      <View style={styles.imageSection}>
+        <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
+          <Image source={{ uri: slide.image }} style={styles.slideImage} />
+        </Animated.View>
+      </View>
 
+      {/* Text section */}
+      <View style={styles.textSection}>
+        {/* Pagination dots */}
+        <View style={styles.pagination}>
+          {slides.map((_, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => index !== currentIndex && goToSlide(index)}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <View
+                style={[
+                  styles.dot,
+                  index === currentIndex ? styles.activeDot : styles.inactiveDot,
+                ]}
+              />
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <Animated.View
+          style={{
+            opacity: fadeAnim,
+            transform: [{ translateX: slideAnim }],
+          }}
+        >
+          <Text style={styles.slideTitle}>{slide.title}</Text>
+          <Text style={styles.slideDescription}>{slide.description}</Text>
+        </Animated.View>
+      </View>
+
+      {/* Footer */}
       <View style={styles.footer}>
         <TouchableOpacity style={styles.getStartedButton} onPress={handleNext}>
           <Text style={styles.getStartedText}>
@@ -144,10 +150,6 @@ const styles = StyleSheet.create({
     fontSize: FontSize.lg,
     color: Colors.primary,
     fontWeight: '500',
-  },
-  slide: {
-    width,
-    flex: 1,
   },
   imageSection: {
     height: height * 0.5,
@@ -204,7 +206,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.lg,
     borderRadius: BorderRadius.md,
     gap: Spacing.sm,
-    ...Shadow.sm,
   },
   getStartedText: {
     fontSize: FontSize.lg,
