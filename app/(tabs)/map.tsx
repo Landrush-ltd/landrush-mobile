@@ -162,6 +162,9 @@ export default function MapScreen() {
               }}
             />
           ))}
+          <View style={styles.countBadge}>
+            <Text style={styles.countBadgeText}>{filteredListings.length} listed</Text>
+          </View>
         </View>
       </View>
 
@@ -297,6 +300,19 @@ const styles = StyleSheet.create({
     fontSize: FontSize.xs,
     fontWeight: '800',
     color: Colors.white,
+  },
+  countBadge: {
+    backgroundColor: Colors.white,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 6,
+    borderRadius: BorderRadius.full,
+    ...Shadow.sm,
+    justifyContent: 'center',
+  },
+  countBadgeText: {
+    fontSize: FontSize.xs,
+    fontWeight: '700',
+    color: Colors.textPrimary,
   },
   legend: {
     position: 'absolute',
