@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -29,24 +29,26 @@ interface NotificationGroup {
   items: NotificationItem[];
 }
 
+const HERO_BG = '#003828';
+
 const groups: NotificationGroup[] = [
   {
     label: 'Today',
     items: [
       {
         id: '1',
-        icon: 'calendar-outline',
+        icon: 'calendar',
         iconColor: Colors.primary,
-        iconBg: `${Colors.lime}25`,
+        iconBg: `${Colors.lime}28`,
         title: 'Inspection Confirmed',
-        subtitle: 'Your inspection for 12 Acres of Farmland has been confirmed for Monday, 12 May.',
+        subtitle: 'Your inspection for 12 Acres of Farmland has been confirmed for Monday, 12 May at 10:00 AM.',
         time: '2m ago',
         unread: true,
       },
       {
         id: '2',
-        icon: 'notifications-outline',
-        iconColor: Colors.info,
+        icon: 'checkmark-circle',
+        iconColor: '#1565C0',
         iconBg: '#E3F2FD',
         title: 'Payment Successful',
         subtitle: 'Your access fee payment of ₦5,000 was processed successfully.',
@@ -60,35 +62,44 @@ const groups: NotificationGroup[] = [
     items: [
       {
         id: '3',
-        icon: 'close-circle-outline',
+        icon: 'close-circle',
         iconColor: Colors.error,
         iconBg: '#FFEBEE',
         title: 'Listing Rejected',
-        subtitle: 'Your listing "5 Plots Industrial Zone" was rejected. Please review and resubmit.',
-        time: 'Yesterday, 3:45 PM',
+        subtitle: 'Your listing "5 Plots Industrial Zone" was rejected. Please review the feedback and resubmit.',
+        time: '3:45 PM',
       },
       {
         id: '4',
-        icon: 'checkmark-circle-outline',
+        icon: 'checkmark-circle',
         iconColor: Colors.success,
         iconBg: '#E8F5E9',
         title: 'Listing Approved',
         subtitle: 'Your listing "8 Plots Corner Piece, Lekki" is now live on Landrush.',
-        time: 'Yesterday, 10:12 AM',
+        time: '10:12 AM',
       },
     ],
   },
   {
-    label: '03-06',
+    label: 'June 3',
     items: [
       {
         id: '5',
-        icon: 'person-outline',
-        iconColor: Colors.textSecondary,
-        iconBg: Colors.chipInactive,
+        icon: 'person',
+        iconColor: Colors.warning,
+        iconBg: '#FFF8E1',
         title: 'New Booking Request',
         subtitle: 'Adewale Properties has requested an inspection for your listing.',
-        time: '03-06, 8:00 AM',
+        time: '8:00 AM',
+      },
+      {
+        id: '6',
+        icon: 'chatbubble',
+        iconColor: Colors.info,
+        iconBg: '#E3F2FD',
+        title: 'New Message',
+        subtitle: 'Chukwu Okafor sent you a message about "3 Plots of Land — Uyo GRA".',
+        time: '7:14 AM',
       },
     ],
   },
@@ -97,117 +108,220 @@ const groups: NotificationGroup[] = [
 export default function NotificationsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
+
+  const totalUnread = groups
+    .flatMap((g) => g.items)
+    .filter((i) => i.unread && !readIds.has(i.id)).length;
+
+  const markAllRead = () => {
+    const allIds = groups.flatMap((g) => g.items.map((i) => i.id));
+    setReadIds(new Set(allIds));
+  };
 
   return (
-    <View style={styles.container}>
-      {/* Sage-green header */}
+    <View style={styles.root}>
+      {/* Dark header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color={Colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Notifications</Text>
-        <View style={{ width: 40 }} />
+        <View style={styles.headerDecoA} />
+        <View style={styles.headerDecoB} />
+
+        <View style={styles.headerRow}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={22} color={Colors.white} />
+          </TouchableOpacity>
+
+          <View style={styles.headerCenter}>
+            <Text style={styles.headerTitle}>Notifications</Text>
+            {totalUnread > 0 && (
+              <View style={styles.unreadBadge}>
+                <Text style={styles.unreadBadgeText}>{totalUnread}</Text>
+              </View>
+            )}
+          </View>
+
+          <TouchableOpacity onPress={markAllRead} disabled={totalUnread === 0}>
+            <Text style={[styles.markAllText, totalUnread === 0 && { opacity: 0.4 }]}>
+              Mark all read
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* White card body */}
-      <View style={styles.card}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {groups.map((group, gi) => (
-            <View key={group.label}>
-              <Text style={[styles.groupLabel, gi > 0 && { marginTop: Spacing.xxl }]}>
-                {group.label}
-              </Text>
-              {group.items.map((item, ii) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[
-                    styles.item,
-                    ii < group.items.length - 1 && styles.itemBorder,
-                    item.unread && styles.itemUnread,
-                  ]}
-                  activeOpacity={0.7}
-                >
-                  <View style={[styles.iconCircle, { backgroundColor: item.iconBg }]}>
-                    <Ionicons name={item.icon} size={22} color={item.iconColor} />
-                  </View>
-                  <View style={styles.itemText}>
-                    <Text style={[styles.itemTitle, item.unread && styles.itemTitleUnread]}>
-                      {item.title}
-                    </Text>
-                    <Text style={styles.itemSubtitle} numberOfLines={2}>
-                      {item.subtitle}
-                    </Text>
-                  </View>
-                  <Text style={styles.itemTime}>{item.time}</Text>
-                </TouchableOpacity>
-              ))}
+      <ScrollView
+        style={styles.card}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.cardContent}
+      >
+        {groups.map((group, gi) => (
+          <View key={group.label} style={gi > 0 ? styles.groupGap : undefined}>
+            <Text style={styles.groupLabel}>{group.label}</Text>
+            <View style={styles.groupItems}>
+              {group.items.map((item, ii) => {
+                const isUnread = item.unread && !readIds.has(item.id);
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[
+                      styles.item,
+                      ii < group.items.length - 1 && styles.itemBorder,
+                      isUnread && styles.itemUnread,
+                    ]}
+                    onPress={() => setReadIds((prev) => new Set([...prev, item.id]))}
+                    activeOpacity={0.7}
+                  >
+                    {/* Unread dot */}
+                    {isUnread && <View style={styles.unreadDot} />}
+
+                    <View style={[styles.iconCircle, { backgroundColor: item.iconBg }]}>
+                      <Ionicons name={item.icon} size={22} color={item.iconColor} />
+                    </View>
+
+                    <View style={styles.itemText}>
+                      <View style={styles.itemTitleRow}>
+                        <Text style={[styles.itemTitle, isUnread && styles.itemTitleUnread]}>
+                          {item.title}
+                        </Text>
+                        <Text style={styles.itemTime}>{item.time}</Text>
+                      </View>
+                      <Text style={styles.itemSubtitle} numberOfLines={2}>
+                        {item.subtitle}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
-          ))}
-          <View style={{ height: Spacing.xxxl }} />
-        </ScrollView>
-      </View>
+          </View>
+        ))}
+        <View style={{ height: 100 }} />
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    backgroundColor: Colors.authBg,
+    backgroundColor: HERO_BG,
   },
   header: {
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.xxl,
+    overflow: 'hidden',
+  },
+  headerDecoA: {
+    position: 'absolute',
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: 'rgba(159,187,68,0.07)',
+    top: -60,
+    right: -40,
+  },
+  headerDecoB: {
+    position: 'absolute',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(159,187,68,0.05)',
+    bottom: 10,
+    left: 30,
+  },
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xl,
   },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.white,
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
-    ...Shadow.sm,
+  },
+  headerCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
   },
   headerTitle: {
     fontSize: FontSize.xl,
+    fontWeight: '800',
+    color: Colors.white,
+  },
+  unreadBadge: {
+    backgroundColor: Colors.lime,
+    borderRadius: BorderRadius.full,
+    minWidth: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 5,
+  },
+  unreadBadgeText: {
+    fontSize: FontSize.xs,
     fontWeight: '700',
     color: Colors.textPrimary,
+  },
+  markAllText: {
+    fontSize: FontSize.sm,
+    fontWeight: '600',
+    color: Colors.lime,
   },
   card: {
     flex: 1,
     backgroundColor: Colors.white,
-    borderTopLeftRadius: BorderRadius.xxl,
-    borderTopRightRadius: BorderRadius.xxl,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+  },
+  cardContent: {
     paddingTop: Spacing.xl,
-    paddingHorizontal: Spacing.xl,
-    ...Shadow.lg,
+    paddingHorizontal: Spacing.lg,
+  },
+  groupGap: {
+    marginTop: Spacing.xxl,
   },
   groupLabel: {
     fontSize: FontSize.sm,
     fontWeight: '700',
     color: Colors.textTertiary,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: Spacing.md,
+    letterSpacing: 0.6,
+    marginBottom: Spacing.sm,
+  },
+  groupItems: {
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    overflow: 'hidden',
   },
   item: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: Spacing.md,
     paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.md,
+    position: 'relative',
   },
   itemBorder: {
-    borderBottomWidth: 0.5,
+    borderBottomWidth: 1,
     borderBottomColor: Colors.borderLight,
   },
   itemUnread: {
-    backgroundColor: `${Colors.lime}08`,
-    marginHorizontal: -Spacing.xl,
-    paddingHorizontal: Spacing.xl,
-    borderRadius: BorderRadius.sm,
+    backgroundColor: `${Colors.lime}0A`,
+  },
+  unreadDot: {
+    position: 'absolute',
+    top: Spacing.lg + 8,
+    left: 4,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: Colors.lime,
   },
   iconCircle: {
     width: 44,
@@ -219,9 +333,16 @@ const styles = StyleSheet.create({
   },
   itemText: {
     flex: 1,
-    gap: 3,
+    gap: 4,
+  },
+  itemTitleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: Spacing.sm,
   },
   itemTitle: {
+    flex: 1,
     fontSize: FontSize.md,
     fontWeight: '600',
     color: Colors.textPrimary,

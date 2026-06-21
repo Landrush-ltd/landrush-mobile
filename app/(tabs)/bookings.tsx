@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
 
-type BookingStatus = 'pending' | 'upcoming' | 'past' | 'rescheduled' | 'cancelled';
+type BookingStatus = 'pending' | 'upcoming' | 'rescheduled' | 'past' | 'cancelled';
 type FilterTab = 'pending' | 'upcoming' | 'past';
 
 interface Booking {
@@ -26,19 +26,23 @@ interface Booking {
   time: string;
   status: BookingStatus;
   agentName: string;
+  agentAvatar: string;
 }
 
-const mockBookings: Booking[] = [
+const HERO_BG = '#003828';
+
+const MOCK: Booking[] = [
   {
     id: '1',
     listingTitle: '12 Acres of Farmland',
     listingImage: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400',
     location: 'Ikot Ekpene, Akwa Ibom',
     price: '₦4,500,000',
-    date: 'Monday, 12 May',
+    date: 'Monday, 12 May 2026',
     time: '10:00 AM – 11:30 AM',
     status: 'pending',
     agentName: 'Adewale Properties',
+    agentAvatar: 'https://i.pravatar.cc/150?img=52',
   },
   {
     id: '2',
@@ -46,10 +50,11 @@ const mockBookings: Booking[] = [
     listingImage: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400',
     location: 'Ota, Ogun State',
     price: '₦2,800,000',
-    date: 'Friday, 20 Jun',
+    date: 'Friday, 20 Jun 2026',
     time: '2:00 PM – 3:30 PM',
     status: 'rescheduled',
     agentName: 'Gideon Etim',
+    agentAvatar: 'https://i.pravatar.cc/150?img=67',
   },
   {
     id: '3',
@@ -57,25 +62,26 @@ const mockBookings: Booking[] = [
     listingImage: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400',
     location: 'Lekki, Lagos',
     price: '₦7,200,000',
-    date: 'Wed, 2 Jul',
+    date: 'Wed, 2 Jul 2026',
     time: '9:00 AM – 10:00 AM',
     status: 'upcoming',
     agentName: 'Prime Realty',
+    agentAvatar: 'https://i.pravatar.cc/150?img=49',
   },
 ];
 
-const TABS: { key: FilterTab; label: string }[] = [
-  { key: 'pending', label: 'Pending' },
-  { key: 'upcoming', label: 'Upcoming' },
-  { key: 'past', label: 'Past' },
+const TABS: { key: FilterTab; label: string; count: (b: Booking[]) => number }[] = [
+  { key: 'pending',  label: 'Pending',  count: (b) => b.filter((x) => x.status === 'pending' || x.status === 'rescheduled').length },
+  { key: 'upcoming', label: 'Upcoming', count: (b) => b.filter((x) => x.status === 'upcoming').length },
+  { key: 'past',     label: 'Past',     count: (b) => b.filter((x) => x.status === 'past' || x.status === 'cancelled').length },
 ];
 
-const STATUS_CHIP: Record<string, { label: string; color: string; bg: string }> = {
-  pending:     { label: 'Pending Inspection', color: '#E65100', bg: '#FFF3E0' },
-  upcoming:    { label: 'Awaiting response ✓', color: Colors.primary, bg: `${Colors.lime}20` },
-  rescheduled: { label: 'Reschedule requests', color: Colors.textSecondary, bg: Colors.border },
-  past:        { label: 'Completed', color: Colors.info, bg: '#E3F2FD' },
-  cancelled:   { label: 'Cancelled', color: Colors.error, bg: '#FFEBEE' },
+const STATUS: Record<BookingStatus, { label: string; color: string; bg: string; icon: string }> = {
+  pending:     { label: 'Pending Confirmation', color: '#E65100', bg: '#FFF3E0', icon: 'time-outline' },
+  upcoming:    { label: 'Confirmed',            color: Colors.primary, bg: `${Colors.lime}22`, icon: 'checkmark-circle-outline' },
+  rescheduled: { label: 'Reschedule Requested', color: '#5C6BC0', bg: '#EDE7F6', icon: 'refresh-outline' },
+  past:        { label: 'Completed',            color: Colors.info, bg: '#E3F2FD', icon: 'archive-outline' },
+  cancelled:   { label: 'Cancelled',            color: Colors.error, bg: '#FFEBEE', icon: 'close-circle-outline' },
 };
 
 export default function BookingsScreen() {
@@ -83,317 +89,465 @@ export default function BookingsScreen() {
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<FilterTab>('pending');
 
-  const filtered = mockBookings.filter((b) => {
-    if (activeTab === 'pending') return b.status === 'pending' || b.status === 'rescheduled';
+  const filtered = MOCK.filter((b) => {
+    if (activeTab === 'pending')  return b.status === 'pending' || b.status === 'rescheduled';
     if (activeTab === 'upcoming') return b.status === 'upcoming';
     return b.status === 'past' || b.status === 'cancelled';
   });
 
-  const handleAccept = (id: string) =>
-    Alert.alert('Booking Accepted', 'The inspection has been confirmed.');
-
-  const handleReschedule = (id: string) =>
-    Alert.alert('Reschedule', 'Reschedule flow coming soon.');
-
-  const handleCancel = (id: string) =>
-    Alert.alert('Cancel Booking Inspection?', 'This action cannot be undone.', [
-      { text: 'No', style: 'cancel' },
-      { text: 'Yes, Cancel', style: 'destructive', onPress: () => {} },
-    ]);
-
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Bookings</Text>
-        <TouchableOpacity style={styles.avatarButton}>
-          <Ionicons name="person-circle-outline" size={36} color={Colors.textSecondary} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Filter tabs */}
-      <View style={styles.filterRow}>
-        {TABS.map((tab) => (
-          <TouchableOpacity
-            key={tab.key}
-            style={[styles.filterTab, activeTab === tab.key && styles.filterTabActive]}
-            onPress={() => setActiveTab(tab.key)}
-          >
-            <Text
-              style={[styles.filterTabText, activeTab === tab.key && styles.filterTabTextActive]}
-            >
-              {tab.label}
-            </Text>
+    <View style={styles.root}>
+      {/* Dark green header */}
+      <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
+        <View style={styles.headerDecoA} />
+        <View style={styles.headerDecoB} />
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.headerTitle}>My Bookings</Text>
+            <Text style={styles.headerSub}>{MOCK.length} inspection requests</Text>
+          </View>
+          <TouchableOpacity style={styles.headerIconBtn} onPress={() => router.push('/notifications')}>
+            <Ionicons name="notifications-outline" size={20} color={Colors.white} />
           </TouchableOpacity>
-        ))}
+        </View>
+
+        {/* Tab pills inside header */}
+        <View style={styles.tabRow}>
+          {TABS.map((tab) => {
+            const count = tab.count(MOCK);
+            const active = activeTab === tab.key;
+            return (
+              <TouchableOpacity
+                key={tab.key}
+                style={[styles.tab, active && styles.tabActive]}
+                onPress={() => setActiveTab(tab.key)}
+              >
+                <Text style={[styles.tabText, active && styles.tabTextActive]}>
+                  {tab.label}
+                </Text>
+                {count > 0 && (
+                  <View style={[styles.tabBadge, active && styles.tabBadgeActive]}>
+                    <Text style={[styles.tabBadgeText, active && styles.tabBadgeTextActive]}>
+                      {count}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      {/* Content */}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {filtered.length === 0 ? (
-          <View style={styles.emptyState}>
+          <View style={styles.empty}>
             <View style={styles.emptyIcon}>
-              <Ionicons name="calendar-outline" size={48} color={Colors.textTertiary} />
+              <Ionicons name="calendar-outline" size={40} color={Colors.textTertiary} />
             </View>
-            <Text style={styles.emptyTitle}>No {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Bookings</Text>
-            <Text style={styles.emptySubtitle}>
-              Your {activeTab} inspection bookings will appear here
+            <Text style={styles.emptyTitle}>
+              No {activeTab} bookings
             </Text>
-            <TouchableOpacity style={styles.discoverButton} onPress={() => router.push('/(tabs)')}>
-              <Text style={styles.discoverButtonText}>Discover Listings</Text>
-            </TouchableOpacity>
+            <Text style={styles.emptySub}>
+              {activeTab === 'past'
+                ? 'Completed inspections will appear here'
+                : 'Book an inspection from any listing to get started'}
+            </Text>
+            {activeTab !== 'past' && (
+              <TouchableOpacity style={styles.emptyBtn} onPress={() => router.push('/(tabs)')}>
+                <Text style={styles.emptyBtnText}>Discover Listings</Text>
+              </TouchableOpacity>
+            )}
           </View>
         ) : (
           filtered.map((booking) => {
-            const chip = STATUS_CHIP[booking.status] ?? STATUS_CHIP.pending;
+            const s = STATUS[booking.status];
             return (
-              <TouchableOpacity key={booking.id} style={styles.card} activeOpacity={0.9}>
-                {/* Card body: image + info */}
-                <View style={styles.cardBody}>
+              <TouchableOpacity key={booking.id} style={styles.card} activeOpacity={0.92}>
+                {/* Hero image */}
+                <View style={styles.cardImageWrap}>
                   <Image source={{ uri: booking.listingImage }} style={styles.cardImage} />
-                  <View style={styles.cardInfo}>
-                    <Text style={styles.cardTitle} numberOfLines={2}>
-                      {booking.listingTitle}
-                    </Text>
-                    <View style={styles.infoRow}>
+                  {/* Status chip overlay */}
+                  <View style={[styles.statusChip, { backgroundColor: s.bg }]}>
+                    <Ionicons name={s.icon as any} size={12} color={s.color} />
+                    <Text style={[styles.statusText, { color: s.color }]}>{s.label}</Text>
+                  </View>
+                  <Text style={styles.cardPrice}>{booking.price}</Text>
+                </View>
+
+                {/* Body */}
+                <View style={styles.cardBody}>
+                  <Text style={styles.cardTitle} numberOfLines={1}>{booking.listingTitle}</Text>
+
+                  <View style={styles.metaGrid}>
+                    <View style={styles.metaItem}>
                       <Ionicons name="location-outline" size={13} color={Colors.textTertiary} />
-                      <Text style={styles.infoText}>{booking.location}</Text>
+                      <Text style={styles.metaText} numberOfLines={1}>{booking.location}</Text>
                     </View>
-                    <View style={styles.infoRow}>
+                    <View style={styles.metaItem}>
                       <Ionicons name="calendar-outline" size={13} color={Colors.textTertiary} />
-                      <Text style={styles.infoText}>{booking.date}</Text>
+                      <Text style={styles.metaText}>{booking.date}</Text>
                     </View>
-                    <View style={styles.infoRow}>
+                    <View style={styles.metaItem}>
                       <Ionicons name="time-outline" size={13} color={Colors.textTertiary} />
-                      <Text style={styles.infoText}>{booking.time}</Text>
+                      <Text style={styles.metaText}>{booking.time}</Text>
                     </View>
                   </View>
-                </View>
 
-                {/* Status chip */}
-                <View style={[styles.statusChip, { backgroundColor: chip.bg, borderColor: chip.color }]}>
-                  <Text style={[styles.statusChipText, { color: chip.color }]}>{chip.label}</Text>
-                </View>
-
-                {/* Action buttons — only on pending/rescheduled */}
-                {(booking.status === 'pending' || booking.status === 'rescheduled') && (
-                  <View style={styles.actionRow}>
+                  {/* Agent row */}
+                  <View style={styles.agentRow}>
+                    <Image source={{ uri: booking.agentAvatar }} style={styles.agentAvatar} />
+                    <Text style={styles.agentName}>{booking.agentName}</Text>
                     <TouchableOpacity
-                      style={styles.acceptButton}
-                      onPress={() => handleAccept(booking.id)}
+                      style={styles.msgBtn}
+                      onPress={() => router.push({ pathname: '/chat/[conversationId]', params: { conversationId: 'conv-1' } })}
                     >
-                      <Text style={styles.acceptButtonText}>Accept</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.recommendButton}
-                      onPress={() => handleReschedule(booking.id)}
-                    >
-                      <Text style={styles.recommendButtonText}>Reschedule</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.cancelButton}
-                      onPress={() => handleCancel(booking.id)}
-                    >
-                      <Text style={styles.cancelButtonText}>Cancel</Text>
+                      <Ionicons name="chatbubble-outline" size={14} color={Colors.primary} />
+                      <Text style={styles.msgBtnText}>Message</Text>
                     </TouchableOpacity>
                   </View>
-                )}
 
-                {/* Add to Calendar — confirmed upcoming inspections */}
-                {booking.status === 'upcoming' && (
-                  <TouchableOpacity
-                    style={styles.calendarButton}
-                    onPress={() =>
-                      Alert.alert(
-                        'Added to Calendar',
-                        `"${booking.listingTitle}" inspection on ${booking.date} at ${booking.time} has been added to your calendar.`,
-                      )
-                    }
-                  >
-                    <Ionicons name="calendar-outline" size={16} color={Colors.textPrimary} />
-                    <Text style={styles.calendarButtonText}>Add to Calendar</Text>
-                  </TouchableOpacity>
-                )}
+                  {/* Action buttons */}
+                  {(booking.status === 'pending' || booking.status === 'rescheduled') && (
+                    <View style={styles.actionRow}>
+                      <TouchableOpacity
+                        style={styles.acceptBtn}
+                        onPress={() => Alert.alert('Booking Accepted', 'Your inspection has been confirmed.')}
+                      >
+                        <Ionicons name="checkmark" size={16} color={Colors.textPrimary} />
+                        <Text style={styles.acceptBtnText}>Accept</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.rescheduleBtn}
+                        onPress={() => Alert.alert('Reschedule', 'Reschedule flow coming soon.')}
+                      >
+                        <Text style={styles.rescheduleBtnText}>Reschedule</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.cancelBtn}
+                        onPress={() =>
+                          Alert.alert('Cancel Inspection?', 'This action cannot be undone.', [
+                            { text: 'No', style: 'cancel' },
+                            { text: 'Yes, Cancel', style: 'destructive', onPress: () => {} },
+                          ])
+                        }
+                      >
+                        <Text style={styles.cancelBtnText}>Cancel</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+
+                  {booking.status === 'upcoming' && (
+                    <TouchableOpacity
+                      style={styles.calBtn}
+                      onPress={() =>
+                        Alert.alert(
+                          'Added to Calendar',
+                          `"${booking.listingTitle}" inspection on ${booking.date} at ${booking.time} has been added.`,
+                        )
+                      }
+                    >
+                      <Ionicons name="calendar-outline" size={15} color={Colors.primary} />
+                      <Text style={styles.calBtnText}>Add to Calendar</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               </TouchableOpacity>
             );
           })
         )}
-        <View style={{ height: Spacing.xxxl }} />
+        <View style={{ height: 100 }} />
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.background,
   },
+
+  // ── Header ────────────────────────────────────────────────────
   header: {
+    backgroundColor: HERO_BG,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.sm,
+    overflow: 'hidden',
+  },
+  headerDecoA: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(159,187,68,0.07)',
+    top: -70,
+    right: -50,
+  },
+  headerDecoB: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(159,187,68,0.05)',
+    bottom: 0,
+    left: -20,
+  },
+  headerRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.lg,
+    alignItems: 'flex-start',
+    marginBottom: Spacing.xl,
   },
-  title: {
+  headerTitle: {
     fontSize: FontSize.xxl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
+    fontWeight: '800',
+    color: Colors.white,
   },
-  avatarButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  headerSub: {
+    fontSize: FontSize.sm,
+    color: 'rgba(255,255,255,0.55)',
+    marginTop: 2,
+  },
+  headerIconBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  filterRow: {
+  tabRow: {
     flexDirection: 'row',
-    paddingHorizontal: Spacing.xl,
     gap: Spacing.sm,
-    marginBottom: Spacing.lg,
+    paddingBottom: Spacing.lg,
   },
-  filterTab: {
-    flex: 1,
-    paddingVertical: Spacing.sm,
+  tab: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 7,
     borderRadius: BorderRadius.full,
-    backgroundColor: Colors.chipInactive,
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
-  filterTabActive: {
+  tabActive: {
     backgroundColor: Colors.lime,
   },
-  filterTabText: {
+  tabText: {
     fontSize: FontSize.sm,
-    fontWeight: '500',
-    color: Colors.textSecondary,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.7)',
   },
-  filterTabTextActive: {
+  tabTextActive: {
     color: Colors.textPrimary,
-    fontWeight: '700',
   },
-  content: {
+  tabBadge: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: BorderRadius.full,
+    minWidth: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  tabBadgeActive: {
+    backgroundColor: 'rgba(26,26,26,0.2)',
+  },
+  tabBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: Colors.white,
+  },
+  tabBadgeTextActive: {
+    color: Colors.textPrimary,
+  },
+
+  // ── Scroll / Cards ────────────────────────────────────────────
+  scroll: {
     flex: 1,
-    paddingHorizontal: Spacing.xl,
+  },
+  scrollContent: {
+    padding: Spacing.lg,
+    gap: Spacing.lg,
   },
   card: {
     backgroundColor: Colors.white,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    padding: Spacing.lg,
-    marginBottom: Spacing.md,
-    gap: Spacing.md,
-    ...Shadow.sm,
+    borderRadius: BorderRadius.xl,
+    overflow: 'hidden',
+    ...Shadow.md,
   },
-  cardBody: {
-    flexDirection: 'row',
-    gap: Spacing.md,
+  cardImageWrap: {
+    height: 160,
+    position: 'relative',
   },
   cardImage: {
-    width: 80,
-    height: 80,
-    borderRadius: BorderRadius.md,
+    width: '100%',
+    height: '100%',
   },
-  cardInfo: {
-    flex: 1,
-    gap: 4,
-  },
-  cardTitle: {
-    fontSize: FontSize.md,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: 2,
-  },
-  infoRow: {
+  statusChip: {
+    position: 'absolute',
+    top: Spacing.md,
+    left: Spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-  },
-  infoText: {
-    fontSize: FontSize.xs,
-    color: Colors.textTertiary,
-    flex: 1,
-  },
-  statusChip: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: Spacing.sm,
     paddingVertical: 4,
     borderRadius: BorderRadius.full,
-    borderWidth: 1,
   },
-  statusChipText: {
+  statusText: {
+    fontSize: FontSize.xs,
+    fontWeight: '700',
+  },
+  cardPrice: {
+    position: 'absolute',
+    bottom: Spacing.md,
+    right: Spacing.md,
+    fontSize: FontSize.md,
+    fontWeight: '800',
+    color: Colors.white,
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  cardBody: {
+    padding: Spacing.lg,
+    gap: Spacing.md,
+  },
+  cardTitle: {
+    fontSize: FontSize.lg,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  metaGrid: {
+    gap: 6,
+  },
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  metaText: {
+    fontSize: FontSize.sm,
+    color: Colors.textSecondary,
+    flex: 1,
+  },
+  agentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingTop: Spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
+  },
+  agentAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+  },
+  agentName: {
+    flex: 1,
+    fontSize: FontSize.sm,
+    fontWeight: '600',
+    color: Colors.textSecondary,
+  },
+  msgBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 5,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+  },
+  msgBtnText: {
     fontSize: FontSize.xs,
     fontWeight: '600',
+    color: Colors.primary,
   },
+
+  // ── Action buttons ────────────────────────────────────────────
   actionRow: {
     flexDirection: 'row',
     gap: Spacing.sm,
-    marginTop: Spacing.xs,
   },
-  acceptButton: {
+  acceptBtn: {
     flex: 1,
-    paddingVertical: Spacing.sm,
-    backgroundColor: Colors.lime,
-    borderRadius: BorderRadius.md,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    height: 40,
+    backgroundColor: Colors.lime,
+    borderRadius: BorderRadius.lg,
   },
-  acceptButtonText: {
+  acceptBtnText: {
     fontSize: FontSize.sm,
     fontWeight: '700',
     color: Colors.textPrimary,
   },
-  recommendButton: {
+  rescheduleBtn: {
     flex: 1,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    height: 40,
+    borderRadius: BorderRadius.lg,
     borderWidth: 1,
     borderColor: Colors.border,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  recommendButtonText: {
+  rescheduleBtnText: {
     fontSize: FontSize.sm,
     fontWeight: '600',
     color: Colors.textPrimary,
   },
-  cancelButton: {
+  cancelBtn: {
     flex: 1,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    height: 40,
+    borderRadius: BorderRadius.lg,
     borderWidth: 1,
     borderColor: Colors.error,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  cancelButtonText: {
+  cancelBtnText: {
     fontSize: FontSize.sm,
     fontWeight: '600',
     color: Colors.error,
   },
-  calendarButton: {
+  calBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.sm,
-    marginTop: Spacing.md,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.lime,
+    height: 42,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: `${Colors.lime}20`,
+    borderWidth: 1,
+    borderColor: `${Colors.lime}50`,
   },
-  calendarButtonText: {
+  calBtnText: {
     fontSize: FontSize.sm,
     fontWeight: '700',
-    color: Colors.textPrimary,
+    color: Colors.primary,
   },
-  emptyState: {
+
+  // ── Empty state ───────────────────────────────────────────────
+  empty: {
     alignItems: 'center',
-    paddingVertical: Spacing.huge * 2,
+    paddingVertical: 80,
     gap: Spacing.md,
   },
   emptyIcon: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: Colors.chipInactive,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: Colors.borderLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: Spacing.sm,
@@ -403,20 +557,21 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.textPrimary,
   },
-  emptySubtitle: {
+  emptySub: {
     fontSize: FontSize.md,
     color: Colors.textSecondary,
     textAlign: 'center',
     paddingHorizontal: Spacing.xxl,
+    lineHeight: 22,
   },
-  discoverButton: {
+  emptyBtn: {
     marginTop: Spacing.md,
     backgroundColor: Colors.lime,
     paddingHorizontal: Spacing.xxl,
     paddingVertical: Spacing.lg,
     borderRadius: BorderRadius.full,
   },
-  discoverButtonText: {
+  emptyBtnText: {
     fontSize: FontSize.md,
     fontWeight: '700',
     color: Colors.textPrimary,
