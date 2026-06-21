@@ -13,6 +13,7 @@ import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/the
 import { useAuthStore } from '../../src/store/auth';
 
 const OTP_LENGTH = 6;
+const HEADER_BG = '#003828';
 
 export default function VerifyOtpScreen() {
   const router = useRouter();
@@ -38,11 +39,7 @@ export default function VerifyOtpScreen() {
     const newOtp = [...otp];
     newOtp[index] = text;
     setOtp(newOtp);
-
-    if (text && index < OTP_LENGTH - 1) {
-      inputRefs.current[index + 1]?.focus();
-    }
-
+    if (text && index < OTP_LENGTH - 1) inputRefs.current[index + 1]?.focus();
     if (newOtp.every((d) => d !== '') && newOtp.join('').length === OTP_LENGTH) {
       handleVerify(newOtp.join(''));
     }
@@ -83,116 +80,240 @@ export default function VerifyOtpScreen() {
     }
   };
 
+  const filled = otp.filter(Boolean).length;
+
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="chevron-back" size={24} color={Colors.textPrimary} />
-      </TouchableOpacity>
+    <View style={styles.root}>
+      {/* Dark header */}
+      <View style={styles.header}>
+        <View style={styles.decoCircleLarge} />
+        <View style={styles.decoCircleSmall} />
 
-      <Text style={styles.title}>Verify your account</Text>
-      <Text style={styles.subtitle}>
-        Enter the 6-digit code sent to{'\n'}
-        <Text style={styles.phoneText}>{phone || 'your phone'}</Text>
-      </Text>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={22} color={Colors.white} />
+        </TouchableOpacity>
 
-      <View style={styles.otpContainer}>
-        {otp.map((digit, index) => (
-          <TextInput
-            key={index}
-            ref={(ref) => { inputRefs.current[index] = ref; }}
-            style={[styles.otpInput, digit ? styles.otpInputFilled : null]}
-            value={digit}
-            onChangeText={(text) => handleOtpChange(text, index)}
-            onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, index)}
-            keyboardType="number-pad"
-            maxLength={1}
-            selectTextOnFocus
-          />
-        ))}
+        <View style={styles.iconCircle}>
+          <Ionicons name="phone-portrait-outline" size={28} color={Colors.lime} />
+        </View>
+
+        <Text style={styles.headerTitle}>Verify your number</Text>
+        <Text style={styles.headerSub}>
+          We sent a 6-digit code to{'\n'}
+          <Text style={styles.phoneHighlight}>{phone || 'your phone'}</Text>
+        </Text>
       </View>
 
-      {isVerifying && (
-        <Text style={styles.verifyingText}>Verifying...</Text>
-      )}
+      {/* White card */}
+      <View style={styles.card}>
+        {/* OTP inputs */}
+        <View style={styles.otpRow}>
+          {otp.map((digit, index) => (
+            <TextInput
+              key={index}
+              ref={(ref) => { inputRefs.current[index] = ref; }}
+              style={[
+                styles.otpCell,
+                digit ? styles.otpCellFilled : null,
+                isVerifying ? styles.otpCellVerifying : null,
+              ]}
+              value={digit}
+              onChangeText={(text) => handleOtpChange(text, index)}
+              onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, index)}
+              keyboardType="number-pad"
+              maxLength={1}
+              selectTextOnFocus
+              editable={!isVerifying}
+            />
+          ))}
+        </View>
 
-      <View style={styles.resendContainer}>
-        <Text style={styles.resendLabel}>Didn't receive the code?</Text>
-        <TouchableOpacity onPress={handleResend} disabled={countdown > 0}>
-          <Text
-            style={[styles.resendButton, countdown > 0 && styles.resendDisabled]}
-          >
-            {countdown > 0 ? `Resend in ${countdown}s` : 'Resend Code'}
+        {/* Progress bar */}
+        <View style={styles.progressTrack}>
+          <View
+            style={[
+              styles.progressFill,
+              { width: `${(filled / OTP_LENGTH) * 100}%` },
+            ]}
+          />
+        </View>
+
+        {isVerifying ? (
+          <View style={styles.verifyingRow}>
+            <Ionicons name="sync-outline" size={16} color={Colors.primary} />
+            <Text style={styles.verifyingText}>Verifying code…</Text>
+          </View>
+        ) : (
+          <View style={{ height: 28 }} />
+        )}
+
+        <TouchableOpacity
+          style={[
+            styles.primaryBtn,
+            filled < OTP_LENGTH && styles.primaryBtnDisabled,
+          ]}
+          onPress={() => handleVerify(otp.join(''))}
+          disabled={filled < OTP_LENGTH || isVerifying}
+        >
+          <Text style={styles.primaryBtnText}>
+            {isVerifying ? 'Verifying…' : 'Confirm Code'}
           </Text>
         </TouchableOpacity>
+
+        <View style={styles.resendRow}>
+          <Text style={styles.resendLabel}>Didn't receive it?</Text>
+          <TouchableOpacity onPress={handleResend} disabled={countdown > 0}>
+            <Text style={[styles.resendBtn, countdown > 0 && styles.resendDisabled]}>
+              {countdown > 0 ? `Resend in ${countdown}s` : 'Resend Code'}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    backgroundColor: Colors.authBg,
+    backgroundColor: HEADER_BG,
+  },
+  header: {
+    paddingTop: 56,
     paddingHorizontal: Spacing.xxl,
-    paddingTop: 60,
+    paddingBottom: Spacing.xxxl,
+    gap: Spacing.sm,
+    overflow: 'hidden',
+  },
+  decoCircleLarge: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(159,187,68,0.08)',
+    top: -50,
+    right: -50,
+  },
+  decoCircleSmall: {
+    position: 'absolute',
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: 'rgba(159,187,68,0.06)',
+    bottom: 20,
+    right: 60,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 38,
+    height: 38,
     borderRadius: BorderRadius.md,
-    backgroundColor: Colors.white,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.xxxl,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    marginBottom: Spacing.lg,
   },
-  title: {
-    fontSize: FontSize.xxl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.md,
+  iconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(159,187,68,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.sm,
   },
-  subtitle: {
+  headerTitle: {
+    fontSize: FontSize.display,
+    fontWeight: '800',
+    color: Colors.white,
+  },
+  headerSub: {
     fontSize: FontSize.md,
-    color: Colors.textSecondary,
+    color: 'rgba(255,255,255,0.6)',
     lineHeight: 22,
-    marginBottom: Spacing.xxxl,
+    marginTop: 4,
   },
-  phoneText: {
-    fontWeight: '600',
-    color: Colors.textPrimary,
+  phoneHighlight: {
+    color: Colors.lime,
+    fontWeight: '700',
   },
-  otpContainer: {
+  card: {
+    flex: 1,
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: Spacing.xxl,
+    paddingTop: Spacing.xxxl,
+    paddingBottom: 48,
+  },
+  otpRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.xxxl,
     gap: Spacing.sm,
+    marginBottom: Spacing.lg,
   },
-  otpInput: {
+  otpCell: {
     flex: 1,
     height: 56,
     borderRadius: BorderRadius.lg,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.background,
     textAlign: 'center',
     fontSize: FontSize.xxl,
     fontWeight: '700',
     color: Colors.textPrimary,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: Colors.border,
   },
-  otpInputFilled: {
+  otpCellFilled: {
     borderColor: Colors.lime,
-    backgroundColor: `${Colors.lime}12`,
+    backgroundColor: `${Colors.lime}14`,
+    color: Colors.primary,
+  },
+  otpCellVerifying: {
+    opacity: 0.6,
+  },
+  progressTrack: {
+    height: 3,
+    backgroundColor: Colors.borderLight,
+    borderRadius: 2,
+    marginBottom: Spacing.lg,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: Colors.lime,
+    borderRadius: 2,
+  },
+  verifyingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    height: 28,
+    marginBottom: Spacing.md,
   },
   verifyingText: {
-    textAlign: 'center',
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
+    fontSize: FontSize.sm,
+    color: Colors.primary,
     fontWeight: '600',
+  },
+  primaryBtn: {
+    backgroundColor: Colors.lime,
+    height: 52,
+    borderRadius: BorderRadius.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: Spacing.xl,
   },
-  resendContainer: {
+  primaryBtnDisabled: {
+    opacity: 0.5,
+  },
+  primaryBtnText: {
+    fontSize: FontSize.lg,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  resendRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
     gap: Spacing.sm,
   },
@@ -200,12 +321,13 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     color: Colors.textSecondary,
   },
-  resendButton: {
+  resendBtn: {
     fontSize: FontSize.md,
-    fontWeight: '600',
+    fontWeight: '700',
     color: Colors.primary,
   },
   resendDisabled: {
     color: Colors.textTertiary,
+    fontWeight: '500',
   },
 });

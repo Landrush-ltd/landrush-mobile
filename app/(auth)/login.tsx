@@ -44,9 +44,7 @@ export default function LoginScreen() {
       fallbackLabel: 'Use password',
       cancelLabel: 'Cancel',
     });
-    if (result.success) {
-      router.replace('/(tabs)');
-    }
+    if (result.success) router.replace('/(tabs)');
   };
 
   const handleLogin = () => {
@@ -63,92 +61,117 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={styles.root}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      {/* Dark green header with decorative flair */}
+      <View style={styles.header}>
+        {/* Decorative circles */}
+        <View style={styles.decoCircleLarge} />
+        <View style={styles.decoCircleSmall} />
+
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={22} color={Colors.white} />
+        </TouchableOpacity>
+
+        <LandrushLogo size={52} textColor="#8DC63F" />
+
+        <Text style={styles.headerTitle}>Welcome back</Text>
+        <Text style={styles.headerSub}>Log in to continue your land journey</Text>
+      </View>
+
+      {/* White form card */}
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        style={styles.card}
+        contentContainerStyle={styles.cardContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color={Colors.textPrimary} />
-        </TouchableOpacity>
-
-        <View style={styles.header}>
-          <LandrushLogo size={52} showText={false} />
-          <Text style={styles.welcomeText}>Welcome back!</Text>
-        </View>
-
-        <View style={styles.tabContainer}>
+        {/* Sign Up / Log in toggle */}
+        <View style={styles.tabRow}>
           <TouchableOpacity
-            style={styles.tab}
-            onPress={() => router.push('/(auth)/signup')}
+            style={styles.tabItem}
+            onPress={() => router.replace('/(auth)/signup')}
           >
             <Text style={styles.tabText}>Sign Up</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.tab, styles.activeTab]}>
-            <Text style={[styles.tabText, styles.activeTabText]}>Log in</Text>
-          </TouchableOpacity>
+          <View style={styles.tabDivider} />
+          <View style={[styles.tabItem, styles.tabActive]}>
+            <Text style={styles.tabTextActive}>Log In</Text>
+          </View>
         </View>
 
+        {/* Social buttons */}
         <View style={styles.socialRow}>
-          <TouchableOpacity style={styles.socialButton}>
+          <TouchableOpacity style={styles.socialBtn}>
             <Ionicons name="logo-google" size={18} color={Colors.textPrimary} />
             <Text style={styles.socialText}>Google</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
+          <TouchableOpacity style={styles.socialBtn}>
             <Ionicons name="logo-apple" size={18} color={Colors.textPrimary} />
             <Text style={styles.socialText}>Apple</Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.orText}>or Continue with</Text>
+        <View style={styles.dividerRow}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>or continue with email</Text>
+          <View style={styles.dividerLine} />
+        </View>
 
+        {/* Form */}
         <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            value={emailOrPhone}
-            onChangeText={setEmailOrPhone}
-            placeholder="Enter Email or Phone Number"
-            placeholderTextColor={Colors.textTertiary}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-
-          <View style={styles.passwordContainer}>
+          <View style={styles.inputWrapper}>
+            <Ionicons name="mail-outline" size={18} color={Colors.textTertiary} style={styles.inputIcon} />
             <TextInput
-              style={styles.passwordInput}
+              style={styles.input}
+              value={emailOrPhone}
+              onChangeText={setEmailOrPhone}
+              placeholder="Email or Phone Number"
+              placeholderTextColor={Colors.textTertiary}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
+
+          <View style={styles.inputWrapper}>
+            <Ionicons name="lock-closed-outline" size={18} color={Colors.textTertiary} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
               value={password}
               onChangeText={setPassword}
-              placeholder="Enter Password"
+              placeholder="Password"
               placeholderTextColor={Colors.textTertiary}
               secureTextEntry={!showPassword}
             />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-              <Text style={styles.showText}>{showPassword ? 'Hide' : 'Show'}</Text>
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
+              <Ionicons
+                name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                size={18}
+                color={Colors.textTertiary}
+              />
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            style={[styles.loginButton, (!emailOrPhone || !password) && styles.loginButtonDisabled]}
-            onPress={handleLogin}
-            disabled={!emailOrPhone || !password || isLoading}
-          >
-            <Text style={styles.loginButtonText}>
-              {isLoading ? 'Logging in...' : 'Log in'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.forgotPassword}>
+          <TouchableOpacity style={styles.forgotRow}>
             <Text style={styles.forgotText}>Forgot password?</Text>
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={[styles.primaryBtn, (!emailOrPhone || !password) && styles.primaryBtnDisabled]}
+            onPress={handleLogin}
+            disabled={!emailOrPhone || !password || isLoading}
+          >
+            <Text style={styles.primaryBtnText}>
+              {isLoading ? 'Logging in…' : 'Log In'}
+            </Text>
+          </TouchableOpacity>
+
           {biometricType && (
-            <TouchableOpacity style={styles.biometricButton} onPress={handleBiometricLogin}>
+            <TouchableOpacity style={styles.biometricBtn} onPress={handleBiometricLogin}>
               <Ionicons
                 name={biometricType === 'face' ? 'scan-outline' : 'finger-print-outline'}
-                size={28}
+                size={22}
                 color={Colors.primary}
               />
               <Text style={styles.biometricText}>
@@ -156,77 +179,124 @@ export default function LoginScreen() {
               </Text>
             </TouchableOpacity>
           )}
+
+          <Text style={styles.signupPrompt}>
+            Don't have an account?{' '}
+            <Text style={styles.signupLink} onPress={() => router.replace('/(auth)/signup')}>
+              Sign Up
+            </Text>
+          </Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
+const HEADER_BG = '#003828';
+
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    backgroundColor: Colors.authBg,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: Spacing.xxl,
-    paddingTop: 60,
-    paddingBottom: Spacing.xxxl,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.xxl,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    backgroundColor: HEADER_BG,
   },
   header: {
+    paddingTop: 56,
+    paddingHorizontal: Spacing.xxl,
+    paddingBottom: Spacing.xxxl,
+    gap: Spacing.sm,
+    overflow: 'hidden',
+  },
+  // Decorative flair: large offset circle top-right
+  decoCircleLarge: {
+    position: 'absolute',
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: 'rgba(159,187,68,0.08)',
+    top: -60,
+    right: -60,
+  },
+  decoCircleSmall: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(159,187,68,0.06)',
+    bottom: 10,
+    right: 40,
+  },
+  backButton: {
+    width: 38,
+    height: 38,
+    borderRadius: BorderRadius.md,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
-    gap: Spacing.lg,
-    marginBottom: Spacing.xxxl,
+    justifyContent: 'center',
+    marginBottom: Spacing.lg,
   },
-  welcomeText: {
-    fontSize: FontSize.xxl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
+  headerTitle: {
+    fontSize: FontSize.display,
+    fontWeight: '800',
+    color: Colors.white,
+    marginTop: Spacing.md,
   },
-  tabContainer: {
-    flexDirection: 'row',
+  headerSub: {
+    fontSize: FontSize.md,
+    color: 'rgba(255,255,255,0.6)',
+  },
+  card: {
+    flex: 1,
     backgroundColor: Colors.white,
-    borderRadius: BorderRadius.lg,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+  },
+  cardContent: {
+    paddingHorizontal: Spacing.xxl,
+    paddingTop: Spacing.xxl,
+    paddingBottom: 48,
+  },
+  tabRow: {
+    flexDirection: 'row',
+    backgroundColor: Colors.background,
+    borderRadius: BorderRadius.xl,
     padding: 4,
     marginBottom: Spacing.xxl,
-    borderWidth: 1,
-    borderColor: Colors.border,
   },
-  tab: {
+  tabItem: {
     flex: 1,
     paddingVertical: Spacing.md,
     alignItems: 'center',
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.lg,
   },
-  activeTab: {
-    backgroundColor: Colors.chipActive,
+  tabActive: {
+    backgroundColor: Colors.white,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  tabDivider: {
+    width: 1,
+    backgroundColor: Colors.borderLight,
+    marginVertical: 6,
   },
   tabText: {
     fontSize: FontSize.md,
-    color: Colors.textSecondary,
+    color: Colors.textTertiary,
     fontWeight: '500',
   },
-  activeTabText: {
+  tabTextActive: {
+    fontSize: FontSize.md,
     color: Colors.textPrimary,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   socialRow: {
     flexDirection: 'row',
     gap: Spacing.md,
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.xl,
   },
-  socialButton: {
+  socialBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -234,55 +304,64 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     height: 48,
     borderRadius: BorderRadius.xl,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.background,
     borderWidth: 1,
     borderColor: Colors.border,
   },
   socialText: {
     fontSize: FontSize.md,
-    fontWeight: '500',
+    fontWeight: '600',
     color: Colors.textPrimary,
   },
-  orText: {
-    textAlign: 'center',
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.borderLight,
+  },
+  dividerText: {
     fontSize: FontSize.sm,
     color: Colors.textTertiary,
-    marginBottom: Spacing.lg,
   },
   form: {
-    gap: Spacing.lg,
+    gap: Spacing.md,
   },
-  input: {
-    height: 52,
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.xl,
-    paddingHorizontal: Spacing.xl,
-    fontSize: FontSize.md,
-    color: Colors.textPrimary,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  passwordContainer: {
+  inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     height: 52,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.background,
     borderRadius: BorderRadius.xl,
-    paddingHorizontal: Spacing.xl,
     borderWidth: 1,
     borderColor: Colors.border,
+    paddingHorizontal: Spacing.lg,
   },
-  passwordInput: {
+  inputIcon: {
+    marginRight: Spacing.sm,
+  },
+  input: {
     flex: 1,
     fontSize: FontSize.md,
     color: Colors.textPrimary,
   },
-  showText: {
+  eyeBtn: {
+    padding: 4,
+  },
+  forgotRow: {
+    alignItems: 'flex-end',
+    marginTop: -4,
+  },
+  forgotText: {
     fontSize: FontSize.sm,
     color: Colors.primary,
     fontWeight: '600',
   },
-  loginButton: {
+  primaryBtn: {
     backgroundColor: Colors.lime,
     height: 52,
     borderRadius: BorderRadius.xl,
@@ -290,36 +369,38 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: Spacing.sm,
   },
-  loginButtonDisabled: {
-    opacity: 0.6,
+  primaryBtnDisabled: {
+    opacity: 0.55,
   },
-  loginButtonText: {
+  primaryBtnText: {
     fontSize: FontSize.lg,
     fontWeight: '700',
     color: Colors.textPrimary,
   },
-  forgotPassword: {
-    alignItems: 'center',
-  },
-  forgotText: {
-    fontSize: FontSize.md,
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  biometricButton: {
+  biometricBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.sm,
-    marginTop: Spacing.md,
     paddingVertical: Spacing.lg,
     borderRadius: BorderRadius.xl,
     borderWidth: 1,
     borderColor: Colors.border,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.background,
   },
   biometricText: {
     fontSize: FontSize.md,
     color: Colors.primary,
     fontWeight: '600',
+  },
+  signupPrompt: {
+    textAlign: 'center',
+    fontSize: FontSize.md,
+    color: Colors.textSecondary,
+    marginTop: Spacing.sm,
+  },
+  signupLink: {
+    color: Colors.primary,
+    fontWeight: '700',
   },
 });
