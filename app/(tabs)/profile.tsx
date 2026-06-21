@@ -9,6 +9,7 @@ import {
   Switch,
   Alert,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -164,10 +165,16 @@ export default function ProfileScreen() {
 
         {/* Avatar */}
         <View style={styles.avatarWrap}>
-          <Image
-            source={{ uri: user?.avatar ?? 'https://i.pravatar.cc/150?img=11' }}
-            style={styles.avatar}
-          />
+          {user?.avatar ? (
+            <Image source={{ uri: user.avatar }} style={styles.avatar} />
+          ) : (
+            <View style={styles.avatarInitials}>
+              <Text style={styles.avatarInitialsText}>
+                {(displayName.split(' ')[0]?.[0] ?? '').toUpperCase()}
+                {(displayName.split(' ')[1]?.[0] ?? '').toUpperCase()}
+              </Text>
+            </View>
+          )}
           <TouchableOpacity style={styles.editAvatarBtn}>
             <Ionicons name="camera-outline" size={14} color={Colors.white} />
           </TouchableOpacity>
@@ -282,6 +289,21 @@ const styles = StyleSheet.create({
     borderRadius: 45,
     borderWidth: 3,
     borderColor: Colors.lime,
+  },
+  avatarInitials: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 3,
+    borderColor: Colors.lime,
+    backgroundColor: `${Colors.lime}22`,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarInitialsText: {
+    fontSize: FontSize.xxxl,
+    fontWeight: '800',
+    color: Colors.lime,
   },
   editAvatarBtn: {
     position: 'absolute',

@@ -1,38 +1,38 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, FontSize, Shadow, BorderRadius } from '../../src/constants/theme';
+import { Colors, FontSize, Shadow, BorderRadius, Spacing } from '../../src/constants/theme';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
 interface TabMeta {
-  icon: IoniconsName;
+  icon:       IoniconsName;
   activeIcon: IoniconsName;
-  label: string;
+  label:      string;
 }
 
 interface TabBarProps {
-  state: { routes: Array<{ key: string; name: string }>; index: number };
-  navigation: { navigate: (name: string) => void };
+  state:       { routes: Array<{ key: string; name: string }>; index: number };
+  navigation:  { navigate: (name: string) => void };
   descriptors: Record<string, unknown>;
 }
 
 const META: Record<string, TabMeta> = {
-  index:    { icon: 'home-outline',          activeIcon: 'home',          label: 'Home' },
-  messages: { icon: 'chatbubbles-outline',   activeIcon: 'chatbubbles',   label: 'Messages' },
-  bookings: { icon: 'calendar-outline',      activeIcon: 'calendar',      label: 'Bookings' },
-  profile:  { icon: 'person-outline',        activeIcon: 'person',        label: 'Profile' },
+  index:    { icon: 'home-outline',        activeIcon: 'home',        label: 'Home'     },
+  messages: { icon: 'chatbubbles-outline', activeIcon: 'chatbubbles', label: 'Messages' },
+  bookings: { icon: 'calendar-outline',    activeIcon: 'calendar',    label: 'Bookings' },
+  profile:  { icon: 'person-outline',      activeIcon: 'person',      label: 'Profile'  },
 };
 
 function CustomTabBar({ state, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
 
-  const renderPillTab = (name: string) => {
+  const renderTab = (name: string) => {
     const meta = META[name];
     if (!meta) return null;
-    const idx = state.routes.findIndex((r) => r.name === name);
+    const idx     = state.routes.findIndex((r) => r.name === name);
     const focused = state.index === idx;
 
     return (
@@ -44,33 +44,38 @@ function CustomTabBar({ state, navigation }: TabBarProps) {
       >
         <Ionicons
           name={focused ? meta.activeIcon : meta.icon}
-          size={20}
-          color={focused ? Colors.textPrimary : Colors.textTertiary}
+          size={19}
+          color={focused ? Colors.textPrimary : 'rgba(255,255,255,0.45)'}
         />
         {focused && <Text style={styles.tabLabel}>{meta.label}</Text>}
       </TouchableOpacity>
     );
   };
 
-  const createIdx = state.routes.findIndex((r) => r.name === 'create');
+  const createIdx     = state.routes.findIndex((r) => r.name === 'create');
   const createFocused = state.index === createIdx;
 
   return (
-    <View style={[styles.wrapper, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+    <View style={[styles.wrapper, { paddingBottom: Math.max(insets.bottom, 16) }]}>
       <View style={styles.pill}>
-        {renderPillTab('index')}
-        {renderPillTab('messages')}
+        {renderTab('index')}
+        {renderTab('messages')}
 
+        {/* Centre FAB */}
         <TouchableOpacity
-          style={[styles.fab, createFocused && styles.fabFocused]}
+          style={[styles.fab, createFocused && styles.fabActive]}
           onPress={() => navigation.navigate('create')}
           activeOpacity={0.85}
         >
-          <Ionicons name="add" size={26} color={Colors.white} />
+          <Ionicons
+            name={createFocused ? 'close' : 'add'}
+            size={26}
+            color={createFocused ? Colors.textPrimary : Colors.white}
+          />
         </TouchableOpacity>
 
-        {renderPillTab('bookings')}
-        {renderPillTab('profile')}
+        {renderTab('bookings')}
+        {renderTab('profile')}
       </View>
     </View>
   );
@@ -78,18 +83,18 @@ function CustomTabBar({ state, navigation }: TabBarProps) {
 
 const styles = StyleSheet.create({
   wrapper: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.sm,
     backgroundColor: Colors.background,
   },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EBEBEB',
+    backgroundColor: '#111',
     borderRadius: BorderRadius.full,
     padding: 5,
-    height: 62,
-    ...Shadow.md,
+    height: 64,
+    ...Shadow.lg,
   },
   tab: {
     flex: 1,
@@ -102,25 +107,26 @@ const styles = StyleSheet.create({
   },
   tabActive: {
     backgroundColor: Colors.lime,
-    flex: 2,
+    flex: 1.8,
   },
   tabLabel: {
-    fontSize: FontSize.sm,
-    fontWeight: '600',
+    fontSize: FontSize.xs,
+    fontWeight: '700',
     color: Colors.textPrimary,
+    letterSpacing: 0.2,
   },
   fab: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     backgroundColor: Colors.lime,
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 4,
-    ...Shadow.sm,
+    marginHorizontal: 3,
+    ...Shadow.md,
   },
-  fabFocused: {
-    backgroundColor: Colors.primary,
+  fabActive: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
   },
 });
 
@@ -130,12 +136,12 @@ export default function TabsLayout() {
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{ headerShown: false }}
     >
-      <Tabs.Screen name="index" />
+      <Tabs.Screen name="index"    />
       <Tabs.Screen name="messages" />
-      <Tabs.Screen name="create" />
+      <Tabs.Screen name="create"   />
       <Tabs.Screen name="bookings" />
-      <Tabs.Screen name="profile" />
-      <Tabs.Screen name="map" options={{ href: null }} />
+      <Tabs.Screen name="profile"  />
+      <Tabs.Screen name="map"      options={{ href: null }} />
     </Tabs>
   );
 }
