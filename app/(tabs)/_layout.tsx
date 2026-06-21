@@ -20,9 +20,10 @@ interface TabBarProps {
 }
 
 const META: Record<string, TabMeta> = {
-  index:    { icon: 'home-outline',     activeIcon: 'home',     label: 'Home' },
-  bookings: { icon: 'calendar-outline', activeIcon: 'calendar', label: 'Bookings' },
-  profile:  { icon: 'person-outline',   activeIcon: 'person',   label: 'Profile' },
+  index:    { icon: 'home-outline',          activeIcon: 'home',          label: 'Home' },
+  messages: { icon: 'chatbubbles-outline',   activeIcon: 'chatbubbles',   label: 'Messages' },
+  bookings: { icon: 'calendar-outline',      activeIcon: 'calendar',      label: 'Bookings' },
+  profile:  { icon: 'person-outline',        activeIcon: 'person',        label: 'Profile' },
 };
 
 function CustomTabBar({ state, navigation }: TabBarProps) {
@@ -58,7 +59,7 @@ function CustomTabBar({ state, navigation }: TabBarProps) {
     <View style={[styles.wrapper, { paddingBottom: Math.max(insets.bottom, 12) }]}>
       <View style={styles.pill}>
         {renderPillTab('index')}
-        {renderPillTab('bookings')}
+        {renderPillTab('messages')}
 
         <TouchableOpacity
           style={[styles.fab, createFocused && styles.fabFocused]}
@@ -68,6 +69,7 @@ function CustomTabBar({ state, navigation }: TabBarProps) {
           <Ionicons name="add" size={26} color={Colors.white} />
         </TouchableOpacity>
 
+        {renderPillTab('bookings')}
         {renderPillTab('profile')}
       </View>
     </View>
@@ -129,8 +131,9 @@ export default function TabsLayout() {
       screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen name="index" />
-      <Tabs.Screen name="bookings" />
+      <Tabs.Screen name="messages" />
       <Tabs.Screen name="create" />
+      <Tabs.Screen name="bookings" />
       <Tabs.Screen name="profile" />
       <Tabs.Screen name="map" options={{ href: null }} />
     </Tabs>

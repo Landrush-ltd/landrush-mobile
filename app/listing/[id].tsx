@@ -169,7 +169,15 @@ export default function ListingDetailScreen() {
               <Ionicons name="call-outline" size={18} color={Colors.primary} />
               <Text style={styles.contactBtnText}>Call</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.contactBtn, styles.contactBtnPrimary]}>
+            <TouchableOpacity
+              style={[styles.contactBtn, styles.contactBtnPrimary]}
+              onPress={() =>
+                router.push({
+                  pathname: '/chat/[conversationId]',
+                  params: { conversationId: 'conv-1' },
+                })
+              }
+            >
               <Ionicons name="chatbubble-outline" size={18} color={Colors.white} />
               <Text style={[styles.contactBtnText, { color: Colors.white }]}>Message</Text>
             </TouchableOpacity>
