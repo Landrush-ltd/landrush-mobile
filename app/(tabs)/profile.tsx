@@ -55,7 +55,7 @@ export default function ProfileScreen() {
     { icon: 'notifications-outline', label: 'Notifications', onPress: () => router.push('/notifications') },
     { icon: 'shield-checkmark-outline', label: 'Verification', onPress: () => router.push('/verification') },
     { icon: 'receipt-outline', label: 'Payment History', onPress: () => router.push('/payment-history') },
-    { icon: 'help-circle-outline', label: 'Help & Support', onPress: () => {} },
+    { icon: 'help-circle-outline', label: 'Help & Support', onPress: () => router.push('/help') },
   ];
 
   const renderMenuItem = (item: MenuItem, index: number, isLast: boolean) => (

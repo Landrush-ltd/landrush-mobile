@@ -17,6 +17,7 @@ import { SearchBar } from '../../src/components/SearchBar';
 import { CategoryChip } from '../../src/components/CategoryChip';
 import { ListingCard } from '../../src/components/ListingCard';
 import { useListingsStore } from '../../src/store/listings';
+import { useAuthStore } from '../../src/store/auth';
 import { mockListings } from '../../src/services/mockData';
 import type { Listing, ListingCategory } from '../../src/types/listing';
 
@@ -30,6 +31,7 @@ const categories: { key: ListingCategory | null; label: string; color: string }[
 export default function DiscoverScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { user } = useAuthStore();
   const {
     filteredListings,
     activeCategory,
@@ -39,6 +41,7 @@ export default function DiscoverScreen() {
     setSearchQuery,
   } = useListingsStore();
   const [refreshing, setRefreshing] = useState(false);
+  const greeting = user?.firstName ? `Hello, ${user.firstName} 👋` : 'Discover Land';
 
   useEffect(() => {
     setListings(mockListings);
@@ -73,16 +76,16 @@ export default function DiscoverScreen() {
     >
       <View style={[styles.topBar, { paddingTop: insets.top + Spacing.sm }]}>
         <View>
-          <Text style={styles.title}>Home</Text>
+          <Text style={styles.title}>{greeting}</Text>
           <Text style={styles.locationSubtitle}>Uyo, Nigeria</Text>
         </View>
         <View style={styles.topBarRight}>
-          <TouchableOpacity style={styles.iconButton}>
+          <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/notifications')}>
             <Ionicons name="notifications-outline" size={22} color={Colors.textPrimary} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.avatarButton}>
+          <TouchableOpacity style={styles.avatarButton} onPress={() => router.push('/(tabs)/profile')}>
             <Image
-              source={{ uri: 'https://i.pravatar.cc/150?img=11' }}
+              source={{ uri: user?.avatar ?? 'https://i.pravatar.cc/150?img=11' }}
               style={styles.avatar}
             />
           </TouchableOpacity>
@@ -115,8 +118,9 @@ export default function DiscoverScreen() {
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Verified Listings</Text>
-        <TouchableOpacity style={styles.seeAllButton}>
-          <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
+        <TouchableOpacity style={styles.seeAllButton} onPress={() => router.push('/search')}>
+          <Text style={styles.seeAllText}>See all</Text>
+          <Ionicons name="chevron-forward" size={16} color={Colors.primary} />
         </TouchableOpacity>
       </View>
 
@@ -134,8 +138,9 @@ export default function DiscoverScreen() {
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Recommended Near you</Text>
-        <TouchableOpacity style={styles.seeAllButton}>
-          <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
+        <TouchableOpacity style={styles.seeAllButton} onPress={() => router.push('/search')}>
+          <Text style={styles.seeAllText}>See all</Text>
+          <Ionicons name="chevron-forward" size={16} color={Colors.primary} />
         </TouchableOpacity>
       </View>
 
@@ -223,7 +228,15 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
   seeAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
     padding: Spacing.xs,
+  },
+  seeAllText: {
+    fontSize: FontSize.sm,
+    fontWeight: '600',
+    color: Colors.primary,
   },
   horizontalList: {
     paddingHorizontal: Spacing.lg,

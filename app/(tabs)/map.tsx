@@ -78,7 +78,7 @@ export default function MapScreen() {
     <View style={styles.container}>
       <MapView
         ref={mapRef}
-        style={StyleSheet.absoluteFillObject}
+        style={StyleSheet.absoluteFill}
         provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
         initialRegion={INITIAL_REGION}
         showsUserLocation
