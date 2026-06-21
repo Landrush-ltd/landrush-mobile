@@ -13,8 +13,10 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, FontSize, BorderRadius } from '../src/constants/theme';
+import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../src/constants/theme';
 import { useAuthStore } from '../src/store/auth';
+
+const HERO_BG = '#003828';
 
 export default function PersonalInformationScreen() {
   const router = useRouter();
@@ -50,13 +52,19 @@ export default function PersonalInformationScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.title}>Personal Information</Text>
-        <View style={{ width: 40 }} />
+      {/* Dark header */}
+      <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
+        <View style={styles.headerDecoA} />
+        <View style={styles.headerRow}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={20} color={Colors.white} />
+          </TouchableOpacity>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={styles.title}>Personal Information</Text>
+            <Text style={styles.subtitle}>Edit your profile details</Text>
+          </View>
+          <View style={{ width: 36 }} />
+        </View>
       </View>
 
       <ScrollView
@@ -141,34 +149,52 @@ export default function PersonalInformationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.background,
   },
   header: {
+    backgroundColor: HERO_BG,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.xl,
+    overflow: 'hidden',
+  },
+  headerDecoA: {
+    position: 'absolute',
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(159,187,68,0.07)',
+    top: -50,
+    right: -30,
+  },
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.xl,
-    paddingBottom: Spacing.lg,
-    borderBottomWidth: 0.5,
-    borderBottomColor: Colors.borderLight,
+    marginTop: Spacing.md,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.chipInactive,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
+    fontSize: FontSize.lg,
+    fontWeight: '800',
+    color: Colors.white,
+  },
+  subtitle: {
+    fontSize: FontSize.xs,
+    color: 'rgba(255,255,255,0.6)',
+    marginTop: 1,
   },
   scrollContent: {
     paddingHorizontal: Spacing.xl,
     paddingBottom: Spacing.huge,
     paddingTop: Spacing.xl,
+    backgroundColor: Colors.background,
   },
   sectionLabel: {
     fontSize: FontSize.sm,
@@ -194,7 +220,7 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 52,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.white,
     borderRadius: BorderRadius.xl,
     paddingHorizontal: Spacing.xl,
     fontSize: FontSize.md,

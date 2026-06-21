@@ -15,6 +15,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../src/constants/theme';
 import { mockListings } from '../src/services/mockData';
 
+const HERO_BG = '#003828';
+
 type ListingStatus = 'live' | 'pending' | 'rejected' | 'draft';
 
 interface MyListing {
@@ -57,20 +59,28 @@ export default function MyListingsScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.title}>My Listings</Text>
-        <View style={{ width: 40 }} />
+    <View style={styles.container}>
+      {/* Dark header */}
+      <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
+        <View style={styles.headerDecoA} />
+        <View style={styles.headerRow}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={20} color={Colors.white} />
+          </TouchableOpacity>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={styles.title}>My Listings</Text>
+            <Text style={styles.subtitle}>{listings.length} listing{listings.length !== 1 ? 's' : ''}</Text>
+          </View>
+          <TouchableOpacity style={styles.addIconBtn} onPress={() => router.push('/(tabs)/create')}>
+            <Ionicons name="add" size={20} color={Colors.white} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {listings.length === 0 ? (
         <View style={styles.emptyState}>
           <View style={styles.emptyIcon}>
-            <Ionicons name="home-outline" size={48} color={Colors.textTertiary} />
+            <Ionicons name="home-outline" size={44} color={Colors.textTertiary} />
           </View>
           <Text style={styles.emptyTitle}>No Listings Yet</Text>
           <Text style={styles.emptySubtitle}>
@@ -183,27 +193,51 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
+    backgroundColor: HERO_BG,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.xl,
+    overflow: 'hidden',
+  },
+  headerDecoA: {
+    position: 'absolute',
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: 'rgba(159,187,68,0.07)',
+    top: -60,
+    right: -40,
+  },
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.lg,
-    backgroundColor: Colors.white,
-    borderBottomWidth: 0.5,
-    borderBottomColor: Colors.borderLight,
+    marginTop: Spacing.md,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.chipInactive,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.lime,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
     fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
+    fontWeight: '800',
+    color: Colors.white,
+  },
+  subtitle: {
+    fontSize: FontSize.xs,
+    color: 'rgba(255,255,255,0.6)',
+    marginTop: 1,
   },
   list: {
     padding: Spacing.xl,

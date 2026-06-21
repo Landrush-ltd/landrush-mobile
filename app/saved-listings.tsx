@@ -14,6 +14,8 @@ import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../src/constant
 import { mockListings } from '../src/services/mockData';
 import type { Listing } from '../src/types/listing';
 
+const HERO_BG = '#003828';
+
 const CATEGORY_COLOR: Record<string, string> = {
   sale:     Colors.primary,
   lease:    Colors.lease,
@@ -28,21 +30,33 @@ export default function SavedListingsScreen() {
   const handleUnsave = (id: string) =>
     setSaved((prev) => prev.filter((l) => l.id !== id));
 
+  const Header = () => (
+    <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
+      <View style={styles.headerDecoA} />
+      <View style={styles.headerRow}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={20} color={Colors.white} />
+        </TouchableOpacity>
+        <View style={{ alignItems: 'center' }}>
+          <Text style={styles.title}>Saved Listings</Text>
+          <Text style={styles.subtitle}>{saved.length} saved</Text>
+        </View>
+        <View style={styles.countBadge}>
+          <Text style={styles.countText}>{saved.length}</Text>
+        </View>
+      </View>
+    </View>
+  );
+
   if (saved.length === 0) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.title}>Saved Listings</Text>
-          <View style={{ width: 40 }} />
-        </View>
+      <View style={styles.container}>
+        <Header />
         <View style={styles.emptyState}>
           <View style={styles.emptyIcon}>
-            <Ionicons name="bookmark-outline" size={48} color={Colors.textTertiary} />
+            <Ionicons name="bookmark-outline" size={44} color={Colors.textTertiary} />
           </View>
-          <Text style={styles.emptyTitle}>No Saved Listings</Text>
+          <Text style={styles.emptyTitle}>Nothing saved yet</Text>
           <Text style={styles.emptySubtitle}>
             Tap the bookmark icon on any listing to save it here for later.
           </Text>
@@ -55,14 +69,8 @@ export default function SavedListingsScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.title}>Saved Listings</Text>
-        <Text style={styles.count}>{saved.length}</Text>
-      </View>
+    <View style={styles.container}>
+      <Header />
 
       <FlatList
         data={saved}
@@ -125,38 +133,56 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
+    backgroundColor: HERO_BG,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.xl,
+    overflow: 'hidden',
+  },
+  headerDecoA: {
+    position: 'absolute',
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: 'rgba(159,187,68,0.07)',
+    top: -60,
+    right: -40,
+  },
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.lg,
-    backgroundColor: Colors.white,
-    borderBottomWidth: 0.5,
-    borderBottomColor: Colors.borderLight,
+    marginTop: Spacing.md,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.chipInactive,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
     fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
+    fontWeight: '800',
+    color: Colors.white,
   },
-  count: {
+  subtitle: {
+    fontSize: FontSize.xs,
+    color: 'rgba(255,255,255,0.6)',
+    marginTop: 1,
+  },
+  countBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.lime,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  countText: {
     fontSize: FontSize.md,
     fontWeight: '700',
-    color: Colors.white,
-    backgroundColor: Colors.lime,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    textAlign: 'center',
-    lineHeight: 28,
+    color: Colors.textPrimary,
   },
   list: {
     padding: Spacing.xl,
