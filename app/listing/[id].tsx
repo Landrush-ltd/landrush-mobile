@@ -142,7 +142,7 @@ export default function ListingDetailScreen() {
             </>
           )}
 
-          <Text style={styles.sectionTitle}>Other Details</Text>
+          <Text style={styles.sectionTitle}>Listed By</Text>
           <View style={styles.agentCard}>
             <Image
               source={{ uri: listing.agent.avatar }}
@@ -152,22 +152,42 @@ export default function ListingDetailScreen() {
               <View style={styles.agentNameRow}>
                 <Text style={styles.agentName}>{listing.agent.name}</Text>
                 {listing.agent.isVerified && (
-                  <Ionicons name="checkmark-circle" size={16} color={Colors.info} />
+                  <Ionicons name="checkmark-circle" size={15} color={Colors.primary} />
                 )}
               </View>
-              <Text style={styles.agentRole}>
-                Landowner || Member since June 2026
-              </Text>
+              <Text style={styles.agentRole}>Landowner · Member since 2024</Text>
+              <View style={styles.agentRatingRow}>
+                <Ionicons name="star" size={12} color="#F9A825" />
+                <Text style={styles.agentRatingText}>{listing.agent.rating.toFixed(1)}</Text>
+                <Text style={styles.agentRatingCount}>(42 reviews)</Text>
+              </View>
             </View>
           </View>
 
-          <TouchableOpacity style={styles.viewContactButton}>
-            <Text style={styles.viewContactText}>View Contact</Text>
-          </TouchableOpacity>
+          <View style={styles.contactRow}>
+            <TouchableOpacity style={styles.contactBtn}>
+              <Ionicons name="call-outline" size={18} color={Colors.primary} />
+              <Text style={styles.contactBtnText}>Call</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.contactBtn, styles.contactBtnPrimary]}>
+              <Ionicons name="chatbubble-outline" size={18} color={Colors.white} />
+              <Text style={[styles.contactBtnText, { color: Colors.white }]}>Message</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
 
       <View style={[styles.bottomBar, { paddingBottom: insets.bottom + Spacing.md }]}>
+        <TouchableOpacity
+          style={[styles.saveButtonBottom, isSaved && styles.saveButtonBottomActive]}
+          onPress={() => setIsSaved(!isSaved)}
+        >
+          <Ionicons
+            name={isSaved ? 'bookmark' : 'bookmark-outline'}
+            size={20}
+            color={isSaved ? Colors.primary : Colors.textSecondary}
+          />
+        </TouchableOpacity>
         <TouchableOpacity
           style={styles.bookInspectionButton}
           onPress={handleBookInspection}
@@ -453,30 +473,82 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: 2,
   },
-  viewContactButton: {
+  agentRatingRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: Spacing.sm,
+    gap: 3,
+    marginTop: 4,
   },
-  viewContactText: {
+  agentRatingText: {
+    fontSize: FontSize.sm,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  agentRatingCount: {
+    fontSize: FontSize.xs,
+    color: Colors.textTertiary,
+  },
+  contactRow: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.xxl,
+  },
+  contactBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    height: 46,
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
+    backgroundColor: Colors.background,
+  },
+  contactBtnPrimary: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  contactBtnText: {
     fontSize: FontSize.md,
+    fontWeight: '700',
     color: Colors.primary,
-    fontWeight: '600',
   },
   bottomBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
     padding: Spacing.lg,
     backgroundColor: Colors.white,
     borderTopWidth: 1,
     borderTopColor: Colors.borderLight,
   },
-  bookInspectionButton: {
-    backgroundColor: Colors.lime,
-    paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.lg,
+  saveButtonBottom: {
+    width: 48,
+    height: 52,
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.background,
+  },
+  saveButtonBottomActive: {
+    borderColor: Colors.primary,
+    backgroundColor: `${Colors.lime}20`,
+  },
+  bookInspectionButton: {
+    flex: 1,
+    backgroundColor: Colors.lime,
+    height: 52,
+    borderRadius: BorderRadius.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   bookInspectionText: {
     fontSize: FontSize.lg,
