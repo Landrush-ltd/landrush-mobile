@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,10 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  Animated,
+  Image,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -39,6 +42,62 @@ export default function CreateListingScreen() {
   const [size, setSize] = useState('');
   const [sizeUnit, setSizeUnit] = useState('Plot');
   const [leaseDuration, setLeaseDuration] = useState('');
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
+  const uploadAnim = useRef(new Animated.Value(0)).current;
+  const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-save draft every 10 seconds when form has data
+  useEffect(() => {
+    if (!title && !location && !price) return;
+    draftTimer.current = setTimeout(() => {
+      setDraftSaved(true);
+      setTimeout(() => setDraftSaved(false), 2500);
+    }, 10000);
+    return () => { if (draftTimer.current) clearTimeout(draftTimer.current); };
+  }, [title, location, price, currentStep]);
+
+  const handlePickPhotos = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images', 'videos'],
+      allowsMultipleSelection: true,
+      quality: 0.7,
+      selectionLimit: 8,
+    });
+    if (result.canceled) return;
+    const uris = result.assets.map((a) => a.uri);
+    setPhotos((prev) => [...prev, ...uris].slice(0, 8));
+    simulateUpload();
+  };
+
+  const handleTakePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Camera permission is required.');
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({ quality: 0.7 });
+    if (result.canceled) return;
+    setPhotos((prev) => [...prev, result.assets[0].uri].slice(0, 8));
+    simulateUpload();
+  };
+
+  const simulateUpload = () => {
+    setIsUploading(true);
+    setUploadProgress(0);
+    uploadAnim.setValue(0);
+    Animated.timing(uploadAnim, {
+      toValue: 1,
+      duration: 1800,
+      useNativeDriver: false,
+    }).start(() => {
+      setIsUploading(false);
+      setUploadProgress(100);
+    });
+    uploadAnim.addListener(({ value }) => setUploadProgress(Math.round(value * 100)));
+  };
 
   const handleNext = () => {
     if (currentStep === 0 && !category) {
@@ -213,11 +272,69 @@ export default function CreateListingScreen() {
     <View style={styles.stepContent}>
       <Text style={styles.stepTitle}>Photos & Documents</Text>
       <Text style={styles.stepSubtitle}>Add photos of the land and any ownership documents</Text>
-      <TouchableOpacity style={styles.uploadArea}>
-        <Ionicons name="cloud-upload-outline" size={48} color={Colors.textTertiary} />
-        <Text style={styles.uploadText}>Tap to upload photos</Text>
-        <Text style={styles.uploadSubtext}>JPG, PNG up to 10MB each</Text>
-      </TouchableOpacity>
+
+      {/* Photo thumbnails */}
+      {photos.length > 0 && (
+        <View style={styles.photoGrid}>
+          {photos.map((uri, i) => (
+            <View key={i} style={styles.photoThumb}>
+              <Image source={{ uri }} style={styles.photoThumbImg} />
+              <TouchableOpacity
+                style={styles.removePhoto}
+                onPress={() => setPhotos((prev) => prev.filter((_, idx) => idx !== i))}
+              >
+                <Ionicons name="close-circle" size={18} color={Colors.error} />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* Upload progress bar */}
+      {isUploading && (
+        <View style={styles.progressContainer}>
+          <View style={styles.progressHeader}>
+            <Text style={styles.progressLabel}>Uploading...</Text>
+            <Text style={styles.progressPercent}>{uploadProgress}%</Text>
+          </View>
+          <View style={styles.progressTrack}>
+            <Animated.View
+              style={[
+                styles.progressFill,
+                {
+                  width: uploadAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['0%', '100%'],
+                  }),
+                },
+              ]}
+            />
+          </View>
+        </View>
+      )}
+
+      {/* Add more photos / upload */}
+      {photos.length < 8 && (
+        <View style={styles.uploadActions}>
+          <TouchableOpacity style={styles.uploadActionBtn} onPress={handlePickPhotos}>
+            <Ionicons name="images-outline" size={22} color={Colors.primary} />
+            <Text style={styles.uploadActionText}>Gallery</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.uploadActionBtn} onPress={handleTakePhoto}>
+            <Ionicons name="camera-outline" size={22} color={Colors.primary} />
+            <Text style={styles.uploadActionText}>Camera</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {photos.length === 0 && !isUploading && (
+        <TouchableOpacity style={styles.uploadArea} onPress={handlePickPhotos}>
+          <Ionicons name="cloud-upload-outline" size={48} color={Colors.textTertiary} />
+          <Text style={styles.uploadText}>Tap to upload photos</Text>
+          <Text style={styles.uploadSubtext}>JPG, PNG up to 10MB each · Max 8</Text>
+        </TouchableOpacity>
+      )}
+
       <Text style={styles.inputLabel}>Verification Documents</Text>
       <TouchableOpacity style={styles.documentUpload}>
         <Ionicons name="document-outline" size={24} color={Colors.primary} />
@@ -282,7 +399,15 @@ export default function CreateListingScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Create Listing</Text>
-        <Text style={styles.headerStep}>Step {currentStep + 1} of {STEPS.length}</Text>
+        <View style={styles.headerRight}>
+          {draftSaved && (
+            <View style={styles.draftIndicator}>
+              <Ionicons name="checkmark-circle-outline" size={13} color={Colors.primary} />
+              <Text style={styles.draftText}>Draft saved</Text>
+            </View>
+          )}
+          <Text style={styles.headerStep}>Step {currentStep + 1} of {STEPS.length}</Text>
+        </View>
       </View>
 
       {renderStepIndicator()}
@@ -330,6 +455,20 @@ const styles = StyleSheet.create({
     fontSize: FontSize.xxl,
     fontWeight: '700',
     color: Colors.textPrimary,
+  },
+  headerRight: {
+    alignItems: 'flex-end',
+    gap: 2,
+  },
+  draftIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  draftText: {
+    fontSize: FontSize.xs,
+    color: Colors.primary,
+    fontWeight: '500',
   },
   headerStep: {
     fontSize: FontSize.sm,
@@ -607,5 +746,81 @@ const styles = StyleSheet.create({
     fontSize: FontSize.lg,
     fontWeight: '700',
     color: Colors.textPrimary,
+  },
+  photoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  photoThumb: {
+    width: 80,
+    height: 80,
+    borderRadius: BorderRadius.md,
+    overflow: 'visible',
+    position: 'relative',
+  },
+  photoThumbImg: {
+    width: 80,
+    height: 80,
+    borderRadius: BorderRadius.md,
+  },
+  removePhoto: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: Colors.white,
+    borderRadius: 9,
+  },
+  progressContainer: {
+    marginBottom: Spacing.md,
+    gap: Spacing.xs,
+  },
+  progressHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  progressLabel: {
+    fontSize: FontSize.sm,
+    color: Colors.textSecondary,
+    fontWeight: '500',
+  },
+  progressPercent: {
+    fontSize: FontSize.sm,
+    color: Colors.primary,
+    fontWeight: '700',
+  },
+  progressTrack: {
+    height: 6,
+    backgroundColor: Colors.border,
+    borderRadius: BorderRadius.full,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: Colors.lime,
+    borderRadius: BorderRadius.full,
+  },
+  uploadActions: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  uploadActionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: Colors.white,
+  },
+  uploadActionText: {
+    fontSize: FontSize.md,
+    color: Colors.primary,
+    fontWeight: '600',
   },
 });

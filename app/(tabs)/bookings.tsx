@@ -197,6 +197,22 @@ export default function BookingsScreen() {
                     </TouchableOpacity>
                   </View>
                 )}
+
+                {/* Add to Calendar — confirmed upcoming inspections */}
+                {booking.status === 'upcoming' && (
+                  <TouchableOpacity
+                    style={styles.calendarButton}
+                    onPress={() =>
+                      Alert.alert(
+                        'Added to Calendar',
+                        `"${booking.listingTitle}" inspection on ${booking.date} at ${booking.time} has been added to your calendar.`,
+                      )
+                    }
+                  >
+                    <Ionicons name="calendar-outline" size={16} color={Colors.textPrimary} />
+                    <Text style={styles.calendarButtonText}>Add to Calendar</Text>
+                  </TouchableOpacity>
+                )}
               </TouchableOpacity>
             );
           })
@@ -352,6 +368,21 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sm,
     fontWeight: '600',
     color: Colors.error,
+  },
+  calendarButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    marginTop: Spacing.md,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.lime,
+  },
+  calendarButtonText: {
+    fontSize: FontSize.sm,
+    fontWeight: '700',
+    color: Colors.textPrimary,
   },
   emptyState: {
     alignItems: 'center',

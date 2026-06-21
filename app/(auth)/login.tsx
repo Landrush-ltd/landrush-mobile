@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as LocalAuthentication from 'expo-local-authentication';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 import { LandrushLogo } from '../../src/components/LandrushLogo';
 
@@ -21,6 +22,33 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [biometricType, setBiometricType] = useState<'face' | 'fingerprint' | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const compatible = await LocalAuthentication.hasHardwareAsync();
+      const enrolled = await LocalAuthentication.isEnrolledAsync();
+      if (!compatible || !enrolled) return;
+      const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
+      if (types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
+        setBiometricType('face');
+      } else if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
+        setBiometricType('fingerprint');
+      }
+    })();
+  }, []);
+
+  const handleBiometricLogin = async () => {
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: 'Log in to Landrush',
+      fallbackLabel: 'Use password',
+      cancelLabel: 'Cancel',
+    });
+    if (result.success) {
+      router.replace('/(tabs)');
+    }
+  };
+
   const handleLogin = () => {
     if (!emailOrPhone || !password) {
       Alert.alert('Missing Fields', 'Please fill in all fields.');
@@ -115,6 +143,19 @@ export default function LoginScreen() {
           <TouchableOpacity style={styles.forgotPassword}>
             <Text style={styles.forgotText}>Forgot password?</Text>
           </TouchableOpacity>
+
+          {biometricType && (
+            <TouchableOpacity style={styles.biometricButton} onPress={handleBiometricLogin}>
+              <Ionicons
+                name={biometricType === 'face' ? 'scan-outline' : 'finger-print-outline'}
+                size={28}
+                color={Colors.primary}
+              />
+              <Text style={styles.biometricText}>
+                {biometricType === 'face' ? 'Sign in with Face ID' : 'Sign in with Fingerprint'}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -261,6 +302,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   forgotText: {
+    fontSize: FontSize.md,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+  biometricButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    marginTop: Spacing.md,
+    paddingVertical: Spacing.lg,
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: Colors.white,
+  },
+  biometricText: {
     fontSize: FontSize.md,
     color: Colors.primary,
     fontWeight: '600',

@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   Image,
+  Platform,
 } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,91 +18,184 @@ import { mockListings } from '../../src/services/mockData';
 import type { ListingCategory, Listing } from '../../src/types/listing';
 
 const categories: { key: ListingCategory | null; label: string; color: string }[] = [
-  { key: null, label: 'All', color: Colors.primary },
-  { key: 'lease', label: 'Lease', color: Colors.lease },
-  { key: 'sale', label: 'Buy', color: Colors.sale },
-  { key: 'distress', label: 'Distress Sale', color: Colors.distress },
+  { key: null,        label: 'All',          color: Colors.primary  },
+  { key: 'lease',     label: 'Lease',        color: Colors.lease    },
+  { key: 'sale',      label: 'Buy',          color: Colors.sale     },
+  { key: 'distress',  label: 'Distress Sale', color: Colors.distress },
 ];
 
+const CATEGORY_COLOR: Record<string, string> = {
+  sale:     Colors.sale,
+  lease:    Colors.lease,
+  distress: Colors.distress,
+};
+
 const legendItems = [
-  { color: Colors.sale, label: 'Buy' },
-  { color: Colors.lease, label: 'Lease' },
-  { color: Colors.distress, label: 'Distress sale' },
+  { color: Colors.sale,     label: 'Buy' },
+  { color: Colors.lease,    label: 'Lease' },
+  { color: Colors.distress, label: 'Distress' },
 ];
+
+// Nigeria centroid
+const INITIAL_REGION = {
+  latitude: 9.082,
+  longitude: 8.6753,
+  latitudeDelta: 8,
+  longitudeDelta: 8,
+};
 
 export default function MapScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const mapRef = useRef<MapView>(null);
   const [activeCategory, setActiveCategory] = useState<ListingCategory | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
 
-  const filteredListings = activeCategory
-    ? mockListings.filter((l) => l.category === activeCategory)
-    : mockListings;
+  const filteredListings = mockListings.filter((l) => {
+    if (activeCategory && l.category !== activeCategory) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      return l.title.toLowerCase().includes(q) || l.location.toLowerCase().includes(q);
+    }
+    return true;
+  });
+
+  const handleMarkerPress = (listing: Listing) => {
+    setSelectedListing(listing);
+    mapRef.current?.animateToRegion(
+      {
+        latitude: listing.coordinates.latitude,
+        longitude: listing.coordinates.longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      },
+      400,
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
-        <Text style={styles.title}>Map</Text>
-      </View>
-
-      <View style={styles.searchContainer}>
-        <SearchBar
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder="Search by location, area, or landmark"
-        />
-      </View>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.categoriesContainer}
+      <MapView
+        ref={mapRef}
+        style={StyleSheet.absoluteFillObject}
+        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+        initialRegion={INITIAL_REGION}
+        showsUserLocation
+        showsMyLocationButton={false}
       >
-        {categories.map((cat) => (
-          <CategoryChip
-            key={cat.label}
-            label={cat.label}
-            isActive={activeCategory === cat.key}
-            color={cat.color}
-            onPress={() => setActiveCategory(cat.key)}
-          />
-        ))}
-      </ScrollView>
-
-      <View style={styles.mapPlaceholder}>
-        <Ionicons name="map" size={64} color={Colors.textTertiary} />
-        <Text style={styles.mapPlaceholderText}>
-          Map view with {filteredListings.length} listings
-        </Text>
-        <Text style={styles.mapSubtext}>
-          Google Maps will render here with color-coded pins
-        </Text>
-
-        <View style={styles.legend}>
-          {legendItems.map((item) => (
-            <View key={item.label} style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: item.color }]} />
-              <Text style={styles.legendText}>{item.label}</Text>
+        {filteredListings.map((listing) => (
+          <Marker
+            key={listing.id}
+            coordinate={{
+              latitude: listing.coordinates.latitude,
+              longitude: listing.coordinates.longitude,
+            }}
+            onPress={() => handleMarkerPress(listing)}
+          >
+            <View
+              style={[
+                styles.marker,
+                { backgroundColor: CATEGORY_COLOR[listing.category] },
+                selectedListing?.id === listing.id && styles.markerSelected,
+              ]}
+            >
+              <Text style={styles.markerText}>
+                ₦{listing.price >= 1_000_000
+                  ? `${(listing.price / 1_000_000).toFixed(1)}M`
+                  : `${(listing.price / 1000).toFixed(0)}K`}
+              </Text>
             </View>
+          </Marker>
+        ))}
+      </MapView>
+
+      {/* Overlay controls */}
+      <View style={[styles.topOverlay, { paddingTop: insets.top + Spacing.sm }]}>
+        <View style={styles.searchRow}>
+          <SearchBar
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search by location or landmark"
+          />
+          <TouchableOpacity
+            style={styles.locationBtn}
+            onPress={() =>
+              mapRef.current?.animateToRegion(INITIAL_REGION, 600)
+            }
+          >
+            <Ionicons name="locate" size={20} color={Colors.primary} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.chipsRow}>
+          {categories.map((cat) => (
+            <CategoryChip
+              key={cat.label}
+              label={cat.label}
+              isActive={activeCategory === cat.key}
+              color={cat.color}
+              onPress={() => {
+                setActiveCategory(cat.key);
+                setSelectedListing(null);
+              }}
+            />
           ))}
         </View>
       </View>
 
+      {/* Legend */}
+      <View style={[styles.legend, { bottom: selectedListing ? 210 : Spacing.xxl }]}>
+        {legendItems.map((item) => (
+          <View key={item.label} style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: item.color }]} />
+            <Text style={styles.legendLabel}>{item.label}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Bottom sheet on marker tap */}
       {selectedListing && (
-        <View style={styles.bottomSheet}>
-          <View style={styles.bottomSheetHandle} />
+        <View style={[styles.bottomSheet, { paddingBottom: insets.bottom + Spacing.lg }]}>
+          <TouchableOpacity
+            style={styles.closeSheet}
+            onPress={() => setSelectedListing(null)}
+          >
+            <Ionicons name="close" size={20} color={Colors.textSecondary} />
+          </TouchableOpacity>
           <View style={styles.listingPreview}>
             <Image
               source={{ uri: selectedListing.media[0]?.uri }}
               style={styles.previewImage}
             />
             <View style={styles.previewContent}>
-              <Text style={styles.previewTitle}>{selectedListing.title}</Text>
-              <Text style={styles.previewLocation}>{selectedListing.location}</Text>
+              <View
+                style={[
+                  styles.categoryPill,
+                  { backgroundColor: `${CATEGORY_COLOR[selectedListing.category]}20` },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.categoryPillText,
+                    { color: CATEGORY_COLOR[selectedListing.category] },
+                  ]}
+                >
+                  {selectedListing.category.charAt(0).toUpperCase() +
+                    selectedListing.category.slice(1)}
+                </Text>
+              </View>
+              <Text style={styles.previewTitle} numberOfLines={2}>
+                {selectedListing.title}
+              </Text>
+              <View style={styles.previewRow}>
+                <Ionicons name="location-outline" size={13} color={Colors.textTertiary} />
+                <Text style={styles.previewLocation} numberOfLines={1}>
+                  {selectedListing.location}
+                </Text>
+              </View>
               <Text style={styles.previewPrice}>
-                {'\u20A6'}{selectedListing.price.toLocaleString()}
+                ₦{selectedListing.price.toLocaleString()}
               </Text>
             </View>
           </View>
@@ -120,65 +214,76 @@ export default function MapScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
-  header: {
+  topOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.md,
+    gap: Spacing.sm,
   },
-  title: {
-    fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  searchContainer: {
-    paddingHorizontal: Spacing.lg,
-    marginBottom: Spacing.md,
-  },
-  categoriesContainer: {
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.md,
-  },
-  mapPlaceholder: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#E8E5DD',
-    margin: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    gap: Spacing.md,
-  },
-  mapPlaceholderText: {
-    fontSize: FontSize.lg,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-  },
-  mapSubtext: {
-    fontSize: FontSize.sm,
-    color: Colors.textTertiary,
-  },
-  legend: {
-    flexDirection: 'row',
-    gap: Spacing.xl,
-    marginTop: Spacing.xl,
-    padding: Spacing.lg,
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.lg,
-    ...Shadow.sm,
-  },
-  legendItem: {
+  searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
   },
-  legendDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+  locationBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    ...Shadow.md,
   },
-  legendText: {
-    fontSize: FontSize.sm,
+  chipsRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  marker: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.full,
+    borderWidth: 2,
+    borderColor: Colors.white,
+    ...Shadow.sm,
+  },
+  markerSelected: {
+    transform: [{ scale: 1.15 }],
+    borderColor: Colors.textPrimary,
+  },
+  markerText: {
+    fontSize: FontSize.xs,
+    fontWeight: '800',
+    color: Colors.white,
+  },
+  legend: {
+    position: 'absolute',
+    right: Spacing.lg,
+    flexDirection: 'row',
+    gap: Spacing.md,
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.lg,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    ...Shadow.md,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  legendLabel: {
+    fontSize: FontSize.xs,
     color: Colors.textSecondary,
+    fontWeight: '500',
   },
   bottomSheet: {
     position: 'absolute',
@@ -189,16 +294,12 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: BorderRadius.xxl,
     borderTopRightRadius: BorderRadius.xxl,
     padding: Spacing.xl,
-    paddingBottom: 40,
     ...Shadow.lg,
   },
-  bottomSheetHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: Colors.border,
-    alignSelf: 'center',
-    marginBottom: Spacing.lg,
+  closeSheet: {
+    alignSelf: 'flex-end',
+    padding: Spacing.xs,
+    marginBottom: Spacing.sm,
   },
   listingPreview: {
     flexDirection: 'row',
@@ -206,32 +307,47 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   previewImage: {
-    width: 100,
-    height: 80,
+    width: 90,
+    height: 90,
     borderRadius: BorderRadius.md,
   },
   previewContent: {
     flex: 1,
+    gap: 4,
     justifyContent: 'center',
+  },
+  categoryPill: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.full,
+  },
+  categoryPillText: {
+    fontSize: FontSize.xs,
+    fontWeight: '700',
   },
   previewTitle: {
     fontSize: FontSize.md,
-    fontWeight: '600',
+    fontWeight: '700',
     color: Colors.textPrimary,
+  },
+  previewRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
   },
   previewLocation: {
     fontSize: FontSize.sm,
     color: Colors.textTertiary,
-    marginTop: 2,
+    flex: 1,
   },
   previewPrice: {
     fontSize: FontSize.lg,
     fontWeight: '700',
     color: Colors.primary,
-    marginTop: 4,
   },
   viewDetailsButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.lime,
     paddingVertical: Spacing.lg,
     borderRadius: BorderRadius.lg,
     alignItems: 'center',
@@ -239,6 +355,6 @@ const styles = StyleSheet.create({
   viewDetailsText: {
     fontSize: FontSize.lg,
     fontWeight: '700',
-    color: Colors.white,
+    color: Colors.textPrimary,
   },
 });

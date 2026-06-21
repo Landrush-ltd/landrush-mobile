@@ -1,0 +1,275 @@
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../src/constants/theme';
+
+type PaymentType = 'access_fee' | 'listing_fee';
+type PaymentStatus = 'success' | 'failed' | 'pending';
+
+interface PaymentRecord {
+  id: string;
+  type: PaymentType;
+  amount: number;
+  status: PaymentStatus;
+  reference: string;
+  date: string;
+  description: string;
+}
+
+const TYPE_LABEL: Record<PaymentType, string> = {
+  access_fee: 'Access Fee',
+  listing_fee: 'Listing Fee',
+};
+
+const STATUS_CONFIG: Record<PaymentStatus, { label: string; color: string; bg: string; icon: string }> = {
+  success: { label: 'Successful', color: Colors.success, bg: '#E8F5E9', icon: 'checkmark-circle' },
+  failed:  { label: 'Failed',     color: Colors.error,   bg: '#FFEBEE', icon: 'close-circle' },
+  pending: { label: 'Pending',    color: '#E65100',      bg: '#FFF3E0', icon: 'time' },
+};
+
+const mockPayments: PaymentRecord[] = [
+  {
+    id: 'p1',
+    type: 'access_fee',
+    amount: 5000,
+    status: 'success',
+    reference: 'LDR-20240512-001',
+    date: 'Mon, 12 May 2025 · 10:45 AM',
+    description: 'One-time platform access fee',
+  },
+  {
+    id: 'p2',
+    type: 'listing_fee',
+    amount: 2500,
+    status: 'success',
+    reference: 'LDR-20240520-002',
+    date: 'Mon, 20 May 2025 · 2:10 PM',
+    description: '12 Acres of Farmland — listing publish fee',
+  },
+  {
+    id: 'p3',
+    type: 'listing_fee',
+    amount: 2500,
+    status: 'failed',
+    reference: 'LDR-20240601-003',
+    date: 'Sun, 1 Jun 2025 · 9:00 AM',
+    description: '5 Plots Industrial Zone — listing publish fee',
+  },
+];
+
+export default function PaymentHistoryScreen() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+
+  const total = mockPayments
+    .filter((p) => p.status === 'success')
+    .reduce((sum, p) => sum + p.amount, 0);
+
+  return (
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
+        </TouchableOpacity>
+        <Text style={styles.title}>Payment History</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
+      {/* Summary card */}
+      <View style={styles.summaryCard}>
+        <Text style={styles.summaryLabel}>Total spent</Text>
+        <Text style={styles.summaryAmount}>₦{total.toLocaleString()}</Text>
+        <Text style={styles.summaryNote}>Platform fees only · Land transaction payments not included</Text>
+      </View>
+
+      <FlatList
+        data={mockPayments}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Ionicons name="receipt-outline" size={48} color={Colors.textTertiary} />
+            <Text style={styles.emptyTitle}>No Payments Yet</Text>
+            <Text style={styles.emptySubtitle}>Your payment receipts will appear here.</Text>
+          </View>
+        }
+        renderItem={({ item }) => {
+          const status = STATUS_CONFIG[item.status];
+          return (
+            <View style={styles.card}>
+              <View style={styles.cardLeft}>
+                <View style={[styles.iconCircle, { backgroundColor: status.bg }]}>
+                  <Ionicons name={status.icon as any} size={22} color={status.color} />
+                </View>
+              </View>
+              <View style={styles.cardBody}>
+                <View style={styles.cardTop}>
+                  <Text style={styles.cardType}>{TYPE_LABEL[item.type]}</Text>
+                  <Text style={styles.cardAmount}>₦{item.amount.toLocaleString()}</Text>
+                </View>
+                <Text style={styles.cardDesc} numberOfLines={1}>{item.description}</Text>
+                <View style={styles.cardBottom}>
+                  <Text style={styles.cardDate}>{item.date}</Text>
+                  <View style={[styles.statusPill, { backgroundColor: status.bg }]}>
+                    <Text style={[styles.statusText, { color: status.color }]}>{status.label}</Text>
+                  </View>
+                </View>
+                <Text style={styles.cardRef}>Ref: {item.reference}</Text>
+              </View>
+            </View>
+          );
+        }}
+        ListFooterComponent={<View style={{ height: Spacing.huge }} />}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.lg,
+    backgroundColor: Colors.white,
+    borderBottomWidth: 0.5,
+    borderBottomColor: Colors.borderLight,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.chipInactive,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: FontSize.xl,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  summaryCard: {
+    backgroundColor: Colors.splashBg,
+    margin: Spacing.xl,
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.xxl,
+    gap: Spacing.sm,
+  },
+  summaryLabel: {
+    fontSize: FontSize.sm,
+    color: 'rgba(255,255,255,0.7)',
+    fontWeight: '500',
+  },
+  summaryAmount: {
+    fontSize: FontSize.xxxl,
+    fontWeight: '800',
+    color: Colors.lime,
+  },
+  summaryNote: {
+    fontSize: FontSize.xs,
+    color: 'rgba(255,255,255,0.5)',
+    marginTop: Spacing.xs,
+    lineHeight: 16,
+  },
+  list: {
+    paddingHorizontal: Spacing.xl,
+    gap: Spacing.md,
+  },
+  card: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    ...Shadow.sm,
+  },
+  cardLeft: {
+    alignItems: 'center',
+    paddingTop: 2,
+  },
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardBody: {
+    flex: 1,
+    gap: 4,
+  },
+  cardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  cardType: {
+    fontSize: FontSize.md,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  cardAmount: {
+    fontSize: FontSize.md,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  cardDesc: {
+    fontSize: FontSize.sm,
+    color: Colors.textSecondary,
+  },
+  cardBottom: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  cardDate: {
+    fontSize: FontSize.xs,
+    color: Colors.textTertiary,
+  },
+  statusPill: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.full,
+  },
+  statusText: {
+    fontSize: FontSize.xs,
+    fontWeight: '600',
+  },
+  cardRef: {
+    fontSize: FontSize.xs,
+    color: Colors.textTertiary,
+    fontFamily: 'monospace',
+    marginTop: 2,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: Spacing.huge * 2,
+    gap: Spacing.md,
+  },
+  emptyTitle: {
+    fontSize: FontSize.xl,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  emptySubtitle: {
+    fontSize: FontSize.md,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+  },
+});

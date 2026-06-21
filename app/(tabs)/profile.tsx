@@ -54,6 +54,7 @@ export default function ProfileScreen() {
     { icon: 'calendar-outline', label: 'Bookings', onPress: () => router.push('/(tabs)/bookings') },
     { icon: 'notifications-outline', label: 'Notifications', onPress: () => router.push('/notifications') },
     { icon: 'shield-checkmark-outline', label: 'Verification', onPress: () => router.push('/verification') },
+    { icon: 'receipt-outline', label: 'Payment History', onPress: () => router.push('/payment-history') },
     { icon: 'help-circle-outline', label: 'Help & Support', onPress: () => {} },
   ];
 
