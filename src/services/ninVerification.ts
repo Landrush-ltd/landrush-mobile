@@ -1,19 +1,17 @@
 /**
  * NIN Verification via Prembly (Identitypass)
  *
- * Real API docs: https://docs.prembly.com/docs/nin-verification
- *
- * To enable live lookups:
- *  1. Sign up at https://app.prembly.com
- *  2. Create an app and copy the App-Id + x-api-key
- *  3. Set EXPO_PUBLIC_PREMBLY_APP_ID and EXPO_PUBLIC_PREMBLY_API_KEY
- *     in your .env file (Expo auto-exposes EXPO_PUBLIC_* to the client)
- *  4. Flip USE_LIVE_API to true below
+ * Enable live mode: set EXPO_PUBLIC_USE_LIVE_NIN=true in .env
+ * (or flip USE_LIVE_API below to true for a quick local test)
  */
 
-const USE_LIVE_API = false; // set true once you have credentials
+const USE_LIVE_API =
+  process.env.EXPO_PUBLIC_USE_LIVE_NIN === 'true' || false;
 
-const PREMBLY_ENDPOINT = 'https://api.prembly.com/identitypass/verification/nin';
+// nin_wo_face = NIN-only lookup, no selfie required
+const PREMBLY_ENDPOINT =
+  'https://api.prembly.com/identitypass/verification/nin_wo_face';
+
 const APP_ID  = process.env.EXPO_PUBLIC_PREMBLY_APP_ID  ?? '';
 const API_KEY = process.env.EXPO_PUBLIC_PREMBLY_API_KEY ?? '';
 
@@ -22,7 +20,7 @@ export interface NINRecord {
   lastName:   string;
   middleName: string;
   gender:     string;
-  dob:        string;   // YYYY-MM-DD
+  dob:        string;
   phone:      string;
 }
 
@@ -31,6 +29,13 @@ export class NINLookupError extends Error {
     super(message);
     this.name = 'NINLookupError';
   }
+}
+
+function normaliseGender(raw: string | undefined): string {
+  const g = (raw ?? '').toLowerCase().trim();
+  if (g === 'm' || g === 'male')   return 'Male';
+  if (g === 'f' || g === 'female') return 'Female';
+  return raw ?? '';
 }
 
 export async function lookupNIN(nin: string): Promise<NINRecord> {
@@ -45,65 +50,62 @@ export async function lookupNIN(nin: string): Promise<NINRecord> {
       body: JSON.stringify({ number: nin }),
     });
 
-    if (!res.ok) {
-      throw new NINLookupError('Network error — please check your connection');
+    const text = await res.text();
+
+    // Log raw so you can inspect in Metro / browser console
+    console.log('[NIN] raw response:', text);
+
+    let json: any;
+    try {
+      json = JSON.parse(text);
+    } catch {
+      throw new NINLookupError('Unexpected response from verification server');
     }
 
-    const json = await res.json();
+    console.log('[NIN] parsed json:', JSON.stringify(json, null, 2));
 
-    if (!json.status) {
-      throw new NINLookupError(json.detail ?? 'NIN not found in NIMC database');
+    if (!res.ok || !json.status) {
+      const msg = json?.detail ?? json?.message ?? json?.error ?? 'NIN not found in NIMC database';
+      throw new NINLookupError(String(msg));
     }
 
-    // Prembly can nest nin_data at different levels depending on API version:
-    //   json.nin_data            (v1)
-    //   json.data.nin_data       (v2 wrapper)
-    //   json.data                (fallback)
-    const d = json.nin_data ?? json.data?.nin_data ?? json.data ?? {};
+    // Prembly nests the data under nin_data (sometimes inside json.data)
+    const d: Record<string, any> =
+      json.nin_data ??
+      json.data?.nin_data ??
+      json.data ??
+      {};
 
-    // NIMC field names vary — handle all known variants
-    const firstName  = d.firstname   ?? d.first_name   ?? d.firstName   ?? '';
-    const lastName   = d.surname     ?? d.last_name    ?? d.lastName    ?? d.lastname ?? '';
-    const middleName = d.middlename  ?? d.middle_name  ?? d.middleName  ?? '';
+    console.log('[NIN] extracted record fields:', JSON.stringify(d, null, 2));
 
-    // Sanity-check: if firstName looks like a surname (ALL_CAPS single token
-    // and lastName is empty) swap them so display is always Given → Family.
-    // NIMC occasionally returns records with reversed name fields.
-    if (lastName === '' && firstName.includes(' ')) {
-      const parts = firstName.trim().split(/\s+/);
-      return {
-        firstName:  parts.slice(1).join(' '),
-        lastName:   parts[0],
-        middleName,
-        gender:     (d.gender ?? '').toLowerCase() === 'm' ? 'Male' : (d.gender ?? '').toLowerCase() === 'f' ? 'Female' : d.gender ?? '',
-        dob:        d.birthdate ?? d.dob ?? '',
-        phone:      d.phone ?? '',
-      };
-    }
+    // Pull every known field variant
+    const firstName  = (d.firstname   ?? d.first_name   ?? d.firstName   ?? '').trim();
+    const lastName   = (d.surname     ?? d.last_name    ?? d.lastName    ?? d.lastname ?? '').trim();
+    const middleName = (d.middlename  ?? d.middle_name  ?? d.middleName  ?? '').trim();
 
     return {
       firstName,
       lastName,
       middleName,
-      gender:  (d.gender ?? '').toLowerCase() === 'm' ? 'Male' : (d.gender ?? '').toLowerCase() === 'f' ? 'Female' : d.gender ?? '',
-      dob:     d.birthdate ?? d.dob ?? '',
-      phone:   d.phone ?? '',
+      gender: normaliseGender(d.gender),
+      dob:    d.birthdate ?? d.birth_date ?? d.dob ?? '',
+      phone:  d.phone ?? d.phone_number ?? '',
     };
   }
 
   // ── Mock (dev) ────────────────────────────────────────────────
-  await new Promise<void>((resolve) => setTimeout(resolve, 1800));
+  await new Promise<void>((r) => setTimeout(r, 1600));
 
-  // Simulate "not found" for NIN starting with 0
   if (nin.startsWith('0')) {
-    throw new NINLookupError('NIN not found in NIMC database. Check the number and try again.');
+    throw new NINLookupError(
+      'NIN not found in NIMC database. Check the number and try again.',
+    );
   }
 
-  // Everything else returns a realistic record
   return {
     firstName:  'KENNETH',
-    lastName:   'UMOEKPE',
     middleName: 'EMEKA',
+    lastName:   'UMOEKPE',
     gender:     'Male',
     dob:        '1995-03-14',
     phone:      '0803*****78',
