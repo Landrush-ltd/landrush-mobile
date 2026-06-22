@@ -22,6 +22,8 @@ export interface NINRecord {
   gender:     string;
   dob:        string;
   phone:      string;
+  /** Raw key→value pairs from Prembly — visible in the debug panel */
+  _raw?: Record<string, string>;
 }
 
 export class NINLookupError extends Error {
@@ -83,6 +85,14 @@ export async function lookupNIN(nin: string): Promise<NINRecord> {
     const lastName   = (d.surname     ?? d.last_name    ?? d.lastName    ?? d.lastname ?? '').trim();
     const middleName = (d.middlename  ?? d.middle_name  ?? d.middleName  ?? '').trim();
 
+    // Build a flat string map of all fields for the debug panel
+    const _raw: Record<string, string> = {};
+    Object.entries(d).forEach(([k, v]) => {
+      if (typeof v === 'string' || typeof v === 'number') {
+        _raw[k] = String(v);
+      }
+    });
+
     return {
       firstName,
       lastName,
@@ -90,6 +100,7 @@ export async function lookupNIN(nin: string): Promise<NINRecord> {
       gender: normaliseGender(d.gender),
       dob:    d.birthdate ?? d.birth_date ?? d.dob ?? '',
       phone:  d.phone ?? d.phone_number ?? '',
+      _raw,
     };
   }
 

@@ -241,6 +241,18 @@ export default function VerificationScreen() {
 
             <Text style={s.nameCardName}>{fullName}</Text>
 
+            {/* ── DEBUG: raw API fields ── remove before shipping ── */}
+            {ninRecord._raw && Object.keys(ninRecord._raw).length > 0 && (
+              <View style={s.debugBox}>
+                <Text style={s.debugTitle}>RAW API FIELDS (debug)</Text>
+                {Object.entries(ninRecord._raw).map(([k, v]) => (
+                  <Text key={k} style={s.debugRow}>
+                    <Text style={s.debugKey}>{k}:</Text> {v}
+                  </Text>
+                ))}
+              </View>
+            )}
+
             <View style={s.nameCardDetails}>
               {ninRecord.gender ? (
                 <View style={s.nameCardChip}>
@@ -520,6 +532,23 @@ const s = StyleSheet.create({
     borderTopColor: Colors.borderLight,
     paddingTop: Spacing.md,
   },
+  debugBox: {
+    backgroundColor: '#1a1a2e',
+    borderRadius: 8,
+    padding: Spacing.md,
+    marginTop: Spacing.sm,
+    gap: 3,
+  },
+  debugTitle: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#7fdbca',
+    letterSpacing: 1,
+    marginBottom: 6,
+    textTransform: 'uppercase',
+  },
+  debugRow: { fontSize: 11, color: '#e0e0e0', lineHeight: 17 },
+  debugKey: { fontWeight: '700', color: '#9FBB44' },
 
   // ── Document upload ───────────────────────────────────────────
   uploadZone: {
