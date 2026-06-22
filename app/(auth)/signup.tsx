@@ -77,7 +77,7 @@ export default function SignupScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
         </TouchableOpacity>
-        <LandrushLogo size={52} textColor="#8DC63F" />
+        <LandrushLogo size={28} />
         <Text style={styles.headerTitle}>Create account</Text>
         <Text style={styles.headerSub}>Join thousands finding land across Nigeria</Text>
       </View>

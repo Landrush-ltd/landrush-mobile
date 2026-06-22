@@ -1,93 +1,133 @@
 /**
- * LandrushLogo — React + Tailwind CSS component
+ * LandrushLogo — React Native component
  *
- * Usage (web / any React project with Tailwind):
- *   import { LandrushLogo } from '@/components/LandrushLogo';
- *   <LandrushLogo iconSize={96} />
+ * Recreates the brand logo using pure View/Text primitives (no SVG lib needed).
  *
- * The icon is pure SVG so it scales crisply at any size.
- * The concave notch uses a white circle overlay — works on any white background.
+ * Props:
+ *   size      — icon cell size in dp (default 40). Total icon = size*2 + gap.
+ *   showText  — whether to show LAND / RUSH wordmark (default true)
+ *   style     — optional ViewStyle for the outer container
  */
-export function LandrushLogo({
-  iconSize = 96,
-  className = '',
-}: {
-  iconSize?: number;
-  className?: string;
-}) {
-  const DARK = '#1A5E3A';   // deep forest green
-  const LIME = '#9FBB44';   // lime accent
+import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import { Colors } from '../constants/theme';
 
-  // Typography scales with icon
-  const fontSize = Math.round(iconSize * 0.495);
+const DARK = '#1A5E3A';
+const LIME = Colors.lime; // #9FBB44
+
+interface Props {
+  size?: number;
+  showText?: boolean;
+  style?: ViewStyle;
+}
+
+export function LandrushLogo({ size = 40, showText = true, style }: Props) {
+  const gap        = Math.round(size * 0.14);   // gap between cells
+  const r          = Math.round(size * 0.22);   // cell border radius
+  const concaveR   = Math.round(size * 0.5);    // concave punch-out radius
+  const fontSize   = Math.round(size * 1.05);   // wordmark font size
+  const iconSize   = size * 2 + gap;            // total icon dimension
 
   return (
-    <div className={`inline-flex items-center select-none ${className}`} style={{ gap: iconSize * 0.18 }}>
+    <View style={[styles.root, style]}>
+      {/* ── 2×2 Grid Icon ───────────────────────────────────── */}
+      <View style={{ width: iconSize, height: iconSize }}>
 
-      {/* ── 2 × 2 Grid Icon ───────────────────────────────────── */}
-      <svg
-        width={iconSize}
-        height={iconSize}
-        viewBox="0 0 100 100"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          {/* Clip arc lines to the lime cell */}
-          <clipPath id="lr-bl">
-            <rect x="0" y="56" width="44" height="44" rx="10" />
-          </clipPath>
-        </defs>
+        {/* Top row */}
+        <View style={[styles.row, { gap }]}>
+          {/* TL — dark green */}
+          <View style={[styles.cell, { width: size, height: size, borderRadius: r, backgroundColor: DARK }]} />
+          {/* TR — dark green */}
+          <View style={[styles.cell, { width: size, height: size, borderRadius: r, backgroundColor: DARK }]} />
+        </View>
 
-        {/* Top-left — dark green */}
-        <rect x="0" y="0" width="44" height="44" rx="10" fill={DARK} />
+        <View style={{ height: gap }} />
 
-        {/* Top-right — dark green */}
-        <rect x="56" y="0" width="44" height="44" rx="10" fill={DARK} />
+        {/* Bottom row */}
+        <View style={[styles.row, { gap }]}>
+          {/* BL — lime + two arc strokes (simulated with white layered views) */}
+          <View style={[styles.cell, { width: size, height: size, borderRadius: r, backgroundColor: LIME, overflow: 'hidden' }]}>
+            {/* Arc 1 — upper terrain contour */}
+            <View style={[
+              styles.arc,
+              {
+                width: size * 1.4,
+                height: size * 1.4,
+                borderRadius: size * 0.7,
+                borderWidth: Math.max(2, size * 0.09),
+                bottom: -size * 0.55,
+                right: -size * 0.55,
+              },
+            ]} />
+            {/* Arc 2 — lower terrain contour */}
+            <View style={[
+              styles.arc,
+              {
+                width: size * 1.05,
+                height: size * 1.05,
+                borderRadius: size * 0.52,
+                borderWidth: Math.max(2, size * 0.08),
+                bottom: -size * 0.42,
+                right: -size * 0.42,
+              },
+            ]} />
+          </View>
 
-        {/* Bottom-left — lime + two terrain-contour arcs */}
-        <rect x="0" y="56" width="44" height="44" rx="10" fill={LIME} />
-        <g clipPath="url(#lr-bl)">
-          {/* Upper arc  */}
-          <path
-            d="M 44 83 Q 20 76 0 74"
-            stroke="rgba(255,255,255,0.62)"
-            strokeWidth="5.5"
-            strokeLinecap="round"
-          />
-          {/* Lower arc */}
-          <path
-            d="M 44 95 Q 22 89 2 87"
-            stroke="rgba(255,255,255,0.62)"
-            strokeWidth="5.5"
-            strokeLinecap="round"
-          />
-        </g>
+          {/* BR — dark green + concave notch (white circle at inner corner) */}
+          <View style={[styles.cell, { width: size, height: size, borderRadius: r, backgroundColor: DARK }]}>
+            {/* White circle at top-left of cell punches out the concave corner */}
+            <View style={[
+              styles.concave,
+              {
+                width: concaveR * 2,
+                height: concaveR * 2,
+                borderRadius: concaveR,
+                top: -concaveR,
+                left: -concaveR,
+              },
+            ]} />
+          </View>
+        </View>
+      </View>
 
-        {/* Bottom-right — dark green */}
-        <rect x="56" y="56" width="44" height="44" rx="10" fill={DARK} />
-        {/*
-          Concave notch: a white circle at the inner-corner point (56, 56)
-          "punches out" a quarter-circle, creating the concave arc effect.
-          Works perfectly on white backgrounds.
-        */}
-        <circle cx="56" cy="56" r="21" fill="white" />
-      </svg>
-
-      {/* ── Wordmark — LAND / RUSH stacked ────────────────────── */}
-      <div
-        style={{
-          color: LIME,
-          fontSize,
-          fontWeight: 900,
-          lineHeight: 0.91,
-          letterSpacing: `${fontSize * 0.09}px`,
-          textTransform: 'uppercase' as const,
-        }}
-      >
-        <div>LAND</div>
-        <div>RUSH</div>
-      </div>
-    </div>
+      {/* ── LAND / RUSH wordmark ────────────────────────────── */}
+      {showText && (
+        <View style={[styles.wordmark, { marginLeft: gap * 2 }]}>
+          <Text style={[styles.word, { fontSize, lineHeight: fontSize * 0.95 }]}>LAND</Text>
+          <Text style={[styles.word, { fontSize, lineHeight: fontSize * 0.95 }]}>RUSH</Text>
+        </View>
+      )}
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  row: {
+    flexDirection: 'row',
+  },
+  cell: {
+    overflow: 'hidden',
+  },
+  arc: {
+    position: 'absolute',
+    borderColor: 'rgba(255,255,255,0.55)',
+    // Only show the top-left quadrant arc — clip via overflow:hidden on parent cell
+    backgroundColor: 'transparent',
+  },
+  concave: {
+    position: 'absolute',
+    backgroundColor: '#FFFFFF',
+  },
+  wordmark: {
+    flexDirection: 'column',
+  },
+  word: {
+    fontWeight: '900',
+    color: LIME,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+  },
+});

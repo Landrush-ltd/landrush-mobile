@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { LandrushLogo } from '../../src/components/LandrushLogo';
 import { useAuthStore } from '../../src/store/auth';
 
 export default function LoginScreen() {
@@ -64,7 +65,7 @@ export default function LoginScreen() {
 
       <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Brand */}
-        <Text style={styles.brand}>Landrush</Text>
+        <LandrushLogo size={28} style={{ marginBottom: Spacing.xl }} />
         <Text style={styles.title}>Welcome back</Text>
         <Text style={styles.subtitle}>Log in to continue your land journey</Text>
 
@@ -140,8 +141,7 @@ const styles = StyleSheet.create({
   backBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   body: { flex: 1 },
   bodyContent: { paddingHorizontal: Spacing.xxl, paddingBottom: 48 },
-  brand: { fontSize: FontSize.sm, fontWeight: '700', color: Colors.lime, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: Spacing.sm },
-  title: { fontSize: FontSize.xxxl, fontWeight: '800', color: Colors.textPrimary, marginBottom: Spacing.xs },
+title: { fontSize: FontSize.xxxl, fontWeight: '800', color: Colors.textPrimary, marginBottom: Spacing.xs },
   subtitle: { fontSize: FontSize.md, color: Colors.textSecondary, marginBottom: Spacing.xxl },
   toggle: { flexDirection: 'row', backgroundColor: Colors.surface, borderRadius: BorderRadius.xl, padding: 4, marginBottom: Spacing.xxl },
   toggleItem: { flex: 1, paddingVertical: Spacing.md, alignItems: 'center', borderRadius: BorderRadius.lg },

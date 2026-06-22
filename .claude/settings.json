@@ -6,7 +6,8 @@
       "Skill(run:*)",
       "Bash(npx expo *)",
       "Bash(curl -s http://localhost:8081)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8081)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8081)",
+      "Bash(git commit *)"
     ]
   },
   "enabledPlugins": {
