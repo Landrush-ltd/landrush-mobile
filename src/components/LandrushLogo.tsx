@@ -1,208 +1,93 @@
-import React from 'react';
-import { View, Text, Animated } from 'react-native';
-
-// Exact colors from the logo PNG
-const MARK_DARK  = '#1A5C3A';
-const MARK_LIGHT = '#8DC63F';
-const TEXT_GREEN = '#8DC63F'; // matches the lime block, not olive
-
-export interface LandrushLogoAnimatedProps {
-  topLeftAnim?:     Animated.Value; // translateY from top
-  bottomLeftAnim?:  Animated.Value; // translateX from left
-  topRightAnim?:    Animated.Value; // translateX from right
-  bottomRightAnim?: Animated.Value; // translateX from right (delayed)
-  textOpacity?:     Animated.Value;
-  textTranslateX?:  Animated.Value;
-}
-
-interface Props {
-  size?:        number;
-  showText?:    boolean;
-  textColor?:   string;
-  orientation?: 'horizontal' | 'vertical';
-  animated?:    LandrushLogoAnimatedProps;
-}
-
+/**
+ * LandrushLogo — React + Tailwind CSS component
+ *
+ * Usage (web / any React project with Tailwind):
+ *   import { LandrushLogo } from '@/components/LandrushLogo';
+ *   <LandrushLogo iconSize={96} />
+ *
+ * The icon is pure SVG so it scales crisply at any size.
+ * The concave notch uses a white circle overlay — works on any white background.
+ */
 export function LandrushLogo({
-  size = 56,
-  showText = true,
-  textColor = TEXT_GREEN,
-  orientation = 'horizontal',
-  animated,
-}: Props) {
-  const cell   = size / 2;
-  const gap    = Math.round(size * 0.08);
-  const radius = Math.round(cell * 0.22);
-  // Large inner radius creates the concave arch between the two right blocks
-  const innerR = Math.round(cell * 0.9);
+  iconSize = 96,
+  className = '',
+}: {
+  iconSize?: number;
+  className?: string;
+}) {
+  const DARK = '#1A5E3A';   // deep forest green
+  const LIME = '#9FBB44';   // lime accent
 
-  // Wrap each block in Animated.View only when animation values are provided
-  const wrap = (
-    child: React.ReactNode,
-    anim?: Animated.Value,
-    axis: 'X' | 'Y' = 'X',
-    direction: 1 | -1 = 1,
-  ): React.ReactNode => {
-    if (!anim) return child;
-    const transform = axis === 'Y'
-      ? [{ translateY: anim }]
-      : [{ translateX: anim }];
-    return <Animated.View style={{ transform }}>{child}</Animated.View>;
-  };
-
-  // Top-left: dark green square, all standard rounded corners
-  const topLeft = (
-    <View
-      style={{
-        width: cell,
-        height: cell,
-        backgroundColor: MARK_DARK,
-        borderRadius: radius,
-      }}
-    />
-  );
-
-  // Bottom-left: lime green square with two topographic arc lines
-  const bottomLeft = (
-    <View
-      style={{
-        width: cell,
-        height: cell,
-        backgroundColor: MARK_LIGHT,
-        borderRadius: radius,
-        overflow: 'hidden',
-      }}
-    >
-      <View
-        style={{
-          position: 'absolute',
-          bottom: cell * 0.38,
-          left: -cell * 0.15,
-          width: cell * 1.3,
-          height: cell * 0.52,
-          backgroundColor: 'rgba(255,255,255,0.30)',
-          borderRadius: cell * 0.9,
-        }}
-      />
-      <View
-        style={{
-          position: 'absolute',
-          bottom: cell * 0.12,
-          left: -cell * 0.15,
-          width: cell * 1.3,
-          height: cell * 0.52,
-          backgroundColor: 'rgba(255,255,255,0.18)',
-          borderRadius: cell * 0.9,
-        }}
-      />
-    </View>
-  );
-
-  // Top-right: dark green square — large bottom-left radius creates the arch opening
-  const topRight = (
-    <View
-      style={{
-        width: cell,
-        height: cell,
-        backgroundColor: MARK_DARK,
-        borderTopLeftRadius: radius,
-        borderTopRightRadius: radius,
-        borderBottomRightRadius: radius,
-        borderBottomLeftRadius: innerR,  // ← concave arch
-      }}
-    />
-  );
-
-  // Bottom-right: dark green square — large top-left radius mirrors the arch above
-  const bottomRight = (
-    <View
-      style={{
-        width: cell,
-        height: cell,
-        backgroundColor: MARK_DARK,
-        borderTopLeftRadius: innerR,     // ← concave arch
-        borderTopRightRadius: radius,
-        borderBottomRightRadius: radius,
-        borderBottomLeftRadius: radius,
-      }}
-    />
-  );
-
-  const mark = (
-    <View style={{ flexDirection: 'row', gap }}>
-      {/* Left column */}
-      <View style={{ gap }}>
-        {wrap(topLeft,    animated?.topLeftAnim,    'Y')}
-        {wrap(bottomLeft, animated?.bottomLeftAnim, 'X', -1)}
-      </View>
-
-      {/* Right column — two separate blocks */}
-      <View style={{ gap }}>
-        {wrap(topRight,    animated?.topRightAnim)}
-        {wrap(bottomRight, animated?.bottomRightAnim)}
-      </View>
-    </View>
-  );
-
-  const textBlock = (
-    <View>
-      <Text
-        style={{
-          fontSize: size * 0.36,
-          fontWeight: '800',
-          color: textColor,
-          letterSpacing: size * 0.015,
-          lineHeight: size * 0.44,
-        }}
-      >
-        LAND
-      </Text>
-      <Text
-        style={{
-          fontSize: size * 0.36,
-          fontWeight: '800',
-          color: textColor,
-          letterSpacing: size * 0.015,
-          lineHeight: size * 0.44,
-        }}
-      >
-        RUSH
-      </Text>
-    </View>
-  );
-
-  if (!showText) return mark;
-
-  const TextWrapper = animated?.textOpacity ? Animated.View : View;
-  const textStyle = animated?.textOpacity
-    ? {
-        opacity: animated.textOpacity,
-        transform: animated.textTranslateX
-          ? [{ translateX: animated.textTranslateX }]
-          : undefined,
-      }
-    : {};
-
-  if (orientation === 'vertical') {
-    return (
-      <View style={{ alignItems: 'center', gap: size * 0.18 }}>
-        {mark}
-        <View style={{ flexDirection: 'row', gap: size * 0.08 }}>
-          <Text style={{ fontSize: size * 0.36, fontWeight: '800', color: textColor, letterSpacing: size * 0.015 }}>
-            LAND
-          </Text>
-          <Text style={{ fontSize: size * 0.36, fontWeight: '800', color: textColor, letterSpacing: size * 0.015 }}>
-            RUSH
-          </Text>
-        </View>
-      </View>
-    );
-  }
+  // Typography scales with icon
+  const fontSize = Math.round(iconSize * 0.495);
 
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: size * 0.22 }}>
-      {mark}
-      <TextWrapper style={textStyle}>{textBlock}</TextWrapper>
-    </View>
+    <div className={`inline-flex items-center select-none ${className}`} style={{ gap: iconSize * 0.18 }}>
+
+      {/* ── 2 × 2 Grid Icon ───────────────────────────────────── */}
+      <svg
+        width={iconSize}
+        height={iconSize}
+        viewBox="0 0 100 100"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          {/* Clip arc lines to the lime cell */}
+          <clipPath id="lr-bl">
+            <rect x="0" y="56" width="44" height="44" rx="10" />
+          </clipPath>
+        </defs>
+
+        {/* Top-left — dark green */}
+        <rect x="0" y="0" width="44" height="44" rx="10" fill={DARK} />
+
+        {/* Top-right — dark green */}
+        <rect x="56" y="0" width="44" height="44" rx="10" fill={DARK} />
+
+        {/* Bottom-left — lime + two terrain-contour arcs */}
+        <rect x="0" y="56" width="44" height="44" rx="10" fill={LIME} />
+        <g clipPath="url(#lr-bl)">
+          {/* Upper arc  */}
+          <path
+            d="M 44 83 Q 20 76 0 74"
+            stroke="rgba(255,255,255,0.62)"
+            strokeWidth="5.5"
+            strokeLinecap="round"
+          />
+          {/* Lower arc */}
+          <path
+            d="M 44 95 Q 22 89 2 87"
+            stroke="rgba(255,255,255,0.62)"
+            strokeWidth="5.5"
+            strokeLinecap="round"
+          />
+        </g>
+
+        {/* Bottom-right — dark green */}
+        <rect x="56" y="56" width="44" height="44" rx="10" fill={DARK} />
+        {/*
+          Concave notch: a white circle at the inner-corner point (56, 56)
+          "punches out" a quarter-circle, creating the concave arc effect.
+          Works perfectly on white backgrounds.
+        */}
+        <circle cx="56" cy="56" r="21" fill="white" />
+      </svg>
+
+      {/* ── Wordmark — LAND / RUSH stacked ────────────────────── */}
+      <div
+        style={{
+          color: LIME,
+          fontSize,
+          fontWeight: 900,
+          lineHeight: 0.91,
+          letterSpacing: `${fontSize * 0.09}px`,
+          textTransform: 'uppercase' as const,
+        }}
+      >
+        <div>LAND</div>
+        <div>RUSH</div>
+      </div>
+    </div>
   );
 }
