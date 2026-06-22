@@ -560,7 +560,7 @@ const cam = StyleSheet.create({
 // ── Preview styles ────────────────────────────────────────────────
 const prev = StyleSheet.create({
   root:     { flex: 1, backgroundColor: '#000' },
-  dim:      { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.45)' },
+  dim:      { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: 'rgba(0,0,0,0.45)' },
   ovalFrame: { borderWidth: 2.5, borderColor: Colors.lime, backgroundColor: 'transparent' },
   closeBtn: {
     position: 'absolute', top: 52, left: 20,

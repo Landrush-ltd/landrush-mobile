@@ -18,9 +18,13 @@ interface Props {
   size?: number;
   showText?: boolean;
   style?: ViewStyle;
+  /** Override the LAND/RUSH wordmark color (defaults to brand lime). */
+  textColor?: string;
+  /** Animated handles supplied by callers (e.g. splash). Currently decorative. */
+  animated?: Record<string, unknown>;
 }
 
-export function LandrushLogo({ size = 40, showText = true, style }: Props) {
+export function LandrushLogo({ size = 40, showText = true, style, textColor }: Props) {
   const gap        = Math.round(size * 0.14);   // gap between cells
   const r          = Math.round(size * 0.22);   // cell border radius
   const concaveR   = Math.round(size * 0.5);    // concave punch-out radius
@@ -92,8 +96,8 @@ export function LandrushLogo({ size = 40, showText = true, style }: Props) {
       {/* ── LAND / RUSH wordmark ────────────────────────────── */}
       {showText && (
         <View style={[styles.wordmark, { marginLeft: gap * 2 }]}>
-          <Text style={[styles.word, { fontSize, lineHeight: fontSize * 0.95 }]}>LAND</Text>
-          <Text style={[styles.word, { fontSize, lineHeight: fontSize * 0.95 }]}>RUSH</Text>
+          <Text style={[styles.word, { fontSize, lineHeight: fontSize * 0.95 }, textColor && { color: textColor }]}>LAND</Text>
+          <Text style={[styles.word, { fontSize, lineHeight: fontSize * 0.95 }, textColor && { color: textColor }]}>RUSH</Text>
         </View>
       )}
     </View>

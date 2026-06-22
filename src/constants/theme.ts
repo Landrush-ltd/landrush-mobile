@@ -99,7 +99,9 @@ export const DarkColors = {
 } as const;
 
 export type ColorScheme = 'light' | 'dark';
-export type ThemeColors = typeof LightColors;
+// Widen value types to string so LightColors and DarkColors (same keys,
+// different hex values) are mutually assignable.
+export type ThemeColors = { [K in keyof typeof LightColors]: string };
 
 // Default export stays as LightColors so components that can't use hooks
 // (like LandrushLogo used in static contexts) still have a valid fallback.
@@ -130,10 +132,19 @@ export const FontSize = {
 } as const;
 
 export const FontFamily = {
-  regular:  'System',
-  medium:   'System',
-  semiBold: 'System',
-  bold:     'System',
+  regular:   'Sora_400Regular',
+  medium:    'Sora_500Medium',
+  semiBold:  'Sora_600SemiBold',
+  bold:      'Sora_700Bold',
+  extraBold: 'Sora_800ExtraBold',
+} as const;
+
+// Negative tracking on large/bold text is what reads as "premium".
+// Apply to headings, prices, and display text.
+export const LetterSpacing = {
+  tight:   -0.5,
+  snug:    -0.3,
+  normal:   0,
 } as const;
 
 // ── Borders ───────────────────────────────────────────────────────
@@ -147,26 +158,28 @@ export const BorderRadius = {
 } as const;
 
 // ── Shadows ───────────────────────────────────────────────────────
+// Soft, diffuse shadows — low opacity + large radius reads as premium depth
+// rather than a hard drop shadow.
 export const Shadow = {
   sm: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
     elevation: 2,
   },
   md: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.10,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    elevation: 5,
   },
   lg: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.13,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.12,
+    shadowRadius: 28,
+    elevation: 10,
   },
 } as const;

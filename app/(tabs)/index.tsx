@@ -12,7 +12,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow, LetterSpacing, FontFamily } from '../../src/constants/theme';
 import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
 import { ListingCard } from '../../src/components/ListingCard';
@@ -65,6 +65,9 @@ export default function ExploreScreen() {
 
   const handlePress  = (l: Listing) => router.push(`/listing/${l.id}`);
   const displayName  = user ? `${user.firstName} ${user.lastName}` : 'Guest';
+  const firstName    = user?.firstName ?? 'there';
+  const hour         = new Date().getHours();
+  const greeting     = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const horizontal   = filteredListings.slice(0, 6);
   const vertical     = filteredListings.slice(6);
 
@@ -76,9 +79,9 @@ export default function ExploreScreen() {
     >
       {/* ── Top bar ─────────────────────────────────────── */}
       <View style={[styles.topBar, { paddingTop: insets.top + Spacing.sm }]}>
-        <View>
-          <Text style={styles.appName}>Landrush</Text>
-          <Text style={styles.appTagline}>Find your land in Nigeria</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.greeting}>{greeting} 👋</Text>
+          <Text style={styles.appName} numberOfLines={1}>{firstName}</Text>
         </View>
         <View style={styles.topBarRight}>
           <TouchableOpacity style={styles.iconBtn} onPress={() => router.push('/notifications')}>
@@ -204,8 +207,8 @@ function makeStyles(colors: ThemeColors) {
       paddingBottom: Spacing.md,
       backgroundColor: colors.white,
     },
-    appName: { fontSize: FontSize.xxl, fontWeight: '800', color: colors.textPrimary },
-    appTagline: { fontSize: FontSize.xs, color: colors.textSecondary, marginTop: 1 },
+    greeting: { fontSize: FontSize.md, color: colors.textSecondary, fontWeight: '500' },
+    appName: { fontSize: FontSize.xxl, fontFamily: FontFamily.extraBold, fontWeight: '800', color: colors.textPrimary, letterSpacing: LetterSpacing.tight, marginTop: 2 },
     topBarRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
     iconBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
     avatar: { width: 34, height: 34, borderRadius: 17, borderWidth: 2, borderColor: colors.lime },
@@ -264,7 +267,7 @@ function makeStyles(colors: ThemeColors) {
       paddingTop: Spacing.xl,
       paddingBottom: Spacing.md,
     },
-    sectionTitle: { fontSize: FontSize.xl, fontWeight: '700', color: colors.textPrimary },
+    sectionTitle: { fontSize: FontSize.xl, fontFamily: FontFamily.extraBold, fontWeight: '800', color: colors.textPrimary, letterSpacing: LetterSpacing.snug },
     seeAll: { fontSize: FontSize.sm, fontWeight: '600', color: colors.textPrimary, textDecorationLine: 'underline' },
 
     hList: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.sm },
