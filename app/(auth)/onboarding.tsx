@@ -1,50 +1,48 @@
 import { useState, useRef } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Animated, StatusBar } from 'react-native';
+import {
+  View, Text, StyleSheet, Dimensions, TouchableOpacity,
+  Animated, StatusBar, Image,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 import { useAuthStore } from '../../src/store/auth';
 
-const { width } = Dimensions.get('window');
-
-type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
+const { width, height } = Dimensions.get('window');
+const IMG_HEIGHT = height * 0.52;
 
 interface Slide {
-  icon:        IoniconsName;
-  eyebrow:     string;
-  title:       string;
+  image: string;
+  eyebrow: string;
+  title: string;
   description: string;
-  accent:      string;
 }
 
 const SLIDES: Slide[] = [
   {
-    icon:        'search-outline',
-    eyebrow:     'DISCOVER',
-    title:       'Find land across Nigeria',
-    description: 'Search verified listings in all 36 states. Filter by type, size, price, and location to find exactly what fits.',
-    accent:      Colors.lime,
+    image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800',
+    eyebrow: 'DISCOVER',
+    title: 'Find land that fits your vision',
+    description: 'Search verified land listings across Nigeria. Filter by type, price, location, and size to find exactly what you need.',
   },
   {
-    icon:        'shield-checkmark-outline',
-    eyebrow:     'TRUST',
-    title:       'Know before you commit',
-    description: 'Every listing shows document status, satellite map, and NIMC-verified agent info — no surprises at the inspection.',
-    accent:      '#40916C',
+    image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800',
+    eyebrow: 'TRUST',
+    title: 'Know before you commit',
+    description: 'View listing details, uploaded documents, map locations, and verification indicators before scheduling an inspection.',
   },
   {
-    icon:        'calendar-outline',
-    eyebrow:     'INSPECT',
-    title:       'Book on your schedule',
-    description: 'Pick a date and time. The agent confirms directly — no phone tag, no middlemen, no wasted trips.',
-    accent:      Colors.lime,
+    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800',
+    eyebrow: 'INSPECT',
+    title: 'Book on your schedule',
+    description: 'Coordinate inspection times directly with agents — no unnecessary back-and-forth, no wasted trips.',
   },
 ];
 
 export default function OnboardingScreen() {
-  const router   = useRouter();
-  const insets   = useSafeAreaInsets();
+  const router  = useRouter();
+  const insets  = useSafeAreaInsets();
   const { setOnboardingComplete } = useAuthStore();
   const [idx, setIdx] = useState(0);
   const fadeAnim  = useRef(new Animated.Value(1)).current;
@@ -69,44 +67,58 @@ export default function OnboardingScreen() {
   const isLast = idx === SLIDES.length - 1;
 
   return (
-    <View style={[styles.root, { paddingTop: insets.top, paddingBottom: Math.max(insets.bottom, 24) }]}>
-      <StatusBar barStyle="dark-content" />
+    <View style={styles.root}>
+      <StatusBar barStyle="light-content" />
 
-      {/* Skip */}
-      <TouchableOpacity style={styles.skipBtn} onPress={finish}>
-        <Text style={styles.skipText}>Skip</Text>
-      </TouchableOpacity>
-
-      {/* Illustration area */}
-      <Animated.View style={[styles.illustrationWrap, { opacity: fadeAnim, transform: [{ translateY: transAnim }] }]}>
-        <View style={[styles.iconCircleOuter, { borderColor: `${slide.accent}30` }]}>
-          <View style={[styles.iconCircleInner, { backgroundColor: `${slide.accent}15` }]}>
-            <Ionicons name={slide.icon} size={56} color={slide.accent} />
-          </View>
-        </View>
-        <Text style={styles.eyebrow}>{slide.eyebrow}</Text>
-        <Text style={styles.title}>{slide.title}</Text>
-        <Text style={styles.description}>{slide.description}</Text>
+      {/* Full-width photo */}
+      <Animated.View style={[styles.imageWrap, { opacity: fadeAnim }]}>
+        <Image source={{ uri: slide.image }} style={styles.image} resizeMode="cover" />
+        {/* Skip button floated on top of image */}
+        <TouchableOpacity
+          style={[styles.skipBtn, { top: insets.top + Spacing.md }]}
+          onPress={finish}
+        >
+          <Text style={styles.skipText}>Skip</Text>
+        </TouchableOpacity>
       </Animated.View>
 
-      {/* Progress dots */}
-      <View style={styles.dotsRow}>
-        {SLIDES.map((_, i) => (
-          <TouchableOpacity key={i} onPress={() => i !== idx && goTo(i)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <View style={[styles.dot, i === idx ? styles.dotActive : styles.dotInactive]} />
-          </TouchableOpacity>
-        ))}
-      </View>
+      {/* Text content */}
+      <View style={[styles.content, { paddingBottom: Math.max(insets.bottom, 28) }]}>
+        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: transAnim }] }}>
+          <Text style={styles.eyebrow}>{slide.eyebrow}</Text>
+          <Text style={styles.title}>{slide.title}</Text>
+          <Text style={styles.description}>{slide.description}</Text>
+        </Animated.View>
 
-      {/* CTA */}
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.cta} onPress={isLast ? finish : () => goTo(idx + 1)} activeOpacity={0.88}>
+        {/* Dots */}
+        <View style={styles.dotsRow}>
+          {SLIDES.map((_, i) => (
+            <TouchableOpacity
+              key={i}
+              onPress={() => i !== idx && goTo(i)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <View style={[styles.dot, i === idx ? styles.dotActive : styles.dotInactive]} />
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* CTA */}
+        <TouchableOpacity
+          style={styles.cta}
+          onPress={isLast ? finish : () => goTo(idx + 1)}
+          activeOpacity={0.88}
+        >
           <Text style={styles.ctaText}>{isLast ? 'Get Started' : 'Continue'}</Text>
           <Ionicons name={isLast ? 'checkmark' : 'arrow-forward'} size={20} color={Colors.textPrimary} />
         </TouchableOpacity>
+
         {isLast && (
           <TouchableOpacity onPress={finish} style={styles.loginRow}>
-            <Text style={styles.loginText}>Already have an account? <Text style={styles.loginLink}>Log in</Text></Text>
+            <Text style={styles.loginText}>
+              Already have an account?{' '}
+              <Text style={styles.loginLink}>Log in</Text>
+            </Text>
           </TouchableOpacity>
         )}
       </View>
@@ -115,22 +127,77 @@ export default function OnboardingScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: Colors.white, paddingHorizontal: Spacing.xxl },
-  skipBtn: { alignSelf: 'flex-end', paddingVertical: Spacing.sm, paddingHorizontal: Spacing.md, marginTop: Spacing.md },
-  skipText: { fontSize: FontSize.md, color: Colors.textSecondary, fontWeight: '500', textDecorationLine: 'underline' },
-  illustrationWrap: { flex: 1, alignItems: 'flex-start', justifyContent: 'center', paddingBottom: Spacing.xxl },
-  iconCircleOuter: { width: 120, height: 120, borderRadius: 60, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.xxxl },
-  iconCircleInner: { width: 96, height: 96, borderRadius: 48, alignItems: 'center', justifyContent: 'center' },
-  eyebrow: { fontSize: FontSize.xs, fontWeight: '700', color: Colors.lime, letterSpacing: 2.5, marginBottom: Spacing.md },
-  title: { fontSize: FontSize.display, fontWeight: '800', color: Colors.textPrimary, lineHeight: 40, marginBottom: Spacing.lg },
-  description: { fontSize: FontSize.lg, color: Colors.textSecondary, lineHeight: 26 },
-  dotsRow: { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.xl, alignSelf: 'center' },
+  root: { flex: 1, backgroundColor: Colors.white },
+
+  imageWrap: {
+    width,
+    height: IMG_HEIGHT,
+    position: 'relative',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  skipBtn: {
+    position: 'absolute',
+    right: Spacing.lg,
+    paddingVertical: 6,
+    paddingHorizontal: Spacing.md,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    borderRadius: BorderRadius.full,
+  },
+  skipText: {
+    fontSize: FontSize.sm,
+    color: Colors.white,
+    fontWeight: '600',
+  },
+
+  content: {
+    flex: 1,
+    paddingHorizontal: Spacing.xxl,
+    paddingTop: Spacing.xxl,
+    gap: Spacing.lg,
+    justifyContent: 'space-between',
+  },
+  eyebrow: {
+    fontSize: FontSize.xs,
+    fontWeight: '700',
+    color: Colors.lime,
+    letterSpacing: 2.5,
+    marginBottom: Spacing.sm,
+  },
+  title: {
+    fontSize: FontSize.display,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    lineHeight: 40,
+    marginBottom: Spacing.md,
+  },
+  description: {
+    fontSize: FontSize.md,
+    color: Colors.textSecondary,
+    lineHeight: 24,
+  },
+
+  dotsRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
   dot: { height: 5, borderRadius: 3 },
   dotActive: { width: 28, backgroundColor: Colors.textPrimary },
   dotInactive: { width: 5, backgroundColor: Colors.border },
-  footer: { gap: Spacing.lg },
-  cta: { backgroundColor: Colors.lime, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: Spacing.xl, borderRadius: BorderRadius.xl, gap: Spacing.sm },
+
+  cta: {
+    backgroundColor: Colors.lime,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.xl,
+    borderRadius: BorderRadius.xl,
+    gap: Spacing.sm,
+  },
   ctaText: { fontSize: FontSize.lg, fontWeight: '700', color: Colors.textPrimary },
+
   loginRow: { alignSelf: 'center' },
   loginText: { fontSize: FontSize.sm, color: Colors.textSecondary },
   loginLink: { color: Colors.textPrimary, fontWeight: '700', textDecorationLine: 'underline' },
