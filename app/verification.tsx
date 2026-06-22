@@ -239,6 +239,13 @@ export default function VerificationScreen() {
               </View>
             </View>
 
+            {!ninRecord._raw && (
+              <View style={s.mockBanner}>
+                <Ionicons name="flask-outline" size={13} color="#b45309" />
+                <Text style={s.mockText}>TEST MODE — not your real NIMC data</Text>
+              </View>
+            )}
+
             <Text style={s.nameCardName}>{fullName}</Text>
 
             {/* ── DEBUG: raw API fields ── remove before shipping ── */}
@@ -531,6 +538,21 @@ const s = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: Colors.borderLight,
     paddingTop: Spacing.md,
+  },
+  mockBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#fef3c7',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    alignSelf: 'flex-start',
+  },
+  mockText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#b45309',
   },
   debugBox: {
     backgroundColor: '#1a1a2e',
