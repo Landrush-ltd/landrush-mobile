@@ -186,7 +186,7 @@ export default function ChatScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.headerMenuBtn}>
-          <Ionicons name="call-outline" size={20} color={Colors.white} />
+          <Ionicons name="call-outline" size={20} color={Colors.textPrimary} />
         </TouchableOpacity>
       </View>
 
@@ -299,7 +299,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -317,7 +316,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.25)',
+    borderColor: Colors.borderLight,
   },
   onlineDot: {
     position: 'absolute',
@@ -328,12 +327,12 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: Colors.success,
     borderWidth: 2,
-    borderColor: HERO_BG,
+    borderColor: Colors.white,
   },
   agentName: {
     fontSize: FontSize.md,
     fontWeight: '700',
-    color: Colors.white,
+    color: Colors.textPrimary,
   },
   agentStatus: {
     fontSize: FontSize.xs,
@@ -343,7 +342,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },

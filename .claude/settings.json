@@ -1,10 +1,15 @@
 {
-  "enabledPlugins": {
-    "expo@claude-plugins-official": true
-  },
   "permissions": {
     "allow": [
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(npx expo *)",
+      "Bash(curl -s http://localhost:8081)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8081)"
     ]
+  },
+  "enabledPlugins": {
+    "expo@claude-plugins-official": true
   }
 }
