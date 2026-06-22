@@ -13,7 +13,6 @@ import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/the
 import { useAuthStore } from '../../src/store/auth';
 
 const OTP_LENGTH = 6;
-const HEADER_BG = '#003828';
 
 export default function VerifyOtpScreen() {
   const router = useRouter();
@@ -90,7 +89,7 @@ export default function VerifyOtpScreen() {
         <View style={styles.decoCircleSmall} />
 
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={22} color={Colors.white} />
+          <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
         </TouchableOpacity>
 
         <View style={styles.iconCircle}>
@@ -176,7 +175,7 @@ export default function VerifyOtpScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: HEADER_BG,
+    backgroundColor: Colors.white,
   },
   header: {
     paddingTop: 56,
@@ -190,7 +189,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: 'rgba(159,187,68,0.08)',
+    backgroundColor: 'transparent',
     top: -50,
     right: -50,
   },
@@ -199,7 +198,7 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: 'rgba(159,187,68,0.06)',
+    backgroundColor: 'transparent',
     bottom: 20,
     right: 60,
   },
@@ -228,7 +227,7 @@ const styles = StyleSheet.create({
   },
   headerSub: {
     fontSize: FontSize.md,
-    color: 'rgba(255,255,255,0.6)',
+    color: Colors.textSecondary,
     lineHeight: 22,
     marginTop: 4,
   },

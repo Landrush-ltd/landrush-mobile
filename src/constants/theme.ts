@@ -1,94 +1,87 @@
 export const Colors = {
-  primary: '#7B8A2E',
-  primaryLight: '#95A83A',
-  primaryDark: '#5C6822',
-  secondary: '#4A5D23',
-  accent: '#D4A017',
-  accentLight: '#E6B422',
+  // Brand greens
+  primary:       '#2D6A4F',
+  primaryLight:  '#40916C',
+  primaryDark:   '#1B4332',
+  lime:          '#9FBB44',   // CTA / active state
+  limeLight:     '#B5CC5C',
 
-  // Listing type colors (from Figma map legend)
-  lease: '#E88A2E',
-  sale: '#7B8A2E',
+  // Category colors
+  lease:    '#E88A2E',
+  sale:     '#2D6A4F',
   distress: '#C62828',
 
-  // Neutrals
-  white: '#FFFFFF',
-  background: '#F8F8F5',
-  surface: '#FFFFFF',
-  card: '#FFFFFF',
-  border: '#E0DDD5',
-  borderLight: '#F0EDE5',
-  divider: '#E8E5DD',
+  // Airbnb-style neutrals — white dominant
+  white:       '#FFFFFF',
+  background:  '#FFFFFF',
+  surface:     '#F7F7F7',
+  card:        '#FFFFFF',
+  border:      '#DDDDDD',
+  borderLight: '#EBEBEB',
+  divider:     '#F0F0F0',
 
-  // Text
-  textPrimary: '#1A1A1A',
-  textSecondary: '#5C5C5C',
-  textTertiary: '#8A8A8A',
-  textInverse: '#FFFFFF',
-  textLink: '#7B8A2E',
+  // Text — Airbnb palette
+  textPrimary:   '#222222',
+  textSecondary: '#717171',
+  textTertiary:  '#AAAAAA',
+  textInverse:   '#FFFFFF',
+  textLink:      '#2D6A4F',
 
-  // Category chip backgrounds
-  chipActive: '#E8EAC8',
-  chipInactive: '#F5F5F0',
+  // Chips
+  chipActive:   '#E8EAC8',
+  chipInactive: '#F7F7F7',
 
   // Status
-  success: '#4CAF50',
-  warning: '#F9A825',
-  error: '#C62828',
-  info: '#1565C0',
+  success: '#2D6A4F',
+  warning: '#E47C18',
+  error:   '#C13515',
+  info:    '#1565C0',
 
-  // Overlay
-  overlay: 'rgba(0, 0, 0, 0.5)',
-  overlayLight: 'rgba(0, 0, 0, 0.3)',
+  // Overlays
+  overlay:      'rgba(0,0,0,0.45)',
+  overlayLight: 'rgba(0,0,0,0.25)',
 
-  // Splash screen
-  splashBg: '#004230',
-
-  // Onboarding slides (white)
-  onboardingBg: '#FAFAFA',
-
-  // Auth screens (login, signup, verify-otp) — sage green from Figma
-  authBg: '#D9E4B4',
-
-  // Lime green used on buttons and logo text (Figma: rgb(159,187,68))
-  lime: '#9FBB44',
+  // Legacy (kept for auth screens)
+  authBg:      '#FFFFFF',
+  onboardingBg:'#FFFFFF',
+  splashBg:    '#1B4332',
 } as const;
 
 export const Spacing = {
-  xs: 4,
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 20,
-  xxl: 24,
+  xs:   4,
+  sm:   8,
+  md:   12,
+  lg:   16,
+  xl:   20,
+  xxl:  24,
   xxxl: 32,
   huge: 48,
 } as const;
 
 export const FontSize = {
-  xs: 10,
-  sm: 12,
-  md: 14,
-  lg: 16,
-  xl: 18,
-  xxl: 22,
-  xxxl: 28,
+  xs:      10,
+  sm:      12,
+  md:      14,
+  lg:      16,
+  xl:      18,
+  xxl:     22,
+  xxxl:    28,
   display: 34,
 } as const;
 
 export const FontFamily = {
-  regular: 'System',
-  medium: 'System',
+  regular:  'System',
+  medium:   'System',
   semiBold: 'System',
-  bold: 'System',
+  bold:     'System',
 } as const;
 
 export const BorderRadius = {
-  sm: 6,
-  md: 10,
-  lg: 14,
-  xl: 20,
-  xxl: 24,
+  sm:  6,
+  md:  10,
+  lg:  14,
+  xl:  20,
+  xxl: 28,
   full: 999,
 } as const;
 
@@ -96,21 +89,21 @@ export const Shadow = {
   sm: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.06,
     shadowRadius: 4,
     elevation: 2,
   },
   md: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.10,
     shadowRadius: 8,
     elevation: 4,
   },
   lg: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.16,
+    shadowOpacity: 0.13,
     shadowRadius: 16,
     elevation: 8,
   },

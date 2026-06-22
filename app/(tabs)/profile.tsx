@@ -1,15 +1,5 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-  Switch,
-  Alert,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,222 +9,121 @@ import { useAuthStore } from '../../src/store/auth';
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
 interface MenuItem {
-  icon: IoniconsName;
-  label: string;
-  onPress?: () => void;
-  iconBg: string;
-  iconColor: string;
-  rightElement?: React.ReactNode;
+  icon:       IoniconsName;
+  label:      string;
+  onPress?:   () => void;
+  right?:     React.ReactNode;
+  danger?:    boolean;
 }
 
-interface MenuGroup {
-  title: string;
-  items: MenuItem[];
-}
-
-const HERO_BG = '#003828';
-
-const STATS = [
-  { value: '3', label: 'Listings' },
-  { value: '5', label: 'Inspections' },
-  { value: '2', label: 'Saved' },
-];
+interface MenuGroup { title: string; items: MenuItem[] }
 
 export default function ProfileScreen() {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const router  = useRouter();
+  const insets  = useSafeAreaInsets();
   const { logout, user } = useAuthStore();
-  const displayName = user ? `${user.firstName} ${user.lastName}` : 'Landrush User';
-  const displayRole =
-    user?.role === 'agent' ? 'Landrush Agent'
-    : user?.role === 'landowner' ? 'Landowner'
-    : 'Land Seeker';
   const [darkMode, setDarkMode] = useState(false);
 
+  const displayName = user ? `${user.firstName} ${user.lastName}` : 'Landrush User';
+  const initials    = ((user?.firstName?.[0] ?? '') + (user?.lastName?.[0] ?? '')).toUpperCase();
+  const role        = user?.role === 'agent' ? 'Landrush Agent' : user?.role === 'landowner' ? 'Landowner' : 'Land Seeker';
+
   const handleLogout = () =>
-    Alert.alert('Log Out?', 'Are you sure you want to log out?', [
+    Alert.alert('Log out?', 'You will be returned to the login screen.', [
       { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Log Out',
-        style: 'destructive',
-        onPress: () => { logout(); router.replace('/(auth)/login'); },
-      },
+      { text: 'Log Out', style: 'destructive', onPress: () => { logout(); router.replace('/(auth)/login'); } },
     ]);
 
   const groups: MenuGroup[] = [
     {
       title: 'Account',
       items: [
-        {
-          icon: 'person-outline',
-          label: 'Personal Information',
-          iconBg: `${Colors.lime}22`,
-          iconColor: Colors.primary,
-          onPress: () => router.push('/personal-information'),
-        },
-        {
-          icon: 'shield-checkmark-outline',
-          label: 'Verification',
-          iconBg: '#E3F2FD',
-          iconColor: '#1565C0',
-          onPress: () => router.push('/verification'),
-        },
-        {
-          icon: 'notifications-outline',
-          label: 'Notifications',
-          iconBg: '#FFF8E1',
-          iconColor: '#F57F17',
-          onPress: () => router.push('/notifications'),
-        },
-        {
-          icon: 'moon-outline',
-          label: 'Dark Mode',
-          iconBg: '#EDE7F6',
-          iconColor: '#5C6BC0',
-          rightElement: (
-            <Switch
-              value={darkMode}
-              onValueChange={setDarkMode}
-              trackColor={{ false: Colors.border, true: Colors.lime }}
-              thumbColor={Colors.white}
-            />
-          ),
-        },
+        { icon: 'person-outline',            label: 'Personal Information', onPress: () => router.push('/personal-information') },
+        { icon: 'shield-checkmark-outline',  label: 'Verification',        onPress: () => router.push('/verification') },
+        { icon: 'notifications-outline',     label: 'Notifications',       onPress: () => router.push('/notifications') },
+        { icon: 'moon-outline',              label: 'Dark Mode',           right: <Switch value={darkMode} onValueChange={setDarkMode} trackColor={{ false: Colors.border, true: Colors.lime }} thumbColor={Colors.white} /> },
       ],
     },
     {
       title: 'Activity',
       items: [
-        {
-          icon: 'list-outline',
-          label: 'My Listings',
-          iconBg: `${Colors.lime}22`,
-          iconColor: Colors.primary,
-          onPress: () => router.push('/my-listings'),
-        },
-        {
-          icon: 'bookmark-outline',
-          label: 'Saved Listings',
-          iconBg: '#E8F5E9',
-          iconColor: Colors.success,
-          onPress: () => router.push('/saved-listings'),
-        },
-        {
-          icon: 'calendar-outline',
-          label: 'Bookings',
-          iconBg: '#E3F2FD',
-          iconColor: '#1565C0',
-          onPress: () => router.push('/(tabs)/bookings'),
-        },
-        {
-          icon: 'receipt-outline',
-          label: 'Payment History',
-          iconBg: '#FFF8E1',
-          iconColor: '#F57F17',
-          onPress: () => router.push('/payment-history'),
-        },
+        { icon: 'list-outline',     label: 'My Listings',    onPress: () => router.push('/my-listings') },
+        { icon: 'bookmark-outline', label: 'Saved Listings', onPress: () => router.push('/saved-listings') },
+        { icon: 'calendar-outline', label: 'Bookings',       onPress: () => router.push('/(tabs)/bookings') },
+        { icon: 'receipt-outline',  label: 'Payment History',onPress: () => router.push('/payment-history') },
       ],
     },
     {
       title: 'Support',
       items: [
-        {
-          icon: 'help-circle-outline',
-          label: 'Help & Support',
-          iconBg: '#F3E5F5',
-          iconColor: '#7B1FA2',
-          onPress: () => router.push('/help'),
-        },
-        {
-          icon: 'document-text-outline',
-          label: 'Terms & Privacy',
-          iconBg: Colors.chipInactive,
-          iconColor: Colors.textSecondary,
-          onPress: () => {},
-        },
+        { icon: 'help-circle-outline',   label: 'Help & Support',  onPress: () => router.push('/help') },
+        { icon: 'document-text-outline', label: 'Terms & Privacy', onPress: () => {} },
       ],
     },
   ];
 
   return (
     <ScrollView style={styles.root} showsVerticalScrollIndicator={false}>
-      {/* Dark hero header */}
-      <View style={[styles.hero, { paddingTop: insets.top + Spacing.lg }]}>
-        <View style={styles.heroDecoA} />
-        <View style={styles.heroDecoB} />
+      {/* ── Header ─────────────────────────────────────────── */}
+      <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
+        <Text style={styles.headerTitle}>Profile</Text>
+      </View>
 
-        {/* Avatar */}
+      {/* ── Avatar card ─────────────────────────────────────── */}
+      <View style={styles.avatarCard}>
         <View style={styles.avatarWrap}>
-          {user?.avatar ? (
-            <Image source={{ uri: user.avatar }} style={styles.avatar} />
-          ) : (
-            <View style={styles.avatarInitials}>
-              <Text style={styles.avatarInitialsText}>
-                {(displayName.split(' ')[0]?.[0] ?? '').toUpperCase()}
-                {(displayName.split(' ')[1]?.[0] ?? '').toUpperCase()}
-              </Text>
-            </View>
-          )}
+          {user?.avatar
+            ? <Image source={{ uri: user.avatar }} style={styles.avatar} />
+            : <View style={styles.avatarInitials}><Text style={styles.avatarInitialsText}>{initials}</Text></View>
+          }
           <TouchableOpacity style={styles.editAvatarBtn}>
             <Ionicons name="camera-outline" size={14} color={Colors.white} />
           </TouchableOpacity>
         </View>
-
-        <Text style={styles.heroName}>{displayName}</Text>
-        <View style={styles.roleRow}>
-          <View style={styles.rolePill}>
-            <Ionicons name="ribbon-outline" size={12} color={Colors.lime} />
-            <Text style={styles.roleText}>{displayRole}</Text>
-          </View>
+        <View style={styles.avatarInfo}>
+          <Text style={styles.displayName}>{displayName}</Text>
+          <Text style={styles.roleText}>{role}</Text>
           {user?.isVerified && (
-            <View style={styles.verifiedPill}>
-              <Ionicons name="checkmark-circle" size={12} color={Colors.primary} />
-              <Text style={styles.verifiedText}>Verified</Text>
+            <View style={styles.verifiedRow}>
+              <Ionicons name="checkmark-circle" size={14} color={Colors.lime} />
+              <Text style={styles.verifiedText}>Verified member</Text>
             </View>
           )}
         </View>
-
-        {/* Stats strip */}
-        <View style={styles.statsRow}>
-          {STATS.map((s, i) => (
-            <React.Fragment key={s.label}>
-              {i > 0 && <View style={styles.statsDivider} />}
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{s.value}</Text>
-                <Text style={styles.statLabel}>{s.label}</Text>
-              </View>
-            </React.Fragment>
-          ))}
-        </View>
       </View>
 
-      {/* Menu groups */}
+      {/* ── Stats row ───────────────────────────────────────── */}
+      <View style={styles.statsRow}>
+        {[{ v: '3', l: 'Listings' }, { v: '5', l: 'Inspections' }, { v: '2', l: 'Saved' }].map((s, i, arr) => (
+          <View key={s.l} style={[styles.statItem, i < arr.length - 1 && styles.statItemBorder]}>
+            <Text style={styles.statValue}>{s.v}</Text>
+            <Text style={styles.statLabel}>{s.l}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* ── Menu groups ─────────────────────────────────────── */}
       <View style={styles.menuArea}>
-        {groups.map((group) => (
-          <View key={group.title} style={styles.group}>
-            <Text style={styles.groupTitle}>{group.title}</Text>
+        {groups.map((g) => (
+          <View key={g.title} style={styles.group}>
+            <Text style={styles.groupTitle}>{g.title}</Text>
             <View style={styles.groupCard}>
-              {group.items.map((item, i) => (
+              {g.items.map((item, i) => (
                 <TouchableOpacity
                   key={item.label}
-                  style={[styles.menuRow, i < group.items.length - 1 && styles.menuRowBorder]}
+                  style={[styles.menuRow, i < g.items.length - 1 && styles.menuRowBorder]}
                   onPress={item.onPress}
                   activeOpacity={item.onPress ? 0.7 : 1}
                 >
-                  <View style={[styles.menuIcon, { backgroundColor: item.iconBg }]}>
-                    <Ionicons name={item.icon} size={18} color={item.iconColor} />
-                  </View>
+                  <Ionicons name={item.icon} size={20} color={Colors.textSecondary} />
                   <Text style={styles.menuLabel}>{item.label}</Text>
-                  {item.rightElement ?? (
-                    <Ionicons name="chevron-forward" size={17} color={Colors.textTertiary} />
-                  )}
+                  {item.right ?? <Ionicons name="chevron-forward" size={16} color={Colors.textTertiary} />}
                 </TouchableOpacity>
               ))}
             </View>
           </View>
         ))}
 
-        {/* Logout */}
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={18} color={Colors.error} />
           <Text style={styles.logoutText}>Log Out</Text>
@@ -248,215 +137,33 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-
-  // ── Hero ────────────────────────────────────────────────────
-  hero: {
-    backgroundColor: HERO_BG,
-    alignItems: 'center',
-    paddingHorizontal: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
-    overflow: 'hidden',
-  },
-  heroDecoA: {
-    position: 'absolute',
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    backgroundColor: 'rgba(159,187,68,0.07)',
-    top: -80,
-    right: -60,
-  },
-  heroDecoB: {
-    position: 'absolute',
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(159,187,68,0.05)',
-    bottom: 20,
-    left: -20,
-  },
-  avatarWrap: {
-    position: 'relative',
-    marginBottom: Spacing.lg,
-  },
-  avatar: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    borderWidth: 3,
-    borderColor: Colors.lime,
-  },
-  avatarInitials: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    borderWidth: 3,
-    borderColor: Colors.lime,
-    backgroundColor: `${Colors.lime}22`,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarInitialsText: {
-    fontSize: FontSize.xxxl,
-    fontWeight: '800',
-    color: Colors.lime,
-  },
-  editAvatarBtn: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: HERO_BG,
-  },
-  heroName: {
-    fontSize: FontSize.xl,
-    fontWeight: '800',
-    color: Colors.white,
-    marginBottom: Spacing.sm,
-  },
-  roleRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-    marginBottom: Spacing.xl,
-  },
-  rolePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.full,
-  },
-  roleText: {
-    fontSize: FontSize.xs,
-    color: 'rgba(255,255,255,0.8)',
-    fontWeight: '600',
-  },
-  verifiedPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: `${Colors.lime}22`,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.full,
-  },
-  verifiedText: {
-    fontSize: FontSize.xs,
-    color: Colors.lime,
-    fontWeight: '600',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(255,255,255,0.07)',
-    borderRadius: BorderRadius.xl,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.xxl,
-    width: '100%',
-  },
-  statsDivider: {
-    width: 1,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    marginVertical: 4,
-    flex: 0,
-  },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 2,
-  },
-  statValue: {
-    fontSize: FontSize.xl,
-    fontWeight: '800',
-    color: Colors.lime,
-  },
-  statLabel: {
-    fontSize: FontSize.xs,
-    color: 'rgba(255,255,255,0.55)',
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-  },
-
-  // ── Menu ────────────────────────────────────────────────────
-  menuArea: {
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.xl,
-    gap: Spacing.sm,
-  },
-  group: {
-    gap: Spacing.sm,
-    marginBottom: Spacing.md,
-  },
-  groupTitle: {
-    fontSize: FontSize.xs,
-    fontWeight: '700',
-    color: Colors.textTertiary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    paddingLeft: 4,
-  },
-  groupCard: {
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.xl,
-    overflow: 'hidden',
-    ...Shadow.sm,
-  },
-  menuRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-  },
-  menuRowBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-  },
-  menuIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: BorderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  menuLabel: {
-    flex: 1,
-    fontSize: FontSize.md,
-    color: Colors.textPrimary,
-    fontWeight: '500',
-  },
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    marginTop: Spacing.sm,
-    paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1.5,
-    borderColor: `${Colors.error}50`,
-    backgroundColor: '#FFF5F5',
-  },
-  logoutText: {
-    fontSize: FontSize.md,
-    fontWeight: '700',
-    color: Colors.error,
-  },
-  version: {
-    textAlign: 'center',
-    fontSize: FontSize.xs,
-    color: Colors.textTertiary,
-    marginTop: Spacing.lg,
-  },
+  root: { flex: 1, backgroundColor: Colors.surface },
+  header: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.md, backgroundColor: Colors.white, borderBottomWidth: 1, borderBottomColor: Colors.borderLight },
+  headerTitle: { fontSize: FontSize.xxl, fontWeight: '800', color: Colors.textPrimary },
+  avatarCard: { flexDirection: 'row', alignItems: 'center', gap: Spacing.lg, backgroundColor: Colors.white, padding: Spacing.xl, marginBottom: 1 },
+  avatarWrap: { position: 'relative' },
+  avatar: { width: 72, height: 72, borderRadius: 36 },
+  avatarInitials: { width: 72, height: 72, borderRadius: 36, backgroundColor: `${Colors.lime}22`, borderWidth: 2, borderColor: Colors.lime, alignItems: 'center', justifyContent: 'center' },
+  avatarInitialsText: { fontSize: FontSize.xxl, fontWeight: '800', color: Colors.lime },
+  editAvatarBtn: { position: 'absolute', bottom: 0, right: 0, width: 24, height: 24, borderRadius: 12, backgroundColor: Colors.textPrimary, alignItems: 'center', justifyContent: 'center' },
+  avatarInfo: { flex: 1, gap: 3 },
+  displayName: { fontSize: FontSize.xl, fontWeight: '700', color: Colors.textPrimary },
+  roleText: { fontSize: FontSize.sm, color: Colors.textSecondary },
+  verifiedRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  verifiedText: { fontSize: FontSize.sm, color: Colors.lime, fontWeight: '600' },
+  statsRow: { flexDirection: 'row', backgroundColor: Colors.white, marginBottom: 8 },
+  statItem: { flex: 1, alignItems: 'center', paddingVertical: Spacing.lg, gap: 3 },
+  statItemBorder: { borderRightWidth: 1, borderRightColor: Colors.borderLight },
+  statValue: { fontSize: FontSize.xxl, fontWeight: '800', color: Colors.textPrimary },
+  statLabel: { fontSize: FontSize.xs, color: Colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5 },
+  menuArea: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg, gap: 2 },
+  group: { marginBottom: Spacing.xl },
+  groupTitle: { fontSize: FontSize.xs, fontWeight: '700', color: Colors.textTertiary, textTransform: 'uppercase', letterSpacing: 0.8, paddingLeft: 4, marginBottom: Spacing.sm },
+  groupCard: { backgroundColor: Colors.white, borderRadius: BorderRadius.xl, overflow: 'hidden', borderWidth: 1, borderColor: Colors.borderLight },
+  menuRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, paddingVertical: 15, paddingHorizontal: Spacing.lg },
+  menuRowBorder: { borderBottomWidth: 1, borderBottomColor: Colors.borderLight },
+  menuLabel: { flex: 1, fontSize: FontSize.md, color: Colors.textPrimary, fontWeight: '500' },
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.sm, paddingVertical: Spacing.lg, borderRadius: BorderRadius.xl, borderWidth: 1.5, borderColor: `${Colors.error}40`, backgroundColor: Colors.white, marginTop: Spacing.md },
+  logoutText: { fontSize: FontSize.md, fontWeight: '700', color: Colors.error },
+  version: { textAlign: 'center', fontSize: FontSize.xs, color: Colors.textTertiary, marginTop: Spacing.lg },
 });

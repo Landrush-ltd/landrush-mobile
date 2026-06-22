@@ -3,7 +3,7 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, FontSize, Shadow, BorderRadius, Spacing } from '../../src/constants/theme';
+import { Colors, FontSize, Spacing } from '../../src/constants/theme';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -20,10 +20,10 @@ interface TabBarProps {
 }
 
 const META: Record<string, TabMeta> = {
-  index:    { icon: 'home-outline',        activeIcon: 'home',        label: 'Home'     },
-  messages: { icon: 'chatbubbles-outline', activeIcon: 'chatbubbles', label: 'Messages' },
-  bookings: { icon: 'calendar-outline',    activeIcon: 'calendar',    label: 'Bookings' },
-  profile:  { icon: 'person-outline',      activeIcon: 'person',      label: 'Profile'  },
+  index:    { icon: 'search-outline',      activeIcon: 'search',        label: 'Explore'  },
+  messages: { icon: 'chatbubble-outline',  activeIcon: 'chatbubble',    label: 'Messages' },
+  bookings: { icon: 'calendar-outline',    activeIcon: 'calendar',      label: 'Bookings' },
+  profile:  { icon: 'person-outline',      activeIcon: 'person',        label: 'Profile'  },
 };
 
 function CustomTabBar({ state, navigation }: TabBarProps) {
@@ -38,16 +38,18 @@ function CustomTabBar({ state, navigation }: TabBarProps) {
     return (
       <TouchableOpacity
         key={name}
-        style={[styles.tab, focused && styles.tabActive]}
+        style={styles.tab}
         onPress={() => navigation.navigate(name)}
-        activeOpacity={0.85}
+        activeOpacity={0.7}
       >
         <Ionicons
           name={focused ? meta.activeIcon : meta.icon}
-          size={19}
-          color={focused ? Colors.textPrimary : 'rgba(255,255,255,0.45)'}
+          size={22}
+          color={focused ? Colors.lime : Colors.textSecondary}
         />
-        {focused && <Text style={styles.tabLabel}>{meta.label}</Text>}
+        <Text style={[styles.tabLabel, focused && styles.tabLabelActive]}>
+          {meta.label}
+        </Text>
       </TouchableOpacity>
     );
   };
@@ -56,77 +58,77 @@ function CustomTabBar({ state, navigation }: TabBarProps) {
   const createFocused = state.index === createIdx;
 
   return (
-    <View style={[styles.wrapper, { paddingBottom: Math.max(insets.bottom, 16) }]}>
-      <View style={styles.pill}>
-        {renderTab('index')}
-        {renderTab('messages')}
+    <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 10) }]}>
+      {renderTab('index')}
+      {renderTab('messages')}
 
-        {/* Centre FAB */}
-        <TouchableOpacity
-          style={[styles.fab, createFocused && styles.fabActive]}
-          onPress={() => navigation.navigate('create')}
-          activeOpacity={0.85}
-        >
-          <Ionicons
-            name={createFocused ? 'close' : 'add'}
-            size={26}
-            color={createFocused ? Colors.textPrimary : Colors.white}
-          />
-        </TouchableOpacity>
+      {/* Centre create FAB */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => navigation.navigate('create')}
+        activeOpacity={0.85}
+      >
+        <View style={[styles.fabInner, createFocused && styles.fabInnerActive]}>
+          <Ionicons name="add" size={28} color={Colors.white} />
+        </View>
+        <Text style={[styles.tabLabel, createFocused && styles.tabLabelActive]}>
+          List
+        </Text>
+      </TouchableOpacity>
 
-        {renderTab('bookings')}
-        {renderTab('profile')}
-      </View>
+      {renderTab('bookings')}
+      {renderTab('profile')}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    paddingHorizontal: Spacing.xl,
-    paddingTop: Spacing.sm,
-    backgroundColor: Colors.background,
-  },
-  pill: {
+  bar: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#111',
-    borderRadius: BorderRadius.full,
-    padding: 5,
-    height: 64,
-    ...Shadow.lg,
+    alignItems: 'flex-start',
+    paddingTop: Spacing.sm,
+    paddingHorizontal: Spacing.xs,
+    backgroundColor: Colors.white,
+    borderTopWidth: Platform.OS === 'android' ? 1 : 0.5,
+    borderTopColor: Colors.borderLight,
   },
   tab: {
     flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 5,
-    height: '100%',
-    borderRadius: BorderRadius.full,
-  },
-  tabActive: {
-    backgroundColor: Colors.lime,
-    flex: 1.8,
+    gap: 3,
+    paddingTop: 2,
   },
   tabLabel: {
     fontSize: FontSize.xs,
+    color: Colors.textSecondary,
+    fontWeight: '500',
+    marginTop: 1,
+  },
+  tabLabelActive: {
+    color: Colors.lime,
     fontWeight: '700',
-    color: Colors.textPrimary,
-    letterSpacing: 0.2,
   },
   fab: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: Colors.lime,
+    flex: 1,
+    alignItems: 'center',
+    gap: 3,
+  },
+  fabInner: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: Colors.textPrimary,
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 3,
-    ...Shadow.md,
+    marginTop: -18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  fabActive: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
+  fabInnerActive: {
+    backgroundColor: Colors.lime,
   },
 });
 

@@ -22,7 +22,6 @@ import {
 import type { ChatMessage } from '../../src/types/chat';
 
 const MY_ID = 'me';
-const HERO_BG = '#003828';
 
 function groupByDay(messages: ChatMessage[]): Array<{ type: 'date'; label: string } | { type: 'msg'; msg: ChatMessage }> {
   const result: Array<{ type: 'date'; label: string } | { type: 'msg'; msg: ChatMessage }> = [];
@@ -170,7 +169,7 @@ export default function ChatScreen() {
         <View style={styles.headerDecoA} />
 
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={22} color={Colors.white} />
+          <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.agentInfo} activeOpacity={0.8}>
@@ -281,17 +280,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
-    backgroundColor: HERO_BG,
+    backgroundColor: Colors.white,
     paddingHorizontal: Spacing.md,
-    paddingBottom: Spacing.lg,
-    overflow: 'hidden',
+    paddingBottom: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderLight,
   },
   headerDecoA: {
     position: 'absolute',
     width: 160,
     height: 160,
     borderRadius: 80,
-    backgroundColor: 'rgba(159,187,68,0.06)',
+    backgroundColor: 'transparent',
     top: -60,
     right: -40,
   },
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
   },
   agentStatus: {
     fontSize: FontSize.xs,
-    color: 'rgba(255,255,255,0.55)',
+    color: Colors.textSecondary,
   },
   headerMenuBtn: {
     width: 36,

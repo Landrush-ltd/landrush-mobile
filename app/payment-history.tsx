@@ -11,7 +11,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../src/constants/theme';
 
-const HERO_BG = '#003828';
 
 type PaymentType = 'access_fee' | 'listing_fee';
 type PaymentStatus = 'success' | 'failed' | 'pending';
@@ -82,7 +81,7 @@ export default function PaymentHistoryScreen() {
         <View style={styles.headerDecoA} />
         <View style={styles.headerRow}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="chevron-back" size={20} color={Colors.white} />
+            <Ionicons name="chevron-back" size={20} color={Colors.textPrimary} />
           </TouchableOpacity>
           <Text style={styles.title}>Payment History</Text>
           <View style={{ width: 36 }} />
@@ -146,17 +145,18 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
-    backgroundColor: HERO_BG,
+    backgroundColor: Colors.white,
     paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xl,
-    overflow: 'hidden',
+    paddingBottom: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderLight,
   },
   headerDecoA: {
     position: 'absolute',
     width: 160,
     height: 160,
     borderRadius: 80,
-    backgroundColor: 'rgba(159,187,68,0.07)',
+    backgroundColor: 'transparent',
     top: -60,
     right: -40,
   },
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: FontSize.sm,
-    color: 'rgba(255,255,255,0.7)',
+    color: Colors.textSecondary,
     fontWeight: '500',
   },
   summaryAmount: {
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   },
   summaryNote: {
     fontSize: FontSize.xs,
-    color: 'rgba(255,255,255,0.5)',
+    color: Colors.textSecondary,
     marginTop: Spacing.xs,
     lineHeight: 16,
   },

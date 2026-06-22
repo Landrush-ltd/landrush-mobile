@@ -29,7 +29,6 @@ interface Booking {
   agentAvatar: string;
 }
 
-const HERO_BG = '#003828';
 
 const MOCK: Booking[] = [
   {
@@ -97,24 +96,13 @@ export default function BookingsScreen() {
 
   return (
     <View style={styles.root}>
-      {/* Dark green header */}
-      <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
-        <View style={styles.headerDecoA} />
-        <View style={styles.headerDecoB} />
-        <View style={styles.headerRow}>
-          <View>
-            <Text style={styles.headerTitle}>My Bookings</Text>
-            <Text style={styles.headerSub}>{MOCK.length} inspection requests</Text>
-          </View>
-          <TouchableOpacity style={styles.headerIconBtn} onPress={() => router.push('/notifications')}>
-            <Ionicons name="notifications-outline" size={20} color={Colors.white} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Tab pills inside header */}
+      {/* White header */}
+      <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
+        <Text style={styles.headerTitle}>Bookings</Text>
+        <Text style={styles.headerSub}>{MOCK.length} inspection requests</Text>
         <View style={styles.tabRow}>
           {TABS.map((tab) => {
-            const count = tab.count(MOCK);
+            const count  = tab.count(MOCK);
             const active = activeTab === tab.key;
             return (
               <TouchableOpacity
@@ -122,14 +110,10 @@ export default function BookingsScreen() {
                 style={[styles.tab, active && styles.tabActive]}
                 onPress={() => setActiveTab(tab.key)}
               >
-                <Text style={[styles.tabText, active && styles.tabTextActive]}>
-                  {tab.label}
-                </Text>
+                <Text style={[styles.tabText, active && styles.tabTextActive]}>{tab.label}</Text>
                 {count > 0 && (
                   <View style={[styles.tabBadge, active && styles.tabBadgeActive]}>
-                    <Text style={[styles.tabBadgeText, active && styles.tabBadgeTextActive]}>
-                      {count}
-                    </Text>
+                    <Text style={[styles.tabBadgeText, active && styles.tabBadgeTextActive]}>{count}</Text>
                   </View>
                 )}
               </TouchableOpacity>
@@ -274,57 +258,26 @@ const styles = StyleSheet.create({
 
   // ── Header ────────────────────────────────────────────────────
   header: {
-    backgroundColor: HERO_BG,
+    backgroundColor: Colors.white,
     paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.sm,
-    overflow: 'hidden',
-  },
-  headerDecoA: {
-    position: 'absolute',
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: 'rgba(159,187,68,0.07)',
-    top: -70,
-    right: -50,
-  },
-  headerDecoB: {
-    position: 'absolute',
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(159,187,68,0.05)',
-    bottom: 0,
-    left: -20,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: Spacing.xl,
+    paddingBottom: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderLight,
   },
   headerTitle: {
     fontSize: FontSize.xxl,
     fontWeight: '800',
-    color: Colors.white,
+    color: Colors.textPrimary,
+    marginBottom: 2,
   },
   headerSub: {
     fontSize: FontSize.sm,
-    color: 'rgba(255,255,255,0.55)',
-    marginTop: 2,
-  },
-  headerIconBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    color: Colors.textSecondary,
+    marginBottom: Spacing.md,
   },
   tabRow: {
     flexDirection: 'row',
     gap: Spacing.sm,
-    paddingBottom: Spacing.lg,
   },
   tab: {
     flexDirection: 'row',
@@ -333,21 +286,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: 7,
     borderRadius: BorderRadius.full,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
   },
   tabActive: {
-    backgroundColor: Colors.lime,
+    backgroundColor: Colors.textPrimary,
+    borderColor: Colors.textPrimary,
   },
   tabText: {
     fontSize: FontSize.sm,
     fontWeight: '600',
-    color: 'rgba(255,255,255,0.7)',
+    color: Colors.textSecondary,
   },
   tabTextActive: {
-    color: Colors.textPrimary,
+    color: Colors.white,
   },
   tabBadge: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: Colors.border,
     borderRadius: BorderRadius.full,
     minWidth: 18,
     height: 18,
@@ -356,15 +312,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   tabBadgeActive: {
-    backgroundColor: 'rgba(26,26,26,0.2)',
+    backgroundColor: 'rgba(255,255,255,0.25)',
   },
   tabBadgeText: {
     fontSize: 10,
     fontWeight: '700',
-    color: Colors.white,
+    color: Colors.textSecondary,
   },
   tabBadgeTextActive: {
-    color: Colors.textPrimary,
+    color: Colors.white,
   },
 
   // ── Scroll / Cards ────────────────────────────────────────────

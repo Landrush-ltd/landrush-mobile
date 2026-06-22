@@ -23,7 +23,6 @@ import type { ListingCategory } from '../../src/types/listing';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
-const HERO_BG = '#003828';
 const STEPS = ['Type', 'Details', 'Location', 'Media', 'Price', 'Review'];
 
 const CATEGORY_OPTIONS: { key: ListingCategory; label: string; desc: string; icon: IoniconsName; color: string; bg: string }[] = [
@@ -594,7 +593,7 @@ const s = StyleSheet.create({
 
   // ── Header ────────────────────────────────────────────────────
   header: {
-    backgroundColor: HERO_BG,
+    backgroundColor: Colors.textPrimary,
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.lg,
     overflow: 'hidden',

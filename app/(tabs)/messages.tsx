@@ -18,7 +18,6 @@ import {
 } from '../../src/services/mockChatData';
 import type { Conversation } from '../../src/types/chat';
 
-const HERO_BG = '#003828';
 
 export default function MessagesScreen() {
   const router = useRouter();
@@ -76,21 +75,12 @@ export default function MessagesScreen() {
 
   return (
     <View style={styles.root}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
-        <View style={styles.headerDecoA} />
-        <View style={styles.headerDecoB} />
-        <View style={styles.headerRow}>
-          <View>
-            <Text style={styles.headerTitle}>Messages</Text>
-            {totalUnread > 0 && (
-              <Text style={styles.headerSub}>{totalUnread} unread conversation{totalUnread > 1 ? 's' : ''}</Text>
-            )}
-          </View>
-          <TouchableOpacity style={styles.headerIconBtn}>
-            <Ionicons name="create-outline" size={20} color={Colors.white} />
-          </TouchableOpacity>
-        </View>
+      {/* White header */}
+      <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
+        <Text style={styles.headerTitle}>Messages</Text>
+        {totalUnread > 0 && (
+          <Text style={styles.headerSub}>{totalUnread} unread</Text>
+        )}
       </View>
 
       {/* Search bar */}
@@ -140,51 +130,21 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
-    backgroundColor: HERO_BG,
+    backgroundColor: Colors.white,
     paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xxl,
-    overflow: 'hidden',
-  },
-  headerDecoA: {
-    position: 'absolute',
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: 'rgba(159,187,68,0.07)',
-    top: -70,
-    right: -50,
-  },
-  headerDecoB: {
-    position: 'absolute',
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(159,187,68,0.05)',
-    bottom: -20,
-    left: 20,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    paddingBottom: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderLight,
   },
   headerTitle: {
     fontSize: FontSize.xxl,
     fontWeight: '800',
-    color: Colors.white,
+    color: Colors.textPrimary,
+    marginBottom: 2,
   },
   headerSub: {
     fontSize: FontSize.sm,
-    color: 'rgba(255,255,255,0.6)',
-    marginTop: 2,
-  },
-  headerIconBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    color: Colors.textSecondary,
   },
   searchWrap: {
     paddingHorizontal: Spacing.lg,

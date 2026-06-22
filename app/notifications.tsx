@@ -29,7 +29,6 @@ interface NotificationGroup {
   items: NotificationItem[];
 }
 
-const HERO_BG = '#003828';
 
 const groups: NotificationGroup[] = [
   {
@@ -128,7 +127,7 @@ export default function NotificationsScreen() {
 
         <View style={styles.headerRow}>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <Ionicons name="chevron-back" size={22} color={Colors.white} />
+            <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
           </TouchableOpacity>
 
           <View style={styles.headerCenter}>
@@ -204,31 +203,17 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: HERO_BG,
+    backgroundColor: Colors.white,
   },
   header: {
     paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xxl,
-    overflow: 'hidden',
+    paddingBottom: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderLight,
+    backgroundColor: Colors.white,
   },
-  headerDecoA: {
-    position: 'absolute',
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    backgroundColor: 'rgba(159,187,68,0.07)',
-    top: -60,
-    right: -40,
-  },
-  headerDecoB: {
-    position: 'absolute',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(159,187,68,0.05)',
-    bottom: 10,
-    left: 30,
-  },
+  headerDecoA: { display: 'none' },
+  headerDecoB: { display: 'none' },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -238,7 +223,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -250,7 +234,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: FontSize.xl,
     fontWeight: '800',
-    color: Colors.white,
+    color: Colors.textPrimary,
   },
   unreadBadge: {
     backgroundColor: Colors.lime,

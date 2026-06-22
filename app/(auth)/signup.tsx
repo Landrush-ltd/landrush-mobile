@@ -75,7 +75,7 @@ export default function SignupScreen() {
         <View style={styles.decoCircleLarge} />
         <View style={styles.decoCircleSmall} />
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={22} color={Colors.white} />
+          <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
         </TouchableOpacity>
         <LandrushLogo size={52} textColor="#8DC63F" />
         <Text style={styles.headerTitle}>Create account</Text>
@@ -218,12 +218,11 @@ export default function SignupScreen() {
   );
 }
 
-const HEADER_BG = '#003828';
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: HEADER_BG,
+    backgroundColor: Colors.white,
   },
   header: {
     paddingTop: 56,
@@ -237,7 +236,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: 'rgba(159,187,68,0.08)',
+    backgroundColor: 'transparent',
     top: -50,
     right: -50,
   },
@@ -246,7 +245,7 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: 'rgba(159,187,68,0.06)',
+    backgroundColor: 'transparent',
     bottom: 16,
     right: 50,
   },
@@ -267,7 +266,7 @@ const styles = StyleSheet.create({
   },
   headerSub: {
     fontSize: FontSize.md,
-    color: 'rgba(255,255,255,0.6)',
+    color: Colors.textSecondary,
   },
   card: {
     flex: 1,

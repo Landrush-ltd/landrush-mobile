@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../constants/theme';
 import type { Listing } from '../types/listing';
@@ -22,76 +21,53 @@ const CATEGORY_LABEL: Record<string, string> = {
   distress: 'Distress',
 };
 
-function formatPrice(price: number) {
-  if (price >= 1_000_000_000) return `₦${(price / 1_000_000_000).toFixed(1)}B`;
-  if (price >= 1_000_000)     return `₦${(price / 1_000_000).toFixed(1)}M`;
-  return `₦${(price / 1_000).toFixed(0)}K`;
+function formatPrice(p: number) {
+  if (p >= 1_000_000_000) return `₦${(p / 1_000_000_000).toFixed(1)}B`;
+  if (p >= 1_000_000)     return `₦${(p / 1_000_000).toFixed(1)}M`;
+  return `₦${(p / 1_000).toFixed(0)}K`;
 }
 
 export function ListingCard({ listing, onPress, variant = 'horizontal' }: ListingCardProps) {
   const [saved, setSaved] = useState(false);
-  const imageUri    = listing.media[0]?.uri;
-  const badgeColor  = CATEGORY_COLOR[listing.category] ?? Colors.primary;
-  const priceLabel  = formatPrice(listing.price);
+  const imageUri = listing.media[0]?.uri;
+  const price    = formatPrice(listing.price);
 
+  // ── Airbnb-style horizontal card (info BELOW image, no overlay text) ──
   if (variant === 'horizontal') {
     return (
-      <TouchableOpacity style={styles.hCard} onPress={() => onPress(listing)} activeOpacity={0.9}>
-        {/* Image */}
-        <View style={styles.hImageWrap}>
+      <TouchableOpacity style={styles.hCard} onPress={() => onPress(listing)} activeOpacity={0.88}>
+        {/* Photo */}
+        <View style={styles.hPhotoWrap}>
           {imageUri
             ? <Image source={{ uri: imageUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-            : <View style={[StyleSheet.absoluteFill, styles.imgPlaceholder]}>
+            : <View style={[StyleSheet.absoluteFill, styles.photoPlaceholder]}>
                 <Ionicons name="image-outline" size={28} color={Colors.textTertiary} />
               </View>
           }
-
-          {/* Gradient overlay */}
-          <LinearGradient
-            colors={['transparent', 'rgba(0,0,0,0.72)']}
-            style={styles.hGradient}
-          />
-
-          {/* Category badge */}
-          <View style={[styles.badge, { backgroundColor: badgeColor }]}>
-            <Text style={styles.badgeText}>{CATEGORY_LABEL[listing.category]}</Text>
-          </View>
-
-          {/* Save button */}
+          {/* Save heart — only overlay on photo */}
           <TouchableOpacity
             style={styles.saveBtn}
             onPress={(e) => { e.stopPropagation?.(); setSaved((s) => !s); }}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Ionicons
-              name={saved ? 'bookmark' : 'bookmark-outline'}
-              size={15}
-              color={saved ? Colors.lime : Colors.white}
-            />
+            <Ionicons name={saved ? 'heart' : 'heart-outline'} size={18} color={saved ? '#E31C5F' : Colors.white} />
           </TouchableOpacity>
-
-          {/* Price pill at bottom */}
-          <View style={styles.hPricePill}>
-            <Text style={styles.hPriceText}>{priceLabel}</Text>
-          </View>
         </View>
 
-        {/* Info */}
-        <View style={styles.hBody}>
-          <Text style={styles.hTitle} numberOfLines={2}>{listing.title}</Text>
-          <View style={styles.metaRow}>
-            <Ionicons name="location-outline" size={11} color={Colors.textTertiary} />
-            <Text style={styles.metaText} numberOfLines={1}>{listing.location}</Text>
+        {/* Info — clean white section below photo */}
+        <View style={styles.hInfo}>
+          <View style={styles.hTitleRow}>
+            <Text style={styles.hTitle} numberOfLines={1}>{listing.location}</Text>
+            <View style={[styles.catDot, { backgroundColor: CATEGORY_COLOR[listing.category] }]} />
           </View>
-          <View style={styles.hFooter}>
-            <View style={styles.chip}>
-              <Ionicons name="expand-outline" size={10} color={Colors.primary} />
-              <Text style={styles.chipText}>{listing.size} {listing.sizeUnit}</Text>
-            </View>
+          <Text style={styles.hSubtitle} numberOfLines={1}>{listing.title}</Text>
+          <View style={styles.hPriceRow}>
+            <Text style={styles.hPrice}>{price}</Text>
+            {listing.priceUnit && <Text style={styles.hPriceUnit}> / {listing.priceUnit}</Text>}
             {listing.agent.isVerified && (
-              <View style={styles.verifiedChip}>
-                <Ionicons name="checkmark-circle" size={11} color={Colors.primary} />
-                <Text style={styles.verifiedChipText}>Verified</Text>
+              <View style={styles.hVerified}>
+                <Ionicons name="checkmark-circle" size={11} color={Colors.lime} />
+                <Text style={styles.hVerifiedText}>Verified</Text>
               </View>
             )}
           </View>
@@ -100,299 +76,206 @@ export function ListingCard({ listing, onPress, variant = 'horizontal' }: Listin
     );
   }
 
-  // ── Vertical card ─────────────────────────────────────────────
+  // ── Airbnb-style vertical / full-width card ──
   return (
-    <TouchableOpacity style={styles.vCard} onPress={() => onPress(listing)} activeOpacity={0.9}>
-      <View style={styles.vImageWrap}>
+    <TouchableOpacity style={styles.vCard} onPress={() => onPress(listing)} activeOpacity={0.88}>
+      {/* Photo */}
+      <View style={styles.vPhotoWrap}>
         {imageUri
           ? <Image source={{ uri: imageUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-          : <View style={[StyleSheet.absoluteFill, styles.imgPlaceholder]}>
+          : <View style={[StyleSheet.absoluteFill, styles.photoPlaceholder]}>
               <Ionicons name="image-outline" size={40} color={Colors.textTertiary} />
             </View>
         }
-
-        <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.78)']}
-          style={styles.vGradient}
-        />
-
-        {/* Category badge */}
-        <View style={[styles.badge, { backgroundColor: badgeColor }]}>
-          <Text style={styles.badgeText}>{CATEGORY_LABEL[listing.category]}</Text>
+        {/* Category pill — top left */}
+        <View style={[styles.catPill, { backgroundColor: CATEGORY_COLOR[listing.category] }]}>
+          <Text style={styles.catPillText}>{CATEGORY_LABEL[listing.category]}</Text>
         </View>
-
         {/* Save */}
         <TouchableOpacity
           style={styles.saveBtn}
           onPress={(e) => { e.stopPropagation?.(); setSaved((s) => !s); }}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons
-            name={saved ? 'bookmark' : 'bookmark-outline'}
-            size={15}
-            color={saved ? Colors.lime : Colors.white}
-          />
+          <Ionicons name={saved ? 'heart' : 'heart-outline'} size={20} color={saved ? '#E31C5F' : Colors.white} />
         </TouchableOpacity>
-
-        {/* Bottom-left: price + priceUnit */}
-        <View style={styles.vBottomLeft}>
-          <Text style={styles.vPrice}>{priceLabel}</Text>
-          {listing.priceUnit && (
-            <Text style={styles.vPriceUnit}> / {listing.priceUnit}</Text>
-          )}
-        </View>
-
-        {/* Bottom-right: verified */}
-        {listing.agent.isVerified && (
-          <View style={styles.vVerified}>
-            <Ionicons name="checkmark-circle" size={12} color={Colors.lime} />
-            <Text style={styles.vVerifiedText}>Verified</Text>
-          </View>
-        )}
       </View>
 
-      <View style={styles.vBody}>
+      {/* Info */}
+      <View style={styles.vInfo}>
+        <View style={styles.vTitleRow}>
+          <Text style={styles.vLocation} numberOfLines={1}>{listing.location}</Text>
+          {listing.agent.isVerified && (
+            <View style={styles.starRow}>
+              <Ionicons name="star" size={11} color="#222" />
+              <Text style={styles.starText}>{listing.agent.rating.toFixed(1)}</Text>
+            </View>
+          )}
+        </View>
         <Text style={styles.vTitle} numberOfLines={1}>{listing.title}</Text>
-
-        <View style={styles.metaRow}>
-          <Ionicons name="location-outline" size={12} color={Colors.textTertiary} />
-          <Text style={styles.metaText} numberOfLines={1}>{listing.location}</Text>
+        <View style={styles.vMeta}>
+          <Text style={styles.vSize}>{listing.size} {listing.sizeUnit}</Text>
         </View>
-
-        <View style={styles.vFooterRow}>
-          <View style={styles.chip}>
-            <Ionicons name="expand-outline" size={10} color={Colors.primary} />
-            <Text style={styles.chipText}>{listing.size} {listing.sizeUnit}</Text>
-          </View>
-
-          <View style={styles.agentRow}>
-            <Image source={{ uri: listing.agent.avatar }} style={styles.agentAvatar} />
-            <Text style={styles.agentName} numberOfLines={1}>{listing.agent.name}</Text>
-            <Ionicons name="star" size={11} color="#F9A825" />
-            <Text style={styles.ratingText}>{listing.agent.rating.toFixed(1)}</Text>
-          </View>
-        </View>
+        <Text style={styles.vPrice}>
+          <Text style={styles.vPriceBold}>{price}</Text>
+          {listing.priceUnit ? <Text style={styles.vPriceUnit}> / {listing.priceUnit}</Text> : null}
+        </Text>
       </View>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  imgPlaceholder: {
-    backgroundColor: Colors.borderLight,
+  photoPlaceholder: {
+    backgroundColor: Colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-
-  // ── Shared ────────────────────────────────────────────────────
-  badge: {
-    position: 'absolute',
-    top: Spacing.sm,
-    left: Spacing.sm,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: BorderRadius.full,
-  },
-  badgeText: {
-    color: Colors.white,
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.4,
   },
   saveBtn: {
     position: 'absolute',
     top: Spacing.sm,
     right: Spacing.sm,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: 'rgba(0,0,0,0.38)',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
+  catDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginTop: 3,
   },
-  metaText: {
-    fontSize: FontSize.xs,
-    color: Colors.textTertiary,
-    flex: 1,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    backgroundColor: `${Colors.lime}1A`,
+  catPill: {
+    position: 'absolute',
+    top: Spacing.sm,
+    left: Spacing.sm,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: BorderRadius.full,
   },
-  chipText: {
+  catPillText: {
     fontSize: 10,
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  verifiedChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    backgroundColor: `${Colors.primary}12`,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: BorderRadius.full,
-  },
-  verifiedChipText: {
-    fontSize: 10,
-    color: Colors.primary,
-    fontWeight: '600',
+    fontWeight: '700',
+    color: Colors.white,
+    letterSpacing: 0.3,
   },
 
-  // ── Horizontal card ──────────────────────────────────────────
+  // ── Horizontal card ──
   hCard: {
     width: 220,
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.xl,
     marginRight: Spacing.md,
+    backgroundColor: Colors.white,
+  },
+  hPhotoWrap: {
+    height: 160,
+    borderRadius: BorderRadius.xl,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-    ...Shadow.md,
+    backgroundColor: Colors.surface,
+    marginBottom: Spacing.sm,
   },
-  hImageWrap: {
-    height: 150,
-    position: 'relative',
-    backgroundColor: Colors.borderLight,
+  hInfo: {
+    gap: 3,
+    paddingHorizontal: 2,
   },
-  hGradient: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 90,
-  },
-  hPricePill: {
-    position: 'absolute',
-    bottom: Spacing.sm,
-    left: Spacing.sm,
-    backgroundColor: Colors.lime,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.full,
-  },
-  hPriceText: {
-    fontSize: FontSize.sm,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-  },
-  hBody: {
-    padding: Spacing.md,
-    gap: 5,
+  hTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: Spacing.xs,
   },
   hTitle: {
     fontSize: FontSize.sm,
     fontWeight: '700',
     color: Colors.textPrimary,
-    lineHeight: 18,
+    flex: 1,
   },
-  hFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-    marginTop: 2,
+  hSubtitle: {
+    fontSize: FontSize.sm,
+    color: Colors.textSecondary,
   },
-
-  // ── Vertical card ─────────────────────────────────────────────
-  vCard: {
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.xl,
-    marginBottom: Spacing.lg,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-    ...Shadow.md,
-  },
-  vImageWrap: {
-    height: 200,
-    position: 'relative',
-    backgroundColor: Colors.borderLight,
-  },
-  vGradient: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 110,
-  },
-  vBottomLeft: {
-    position: 'absolute',
-    bottom: Spacing.md,
-    left: Spacing.md,
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  vPrice: {
-    fontSize: FontSize.xl,
-    fontWeight: '800',
-    color: Colors.white,
-  },
-  vPriceUnit: {
-    fontSize: FontSize.xs,
-    color: 'rgba(255,255,255,0.7)',
-    fontWeight: '500',
-  },
-  vVerified: {
-    position: 'absolute',
-    bottom: Spacing.md,
-    right: Spacing.md,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    backgroundColor: 'rgba(0,0,0,0.42)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: BorderRadius.full,
-  },
-  vVerifiedText: {
-    fontSize: 10,
-    color: Colors.white,
-    fontWeight: '600',
-  },
-  vBody: {
-    padding: Spacing.lg,
-    gap: 6,
-  },
-  vTitle: {
-    fontSize: FontSize.md,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  vFooterRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 2,
-  },
-  agentRow: {
+  hPriceRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    flexShrink: 1,
+    marginTop: 2,
   },
-  agentAvatar: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+  hPrice: {
+    fontSize: FontSize.sm,
+    fontWeight: '700',
+    color: Colors.textPrimary,
   },
-  agentName: {
+  hPriceUnit: {
     fontSize: FontSize.xs,
     color: Colors.textSecondary,
-    maxWidth: 80,
   },
-  ratingText: {
-    fontSize: FontSize.xs,
-    color: Colors.textSecondary,
+  hVerified: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    marginLeft: 4,
+  },
+  hVerifiedText: {
+    fontSize: 9,
+    color: Colors.lime,
     fontWeight: '600',
+  },
+
+  // ── Vertical card ──
+  vCard: {
+    marginBottom: Spacing.xxl,
+    backgroundColor: Colors.white,
+  },
+  vPhotoWrap: {
+    height: 240,
+    borderRadius: BorderRadius.xl,
+    overflow: 'hidden',
+    backgroundColor: Colors.surface,
+    marginBottom: Spacing.sm,
+  },
+  vInfo: {
+    gap: 3,
+    paddingHorizontal: 2,
+  },
+  vTitleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  vLocation: {
+    fontSize: FontSize.md,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+    flex: 1,
+  },
+  starRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  starText: {
+    fontSize: FontSize.sm,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+  },
+  vTitle: {
+    fontSize: FontSize.sm,
+    color: Colors.textSecondary,
+  },
+  vMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  vSize: {
+    fontSize: FontSize.sm,
+    color: Colors.textSecondary,
+  },
+  vPrice: {
+    fontSize: FontSize.md,
+    marginTop: 2,
+  },
+  vPriceBold: {
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  vPriceUnit: {
+    fontWeight: '400',
+    color: Colors.textSecondary,
   },
 });

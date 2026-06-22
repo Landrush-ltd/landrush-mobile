@@ -16,7 +16,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../src/constants/theme';
 import { useAuthStore } from '../src/store/auth';
 
-const HERO_BG = '#003828';
 
 export default function PersonalInformationScreen() {
   const router = useRouter();
@@ -57,7 +56,7 @@ export default function PersonalInformationScreen() {
         <View style={styles.headerDecoA} />
         <View style={styles.headerRow}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="chevron-back" size={20} color={Colors.white} />
+            <Ionicons name="chevron-back" size={20} color={Colors.textPrimary} />
           </TouchableOpacity>
           <View style={{ alignItems: 'center' }}>
             <Text style={styles.title}>Personal Information</Text>
@@ -152,17 +151,18 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
-    backgroundColor: HERO_BG,
+    backgroundColor: Colors.white,
     paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xl,
-    overflow: 'hidden',
+    paddingBottom: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderLight,
   },
   headerDecoA: {
     position: 'absolute',
     width: 140,
     height: 140,
     borderRadius: 70,
-    backgroundColor: 'rgba(159,187,68,0.07)',
+    backgroundColor: 'transparent',
     top: -50,
     right: -30,
   },
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: FontSize.xs,
-    color: 'rgba(255,255,255,0.6)',
+    color: Colors.textSecondary,
     marginTop: 1,
   },
   scrollContent: {

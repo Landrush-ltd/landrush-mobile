@@ -15,7 +15,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../src/constants/theme';
 import { mockListings } from '../src/services/mockData';
 
-const HERO_BG = '#003828';
 
 type ListingStatus = 'live' | 'pending' | 'rejected' | 'draft';
 
@@ -65,7 +64,7 @@ export default function MyListingsScreen() {
         <View style={styles.headerDecoA} />
         <View style={styles.headerRow}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="chevron-back" size={20} color={Colors.white} />
+            <Ionicons name="chevron-back" size={20} color={Colors.textPrimary} />
           </TouchableOpacity>
           <View style={{ alignItems: 'center' }}>
             <Text style={styles.title}>My Listings</Text>
@@ -193,17 +192,18 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
-    backgroundColor: HERO_BG,
+    backgroundColor: Colors.white,
     paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xl,
-    overflow: 'hidden',
+    paddingBottom: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderLight,
   },
   headerDecoA: {
     position: 'absolute',
     width: 160,
     height: 160,
     borderRadius: 80,
-    backgroundColor: 'rgba(159,187,68,0.07)',
+    backgroundColor: 'transparent',
     top: -60,
     right: -40,
   },
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: FontSize.xs,
-    color: 'rgba(255,255,255,0.6)',
+    color: Colors.textSecondary,
     marginTop: 1,
   },
   list: {

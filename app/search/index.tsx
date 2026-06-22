@@ -17,7 +17,6 @@ import { ListingCard } from '../../src/components/ListingCard';
 import { mockListings } from '../../src/services/mockData';
 import type { Listing, ListingCategory } from '../../src/types/listing';
 
-const HERO_BG = '#003828';
 
 const CATEGORIES: { key: ListingCategory | null; label: string }[] = [
   { key: null,       label: 'All' },
@@ -70,7 +69,7 @@ export default function SearchScreen() {
 
         <View style={styles.headerRow}>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <Ionicons name="chevron-back" size={22} color={Colors.white} />
+            <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Search Land</Text>
           <View style={{ width: 36 }} />
@@ -294,7 +293,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
-    backgroundColor: HERO_BG,
+    backgroundColor: Colors.white,
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.md,
     overflow: 'hidden',
@@ -304,7 +303,7 @@ const styles = StyleSheet.create({
     width: 180,
     height: 180,
     borderRadius: 90,
-    backgroundColor: 'rgba(159,187,68,0.07)',
+    backgroundColor: 'transparent',
     top: -60,
     right: -40,
   },
@@ -325,7 +324,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: FontSize.xl,
     fontWeight: '800',
-    color: Colors.white,
+    color: Colors.textPrimary,
   },
   searchRow: {
     flexDirection: 'row',
