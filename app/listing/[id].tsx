@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -34,7 +34,9 @@ const AFTERNOON_SLOTS = ['12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM',
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import type { ThemeColors } from '../../src/constants/theme';
+import { useColors } from '../../src/context/ThemeContext';
 import { mockListings } from '../../src/services/mockData';
 
 const { width } = Dimensions.get('window');
@@ -43,6 +45,8 @@ export default function ListingDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [showSchedule, setShowSchedule] = useState(false);
   const [isSaved, setIsSaved]           = useState(false);
   const [selectedDate, setSelDate]      = useState('');
@@ -91,10 +95,10 @@ export default function ListingDetailScreen() {
               style={styles.headerButton}
               onPress={() => router.back()}
             >
-              <Ionicons name="chevron-back" size={24} color={Colors.textPrimary} />
+              <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.headerButton}>
-              <Ionicons name="share-outline" size={22} color={Colors.textPrimary} />
+              <Ionicons name="share-outline" size={22} color={colors.textPrimary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -107,7 +111,7 @@ export default function ListingDetailScreen() {
             <Ionicons
               name={isSaved ? 'bookmark' : 'bookmark-outline'}
               size={16}
-              color={isSaved ? Colors.primary : Colors.textSecondary}
+              color={isSaved ? colors.primary : colors.textSecondary}
             />
             <Text style={[styles.saveText, isSaved && styles.saveTextActive]}>
               {isSaved ? 'Saved' : 'Save'}
@@ -116,11 +120,11 @@ export default function ListingDetailScreen() {
 
           <Text style={styles.listingTitle}>{listing.title}</Text>
           <Text style={styles.listingPrice}>
-            {'\u20A6'}{listing.price.toLocaleString()}
+            {'₦'}{listing.price.toLocaleString()}
           </Text>
 
           <View style={styles.locationRow}>
-            <Ionicons name="location-outline" size={16} color={Colors.textSecondary} />
+            <Ionicons name="location-outline" size={16} color={colors.textSecondary} />
             <Text style={styles.locationText}>{listing.location}</Text>
           </View>
 
@@ -135,7 +139,7 @@ export default function ListingDetailScreen() {
           {listing.agent.isVerified && (
             <View style={styles.verifiedBadge}>
               <Text style={styles.verifiedText}>Document Verified</Text>
-              <Ionicons name="checkmark-circle" size={16} color={Colors.primary} />
+              <Ionicons name="checkmark-circle" size={16} color={colors.primary} />
             </View>
           )}
 
@@ -169,7 +173,7 @@ export default function ListingDetailScreen() {
               <View style={styles.agentNameRow}>
                 <Text style={styles.agentName}>{listing.agent.name}</Text>
                 {listing.agent.isVerified && (
-                  <Ionicons name="checkmark-circle" size={15} color={Colors.primary} />
+                  <Ionicons name="checkmark-circle" size={15} color={colors.primary} />
                 )}
               </View>
               <Text style={styles.agentRole}>Landowner · Member since 2024</Text>
@@ -183,7 +187,7 @@ export default function ListingDetailScreen() {
 
           <View style={styles.contactRow}>
             <TouchableOpacity style={styles.contactBtn}>
-              <Ionicons name="call-outline" size={18} color={Colors.primary} />
+              <Ionicons name="call-outline" size={18} color={colors.primary} />
               <Text style={styles.contactBtnText}>Call</Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -195,8 +199,8 @@ export default function ListingDetailScreen() {
                 })
               }
             >
-              <Ionicons name="chatbubble-outline" size={18} color={Colors.white} />
-              <Text style={[styles.contactBtnText, { color: Colors.white }]}>Message</Text>
+              <Ionicons name="chatbubble-outline" size={18} color={colors.white} />
+              <Text style={[styles.contactBtnText, { color: colors.white }]}>Message</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -210,7 +214,7 @@ export default function ListingDetailScreen() {
           <Ionicons
             name={isSaved ? 'bookmark' : 'bookmark-outline'}
             size={20}
-            color={isSaved ? Colors.primary : Colors.textSecondary}
+            color={isSaved ? colors.primary : colors.textSecondary}
           />
         </TouchableOpacity>
         <TouchableOpacity
@@ -230,7 +234,7 @@ export default function ListingDetailScreen() {
             {/* Header */}
             <View style={styles.scheduleHeader}>
               <TouchableOpacity onPress={() => setShowSchedule(false)}>
-                <Ionicons name="chevron-back" size={24} color={Colors.textPrimary} />
+                <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
               </TouchableOpacity>
               <Text style={styles.scheduleTitle}>Schedule Inspection</Text>
               <View style={{ width: 24 }} />
@@ -305,14 +309,14 @@ export default function ListingDetailScreen() {
             {/* Notes */}
             <Text style={[styles.scheduleLabel, { marginTop: Spacing.xl }]}>
               Notes{' '}
-              <Text style={{ fontWeight: '400', color: Colors.textTertiary }}>(Optional)</Text>
+              <Text style={{ fontWeight: '400', color: colors.textTertiary }}>(Optional)</Text>
             </Text>
             <TextInput
               style={styles.notesInput}
               value={notes}
               onChangeText={setNotes}
               placeholder="Access instructions, questions for the agent…"
-              placeholderTextColor={Colors.textTertiary}
+              placeholderTextColor={colors.textTertiary}
               multiline
               numberOfLines={3}
               textAlignVertical="top"
@@ -326,7 +330,7 @@ export default function ListingDetailScreen() {
               onPress={handleScheduleDone}
               disabled={!selectedDate || !selectedTime}
             >
-              <Ionicons name="calendar-outline" size={18} color={Colors.textPrimary} />
+              <Ionicons name="calendar-outline" size={18} color={colors.textPrimary} />
               <Text style={styles.doneButtonText}>
                 {selectedDate && selectedTime
                   ? `Request ${selectedTime} · ${selectedDate.slice(5)}`
@@ -342,399 +346,398 @@ export default function ListingDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.white,
-  },
-  notFound: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  imageContainer: {
-    height: 280,
-    position: 'relative',
-  },
-  heroImage: {
-    width: '100%',
-    height: '100%',
-  },
-  headerOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg,
-  },
-  headerButton: {
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.md,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  content: {
-    padding: Spacing.xl,
-    paddingBottom: 100,
-  },
-  saveButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-end',
-    gap: Spacing.xs,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.full,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    marginBottom: Spacing.md,
-  },
-  saveButtonActive: {
-    backgroundColor: `${Colors.lime}25`,
-    borderColor: Colors.primary,
-  },
-  saveText: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-    fontWeight: '500',
-  },
-  saveTextActive: {
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  listingTitle: {
-    fontSize: FontSize.xxl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.sm,
-  },
-  listingPrice: {
-    fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.primary,
-    marginBottom: Spacing.sm,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-    marginBottom: Spacing.lg,
-  },
-  locationText: {
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-  },
-  tagsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-    marginBottom: Spacing.md,
-  },
-  tag: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.full,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.background,
-  },
-  tagText: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-  },
-  verifiedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.full,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-    backgroundColor: `${Colors.primary}10`,
-    alignSelf: 'flex-start',
-    marginBottom: Spacing.lg,
-  },
-  verifiedText: {
-    fontSize: FontSize.sm,
-    color: Colors.primary,
-    fontWeight: '500',
-  },
-  description: {
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-    lineHeight: 22,
-    marginBottom: Spacing.xxl,
-  },
-  sectionTitle: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.md,
-  },
-  thumbnailList: {
-    gap: Spacing.sm,
-    marginBottom: Spacing.xxl,
-  },
-  thumbnailImage: {
-    width: 100,
-    height: 80,
-    borderRadius: BorderRadius.md,
-  },
-  agentCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    gap: Spacing.md,
-    marginBottom: Spacing.md,
-  },
-  agentAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-  },
-  agentInfo: {
-    flex: 1,
-  },
-  agentNameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-  },
-  agentName: {
-    fontSize: FontSize.lg,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  agentRole: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-    marginTop: 2,
-  },
-  agentRatingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    marginTop: 4,
-  },
-  agentRatingText: {
-    fontSize: FontSize.sm,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  agentRatingCount: {
-    fontSize: FontSize.xs,
-    color: Colors.textTertiary,
-  },
-  contactRow: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-    marginTop: Spacing.md,
-    marginBottom: Spacing.xxl,
-  },
-  contactBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    height: 46,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1.5,
-    borderColor: Colors.primary,
-    backgroundColor: Colors.background,
-  },
-  contactBtnPrimary: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  contactBtnText: {
-    fontSize: FontSize.md,
-    fontWeight: '700',
-    color: Colors.primary,
-  },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-    padding: Spacing.lg,
-    backgroundColor: Colors.white,
-    borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
-  },
-  saveButtonBottom: {
-    width: 48,
-    height: 52,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.background,
-  },
-  saveButtonBottomActive: {
-    borderColor: Colors.primary,
-    backgroundColor: `${Colors.lime}20`,
-  },
-  bookInspectionButton: {
-    flex: 1,
-    backgroundColor: Colors.lime,
-    height: 52,
-    borderRadius: BorderRadius.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  bookInspectionText: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: Colors.overlay,
-    justifyContent: 'flex-end',
-  },
-  scheduleModal: {
-    backgroundColor: Colors.white,
-    borderTopLeftRadius: BorderRadius.xxl,
-    borderTopRightRadius: BorderRadius.xxl,
-    padding: Spacing.xxl,
-    paddingBottom: 40,
-    maxHeight: '90%',
-  },
-  scheduleHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.lg,
-  },
-  scheduleTitle: {
-    fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  scheduleSubtitle: {
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-    marginBottom: Spacing.xxl,
-  },
-  scheduleLabel: {
-    fontSize: FontSize.md,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.md,
-  },
-  // Date strip
-  dateStrip: {
-    gap: Spacing.sm,
-    paddingBottom: Spacing.sm,
-  },
-  dateCell: {
-    width: 64,
-    alignItems: 'center',
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    backgroundColor: Colors.white,
-    gap: 2,
-  },
-  dateCellActive: {
-    backgroundColor: Colors.lime,
-    borderColor: Colors.lime,
-  },
-  dateDayLabel: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: Colors.textTertiary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-  },
-  dateDayNum: {
-    fontSize: FontSize.xl,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-  },
-  dateMonth: {
-    fontSize: 10,
-    color: Colors.textTertiary,
-    fontWeight: '500',
-  },
-  dateLabelActive: {
-    color: Colors.textPrimary,
-  },
-  // Time slots
-  timeGroupLabel: {
-    fontSize: FontSize.sm,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-    marginBottom: Spacing.sm,
-    marginTop: Spacing.sm,
-  },
-  timeSlotRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-    marginBottom: Spacing.sm,
-  },
-  timeSlot: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    backgroundColor: Colors.white,
-  },
-  timeSlotActive: {
-    backgroundColor: Colors.lime,
-    borderColor: Colors.lime,
-  },
-  timeSlotText: {
-    fontSize: FontSize.sm,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-  },
-  timeSlotTextActive: {
-    color: Colors.textPrimary,
-  },
-  // Notes input
-  notesInput: {
-    height: 88,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    padding: Spacing.lg,
-    marginBottom: Spacing.lg,
-    fontSize: FontSize.md,
-    color: Colors.textPrimary,
-    backgroundColor: Colors.background,
-  },
-  doneButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    backgroundColor: Colors.lime,
-    paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.xl,
-  },
-  doneButtonDisabled: {
-    opacity: 0.45,
-  },
-  doneButtonText: {
-    fontSize: FontSize.md,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-});
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.white,
+    },
+    notFound: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    imageContainer: {
+      height: 280,
+      position: 'relative',
+    },
+    heroImage: {
+      width: '100%',
+      height: '100%',
+    },
+    headerOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingHorizontal: Spacing.lg,
+    },
+    headerButton: {
+      width: 40,
+      height: 40,
+      borderRadius: BorderRadius.md,
+      backgroundColor: 'rgba(255,255,255,0.9)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    content: {
+      padding: Spacing.xl,
+      paddingBottom: 100,
+    },
+    saveButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'flex-end',
+      gap: Spacing.xs,
+      paddingVertical: Spacing.sm,
+      paddingHorizontal: Spacing.md,
+      borderRadius: BorderRadius.full,
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginBottom: Spacing.md,
+    },
+    saveButtonActive: {
+      backgroundColor: `${colors.lime}25`,
+      borderColor: colors.primary,
+    },
+    saveText: {
+      fontSize: FontSize.sm,
+      color: colors.textSecondary,
+      fontWeight: '500',
+    },
+    saveTextActive: {
+      color: colors.primary,
+      fontWeight: '600',
+    },
+    listingTitle: {
+      fontSize: FontSize.xxl,
+      fontWeight: '700',
+      color: colors.textPrimary,
+      marginBottom: Spacing.sm,
+    },
+    listingPrice: {
+      fontSize: FontSize.xl,
+      fontWeight: '700',
+      color: colors.primary,
+      marginBottom: Spacing.sm,
+    },
+    locationRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.xs,
+      marginBottom: Spacing.lg,
+    },
+    locationText: {
+      fontSize: FontSize.md,
+      color: colors.textSecondary,
+    },
+    tagsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: Spacing.sm,
+      marginBottom: Spacing.md,
+    },
+    tag: {
+      paddingHorizontal: Spacing.md,
+      paddingVertical: Spacing.sm,
+      borderRadius: BorderRadius.full,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.background,
+    },
+    tagText: {
+      fontSize: FontSize.sm,
+      color: colors.textSecondary,
+    },
+    verifiedBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.xs,
+      paddingHorizontal: Spacing.md,
+      paddingVertical: Spacing.sm,
+      borderRadius: BorderRadius.full,
+      borderWidth: 1,
+      borderColor: colors.primary,
+      backgroundColor: `${colors.primary}10`,
+      alignSelf: 'flex-start',
+      marginBottom: Spacing.lg,
+    },
+    verifiedText: {
+      fontSize: FontSize.sm,
+      color: colors.primary,
+      fontWeight: '500',
+    },
+    description: {
+      fontSize: FontSize.md,
+      color: colors.textSecondary,
+      lineHeight: 22,
+      marginBottom: Spacing.xxl,
+    },
+    sectionTitle: {
+      fontSize: FontSize.lg,
+      fontWeight: '700',
+      color: colors.textPrimary,
+      marginBottom: Spacing.md,
+    },
+    thumbnailList: {
+      gap: Spacing.sm,
+      marginBottom: Spacing.xxl,
+    },
+    thumbnailImage: {
+      width: 100,
+      height: 80,
+      borderRadius: BorderRadius.md,
+    },
+    agentCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: Spacing.lg,
+      borderRadius: BorderRadius.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+      gap: Spacing.md,
+      marginBottom: Spacing.md,
+    },
+    agentAvatar: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+    },
+    agentInfo: {
+      flex: 1,
+    },
+    agentNameRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.xs,
+    },
+    agentName: {
+      fontSize: FontSize.lg,
+      fontWeight: '600',
+      color: colors.textPrimary,
+    },
+    agentRole: {
+      fontSize: FontSize.sm,
+      color: colors.textSecondary,
+      marginTop: 2,
+    },
+    agentRatingRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 3,
+      marginTop: 4,
+    },
+    agentRatingText: {
+      fontSize: FontSize.sm,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    agentRatingCount: {
+      fontSize: FontSize.xs,
+      color: colors.textTertiary,
+    },
+    contactRow: {
+      flexDirection: 'row',
+      gap: Spacing.md,
+      marginTop: Spacing.md,
+      marginBottom: Spacing.xxl,
+    },
+    contactBtn: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing.sm,
+      height: 46,
+      borderRadius: BorderRadius.xl,
+      borderWidth: 1.5,
+      borderColor: colors.primary,
+      backgroundColor: colors.background,
+    },
+    contactBtnPrimary: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    contactBtnText: {
+      fontSize: FontSize.md,
+      fontWeight: '700',
+      color: colors.primary,
+    },
+    bottomBar: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.md,
+      padding: Spacing.lg,
+      backgroundColor: colors.white,
+      borderTopWidth: 1,
+      borderTopColor: colors.borderLight,
+    },
+    saveButtonBottom: {
+      width: 48,
+      height: 52,
+      borderRadius: BorderRadius.xl,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.background,
+    },
+    saveButtonBottomActive: {
+      borderColor: colors.primary,
+      backgroundColor: `${colors.lime}20`,
+    },
+    bookInspectionButton: {
+      flex: 1,
+      backgroundColor: colors.lime,
+      height: 52,
+      borderRadius: BorderRadius.xl,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    bookInspectionText: {
+      fontSize: FontSize.lg,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: colors.overlay,
+      justifyContent: 'flex-end',
+    },
+    scheduleModal: {
+      backgroundColor: colors.white,
+      borderTopLeftRadius: BorderRadius.xxl,
+      borderTopRightRadius: BorderRadius.xxl,
+      padding: Spacing.xxl,
+      paddingBottom: 40,
+      maxHeight: '90%',
+    },
+    scheduleHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: Spacing.lg,
+    },
+    scheduleTitle: {
+      fontSize: FontSize.xl,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    scheduleSubtitle: {
+      fontSize: FontSize.md,
+      color: colors.textSecondary,
+      marginBottom: Spacing.xxl,
+    },
+    scheduleLabel: {
+      fontSize: FontSize.md,
+      fontWeight: '600',
+      color: colors.textPrimary,
+      marginBottom: Spacing.md,
+    },
+    dateStrip: {
+      gap: Spacing.sm,
+      paddingBottom: Spacing.sm,
+    },
+    dateCell: {
+      width: 64,
+      alignItems: 'center',
+      paddingVertical: Spacing.md,
+      borderRadius: BorderRadius.xl,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      backgroundColor: colors.white,
+      gap: 2,
+    },
+    dateCellActive: {
+      backgroundColor: colors.lime,
+      borderColor: colors.lime,
+    },
+    dateDayLabel: {
+      fontSize: 10,
+      fontWeight: '600',
+      color: colors.textTertiary,
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
+    },
+    dateDayNum: {
+      fontSize: FontSize.xl,
+      fontWeight: '800',
+      color: colors.textPrimary,
+    },
+    dateMonth: {
+      fontSize: 10,
+      color: colors.textTertiary,
+      fontWeight: '500',
+    },
+    dateLabelActive: {
+      color: colors.textPrimary,
+    },
+    timeGroupLabel: {
+      fontSize: FontSize.sm,
+      fontWeight: '600',
+      color: colors.textSecondary,
+      marginBottom: Spacing.sm,
+      marginTop: Spacing.sm,
+    },
+    timeSlotRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: Spacing.sm,
+      marginBottom: Spacing.sm,
+    },
+    timeSlot: {
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.md,
+      borderRadius: BorderRadius.xl,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      backgroundColor: colors.white,
+    },
+    timeSlotActive: {
+      backgroundColor: colors.lime,
+      borderColor: colors.lime,
+    },
+    timeSlotText: {
+      fontSize: FontSize.sm,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    timeSlotTextActive: {
+      color: colors.textPrimary,
+    },
+    notesInput: {
+      height: 88,
+      borderRadius: BorderRadius.xl,
+      borderWidth: 1,
+      borderColor: colors.border,
+      padding: Spacing.lg,
+      marginBottom: Spacing.lg,
+      fontSize: FontSize.md,
+      color: colors.textPrimary,
+      backgroundColor: colors.background,
+    },
+    doneButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing.sm,
+      backgroundColor: colors.lime,
+      paddingVertical: Spacing.lg,
+      borderRadius: BorderRadius.xl,
+    },
+    doneButtonDisabled: {
+      opacity: 0.45,
+    },
+    doneButtonText: {
+      fontSize: FontSize.md,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+  });
+}

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -22,30 +22,13 @@ if (!IS_WEB) {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import type { ThemeColors } from '../../src/constants/theme';
+import { useColors } from '../../src/context/ThemeContext';
 import { SearchBar } from '../../src/components/SearchBar';
 import { CategoryChip } from '../../src/components/CategoryChip';
 import { mockListings } from '../../src/services/mockData';
 import type { ListingCategory, Listing } from '../../src/types/listing';
-
-const categories: { key: ListingCategory | null; label: string; color: string }[] = [
-  { key: null,        label: 'All',          color: Colors.primary  },
-  { key: 'lease',     label: 'Lease',        color: Colors.lease    },
-  { key: 'sale',      label: 'Buy',          color: Colors.sale     },
-  { key: 'distress',  label: 'Distress Sale', color: Colors.distress },
-];
-
-const CATEGORY_COLOR: Record<string, string> = {
-  sale:     Colors.sale,
-  lease:    Colors.lease,
-  distress: Colors.distress,
-};
-
-const legendItems = [
-  { color: Colors.sale,     label: 'Buy' },
-  { color: Colors.lease,    label: 'Lease' },
-  { color: Colors.distress, label: 'Distress' },
-];
 
 // Nigeria centroid
 const INITIAL_REGION = {
@@ -62,6 +45,27 @@ export default function MapScreen() {
   const [activeCategory, setActiveCategory] = useState<ListingCategory | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
+  const categories: { key: ListingCategory | null; label: string; color: string }[] = [
+    { key: null,        label: 'All',          color: colors.primary  },
+    { key: 'lease',     label: 'Lease',        color: colors.lease    },
+    { key: 'sale',      label: 'Buy',          color: colors.sale     },
+    { key: 'distress',  label: 'Distress Sale', color: colors.distress },
+  ];
+
+  const CATEGORY_COLOR: Record<string, string> = {
+    sale:     colors.sale,
+    lease:    colors.lease,
+    distress: colors.distress,
+  };
+
+  const legendItems = [
+    { color: colors.sale,     label: 'Buy' },
+    { color: colors.lease,    label: 'Lease' },
+    { color: colors.distress, label: 'Distress' },
+  ];
 
   const filteredListings = mockListings.filter((l) => {
     if (activeCategory && l.category !== activeCategory) return false;
@@ -88,7 +92,7 @@ export default function MapScreen() {
   if (IS_WEB) {
     return (
       <View style={styles.webFallback}>
-        <Ionicons name="map-outline" size={48} color={Colors.textTertiary} />
+        <Ionicons name="map-outline" size={48} color={colors.textTertiary} />
         <Text style={styles.webFallbackTitle}>Map View</Text>
         <Text style={styles.webFallbackSub}>Map is available on the iOS and Android app.</Text>
       </View>
@@ -145,7 +149,7 @@ export default function MapScreen() {
               mapRef.current?.animateToRegion(INITIAL_REGION, 600)
             }
           >
-            <Ionicons name="locate" size={20} color={Colors.primary} />
+            <Ionicons name="locate" size={20} color={colors.primary} />
           </TouchableOpacity>
         </View>
 
@@ -185,7 +189,7 @@ export default function MapScreen() {
             style={styles.closeSheet}
             onPress={() => setSelectedListing(null)}
           >
-            <Ionicons name="close" size={20} color={Colors.textSecondary} />
+            <Ionicons name="close" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
           <View style={styles.listingPreview}>
             <Image
@@ -213,7 +217,7 @@ export default function MapScreen() {
                 {selectedListing.title}
               </Text>
               <View style={styles.previewRow}>
-                <Ionicons name="location-outline" size={13} color={Colors.textTertiary} />
+                <Ionicons name="location-outline" size={13} color={colors.textTertiary} />
                 <Text style={styles.previewLocation} numberOfLines={1}>
                   {selectedListing.location}
                 </Text>
@@ -235,181 +239,183 @@ export default function MapScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  webFallback: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    backgroundColor: Colors.background,
-  },
-  webFallbackTitle: {
-    fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  webFallbackSub: {
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    paddingHorizontal: 40,
-  },
-  topOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.sm,
-  },
-  searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  locationBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: Colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    ...Shadow.md,
-  },
-  chipsRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  marker: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.full,
-    borderWidth: 2,
-    borderColor: Colors.white,
-    ...Shadow.sm,
-  },
-  markerSelected: {
-    transform: [{ scale: 1.15 }],
-    borderColor: Colors.textPrimary,
-  },
-  markerText: {
-    fontSize: FontSize.xs,
-    fontWeight: '800',
-    color: Colors.white,
-  },
-  countBadge: {
-    backgroundColor: Colors.white,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 6,
-    borderRadius: BorderRadius.full,
-    ...Shadow.sm,
-    justifyContent: 'center',
-  },
-  countBadgeText: {
-    fontSize: FontSize.xs,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  legend: {
-    position: 'absolute',
-    right: Spacing.lg,
-    flexDirection: 'row',
-    gap: Spacing.md,
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.lg,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    ...Shadow.md,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  legendLabel: {
-    fontSize: FontSize.xs,
-    color: Colors.textSecondary,
-    fontWeight: '500',
-  },
-  bottomSheet: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: Colors.white,
-    borderTopLeftRadius: BorderRadius.xxl,
-    borderTopRightRadius: BorderRadius.xxl,
-    padding: Spacing.xl,
-    ...Shadow.lg,
-  },
-  closeSheet: {
-    alignSelf: 'flex-end',
-    padding: Spacing.xs,
-    marginBottom: Spacing.sm,
-  },
-  listingPreview: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-    marginBottom: Spacing.lg,
-  },
-  previewImage: {
-    width: 90,
-    height: 90,
-    borderRadius: BorderRadius.md,
-  },
-  previewContent: {
-    flex: 1,
-    gap: 4,
-    justifyContent: 'center',
-  },
-  categoryPill: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
-    borderRadius: BorderRadius.full,
-  },
-  categoryPillText: {
-    fontSize: FontSize.xs,
-    fontWeight: '700',
-  },
-  previewTitle: {
-    fontSize: FontSize.md,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  previewRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
-  previewLocation: {
-    fontSize: FontSize.sm,
-    color: Colors.textTertiary,
-    flex: 1,
-  },
-  previewPrice: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    color: Colors.primary,
-  },
-  viewDetailsButton: {
-    backgroundColor: Colors.lime,
-    paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    alignItems: 'center',
-  },
-  viewDetailsText: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-});
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    webFallback: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 12,
+      backgroundColor: colors.background,
+    },
+    webFallbackTitle: {
+      fontSize: FontSize.xl,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    webFallbackSub: {
+      fontSize: FontSize.md,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      paddingHorizontal: 40,
+    },
+    topOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      paddingHorizontal: Spacing.lg,
+      gap: Spacing.sm,
+    },
+    searchRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.sm,
+    },
+    locationBtn: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: colors.white,
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
+      ...Shadow.md,
+    },
+    chipsRow: {
+      flexDirection: 'row',
+      gap: Spacing.sm,
+    },
+    marker: {
+      paddingHorizontal: Spacing.sm,
+      paddingVertical: 4,
+      borderRadius: BorderRadius.full,
+      borderWidth: 2,
+      borderColor: colors.white,
+      ...Shadow.sm,
+    },
+    markerSelected: {
+      transform: [{ scale: 1.15 }],
+      borderColor: colors.textPrimary,
+    },
+    markerText: {
+      fontSize: FontSize.xs,
+      fontWeight: '800',
+      color: colors.white,
+    },
+    countBadge: {
+      backgroundColor: colors.white,
+      paddingHorizontal: Spacing.md,
+      paddingVertical: 6,
+      borderRadius: BorderRadius.full,
+      ...Shadow.sm,
+      justifyContent: 'center',
+    },
+    countBadgeText: {
+      fontSize: FontSize.xs,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    legend: {
+      position: 'absolute',
+      right: Spacing.lg,
+      flexDirection: 'row',
+      gap: Spacing.md,
+      backgroundColor: colors.white,
+      borderRadius: BorderRadius.lg,
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.sm,
+      ...Shadow.md,
+    },
+    legendItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+    },
+    legendDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+    },
+    legendLabel: {
+      fontSize: FontSize.xs,
+      color: colors.textSecondary,
+      fontWeight: '500',
+    },
+    bottomSheet: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: colors.white,
+      borderTopLeftRadius: BorderRadius.xxl,
+      borderTopRightRadius: BorderRadius.xxl,
+      padding: Spacing.xl,
+      ...Shadow.lg,
+    },
+    closeSheet: {
+      alignSelf: 'flex-end',
+      padding: Spacing.xs,
+      marginBottom: Spacing.sm,
+    },
+    listingPreview: {
+      flexDirection: 'row',
+      gap: Spacing.md,
+      marginBottom: Spacing.lg,
+    },
+    previewImage: {
+      width: 90,
+      height: 90,
+      borderRadius: BorderRadius.md,
+    },
+    previewContent: {
+      flex: 1,
+      gap: 4,
+      justifyContent: 'center',
+    },
+    categoryPill: {
+      alignSelf: 'flex-start',
+      paddingHorizontal: Spacing.sm,
+      paddingVertical: 2,
+      borderRadius: BorderRadius.full,
+    },
+    categoryPillText: {
+      fontSize: FontSize.xs,
+      fontWeight: '700',
+    },
+    previewTitle: {
+      fontSize: FontSize.md,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    previewRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 3,
+    },
+    previewLocation: {
+      fontSize: FontSize.sm,
+      color: colors.textTertiary,
+      flex: 1,
+    },
+    previewPrice: {
+      fontSize: FontSize.lg,
+      fontWeight: '700',
+      color: colors.primary,
+    },
+    viewDetailsButton: {
+      backgroundColor: colors.lime,
+      paddingVertical: Spacing.lg,
+      borderRadius: BorderRadius.lg,
+      alignItems: 'center',
+    },
+    viewDetailsText: {
+      fontSize: FontSize.lg,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+  });
+}

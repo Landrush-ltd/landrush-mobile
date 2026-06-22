@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,21 +10,24 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../src/constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../src/constants/theme';
+import type { ThemeColors } from '../src/constants/theme';
+import { useColors } from '../src/context/ThemeContext';
 import { mockListings } from '../src/services/mockData';
 import type { Listing } from '../src/types/listing';
-
-
-const CATEGORY_COLOR: Record<string, string> = {
-  sale:     Colors.primary,
-  lease:    Colors.lease,
-  distress: Colors.distress,
-};
 
 export default function SavedListingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [saved, setSaved] = useState<Listing[]>(mockListings.slice(0, 3));
+
+  const CATEGORY_COLOR: Record<string, string> = {
+    sale:     colors.primary,
+    lease:    colors.lease,
+    distress: colors.distress,
+  };
 
   const handleUnsave = (id: string) =>
     setSaved((prev) => prev.filter((l) => l.id !== id));
@@ -34,7 +37,7 @@ export default function SavedListingsScreen() {
       <View style={styles.headerDecoA} />
       <View style={styles.headerRow}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={20} color={Colors.textPrimary} />
+          <Ionicons name="chevron-back" size={20} color={colors.textPrimary} />
         </TouchableOpacity>
         <View style={{ alignItems: 'center' }}>
           <Text style={styles.title}>Saved Listings</Text>
@@ -53,7 +56,7 @@ export default function SavedListingsScreen() {
         <Header />
         <View style={styles.emptyState}>
           <View style={styles.emptyIcon}>
-            <Ionicons name="bookmark-outline" size={44} color={Colors.textTertiary} />
+            <Ionicons name="bookmark-outline" size={44} color={colors.textTertiary} />
           </View>
           <Text style={styles.emptyTitle}>Nothing saved yet</Text>
           <Text style={styles.emptySubtitle}>
@@ -102,7 +105,7 @@ export default function SavedListingsScreen() {
                   onPress={() => handleUnsave(item.id)}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <Ionicons name="bookmark" size={18} color={Colors.primary} />
+                  <Ionicons name="bookmark" size={18} color={colors.primary} />
                 </TouchableOpacity>
               </View>
 
@@ -110,7 +113,7 @@ export default function SavedListingsScreen() {
                 {item.title}
               </Text>
               <View style={styles.infoRow}>
-                <Ionicons name="location-outline" size={13} color={Colors.textTertiary} />
+                <Ionicons name="location-outline" size={13} color={colors.textTertiary} />
                 <Text style={styles.infoText} numberOfLines={1}>{item.location}</Text>
               </View>
               <View style={styles.cardFooter}>
@@ -126,168 +129,170 @@ export default function SavedListingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  header: {
-    backgroundColor: Colors.white,
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-  },
-  headerDecoA: {
-    position: 'absolute',
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    backgroundColor: 'transparent',
-    top: -60,
-    right: -40,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: Spacing.md,
-  },
-  backButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: FontSize.xl,
-    fontWeight: '800',
-    color: Colors.white,
-  },
-  subtitle: {
-    fontSize: FontSize.xs,
-    color: Colors.textSecondary,
-    marginTop: 1,
-  },
-  countBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: Colors.lime,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  countText: {
-    fontSize: FontSize.md,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  list: {
-    padding: Spacing.xl,
-    gap: Spacing.md,
-  },
-  card: {
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.lg,
-    overflow: 'hidden',
-    ...Shadow.sm,
-  },
-  cardImage: {
-    width: '100%',
-    height: 160,
-  },
-  cardBody: {
-    padding: Spacing.lg,
-    gap: Spacing.sm,
-  },
-  cardTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  categoryPill: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 3,
-    borderRadius: BorderRadius.full,
-  },
-  categoryText: {
-    fontSize: FontSize.xs,
-    fontWeight: '700',
-  },
-  savedBtn: {
-    padding: 4,
-  },
-  cardTitle: {
-    fontSize: FontSize.md,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    lineHeight: 20,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  infoText: {
-    fontSize: FontSize.sm,
-    color: Colors.textTertiary,
-    flex: 1,
-  },
-  cardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 2,
-  },
-  price: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    color: Colors.primary,
-  },
-  size: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-    fontWeight: '500',
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.xxxl,
-    gap: Spacing.md,
-  },
-  emptyIcon: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: Colors.chipInactive,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.sm,
-  },
-  emptyTitle: {
-    fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  emptySubtitle: {
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  discoverBtn: {
-    backgroundColor: Colors.lime,
-    paddingHorizontal: Spacing.xxl,
-    paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.full,
-    marginTop: Spacing.md,
-  },
-  discoverBtnText: {
-    fontSize: FontSize.md,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-});
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    header: {
+      backgroundColor: colors.white,
+      paddingHorizontal: Spacing.lg,
+      paddingBottom: Spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.borderLight,
+    },
+    headerDecoA: {
+      position: 'absolute',
+      width: 160,
+      height: 160,
+      borderRadius: 80,
+      backgroundColor: 'transparent',
+      top: -60,
+      right: -40,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginTop: Spacing.md,
+    },
+    backButton: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: 'rgba(255,255,255,0.12)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    title: {
+      fontSize: FontSize.xl,
+      fontWeight: '800',
+      color: colors.textPrimary,
+    },
+    subtitle: {
+      fontSize: FontSize.xs,
+      color: colors.textSecondary,
+      marginTop: 1,
+    },
+    countBadge: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: colors.lime,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    countText: {
+      fontSize: FontSize.md,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    list: {
+      padding: Spacing.xl,
+      gap: Spacing.md,
+    },
+    card: {
+      backgroundColor: colors.white,
+      borderRadius: BorderRadius.lg,
+      overflow: 'hidden',
+      ...Shadow.sm,
+    },
+    cardImage: {
+      width: '100%',
+      height: 160,
+    },
+    cardBody: {
+      padding: Spacing.lg,
+      gap: Spacing.sm,
+    },
+    cardTop: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    categoryPill: {
+      paddingHorizontal: Spacing.md,
+      paddingVertical: 3,
+      borderRadius: BorderRadius.full,
+    },
+    categoryText: {
+      fontSize: FontSize.xs,
+      fontWeight: '700',
+    },
+    savedBtn: {
+      padding: 4,
+    },
+    cardTitle: {
+      fontSize: FontSize.md,
+      fontWeight: '700',
+      color: colors.textPrimary,
+      lineHeight: 20,
+    },
+    infoRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    infoText: {
+      fontSize: FontSize.sm,
+      color: colors.textTertiary,
+      flex: 1,
+    },
+    cardFooter: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: 2,
+    },
+    price: {
+      fontSize: FontSize.lg,
+      fontWeight: '700',
+      color: colors.primary,
+    },
+    size: {
+      fontSize: FontSize.sm,
+      color: colors.textSecondary,
+      fontWeight: '500',
+    },
+    emptyState: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: Spacing.xxxl,
+      gap: Spacing.md,
+    },
+    emptyIcon: {
+      width: 96,
+      height: 96,
+      borderRadius: 48,
+      backgroundColor: colors.chipInactive,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: Spacing.sm,
+    },
+    emptyTitle: {
+      fontSize: FontSize.xl,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    emptySubtitle: {
+      fontSize: FontSize.md,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 22,
+    },
+    discoverBtn: {
+      backgroundColor: colors.lime,
+      paddingHorizontal: Spacing.xxl,
+      paddingVertical: Spacing.lg,
+      borderRadius: BorderRadius.full,
+      marginTop: Spacing.md,
+    },
+    discoverBtnText: {
+      fontSize: FontSize.md,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+  });
+}

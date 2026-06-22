@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,9 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
+import type { ThemeColors } from '../../src/constants/theme';
+import { useColors } from '../../src/context/ThemeContext';
 import { useAuthStore } from '../../src/store/auth';
 
 const OTP_LENGTH = 6;
@@ -18,6 +20,9 @@ export default function VerifyOtpScreen() {
   const router = useRouter();
   const { phone } = useLocalSearchParams<{ phone: string }>();
   const { setUser } = useAuthStore();
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''));
   const [countdown, setCountdown] = useState(60);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -89,11 +94,11 @@ export default function VerifyOtpScreen() {
         <View style={styles.decoCircleSmall} />
 
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
+          <Ionicons name="chevron-back" size={22} color={colors.textPrimary} />
         </TouchableOpacity>
 
         <View style={styles.iconCircle}>
-          <Ionicons name="phone-portrait-outline" size={28} color={Colors.lime} />
+          <Ionicons name="phone-portrait-outline" size={28} color={colors.lime} />
         </View>
 
         <Text style={styles.headerTitle}>Verify your number</Text>
@@ -139,7 +144,7 @@ export default function VerifyOtpScreen() {
 
         {isVerifying ? (
           <View style={styles.verifyingRow}>
-            <Ionicons name="sync-outline" size={16} color={Colors.primary} />
+            <Ionicons name="sync-outline" size={16} color={colors.primary} />
             <Text style={styles.verifyingText}>Verifying code…</Text>
           </View>
         ) : (
@@ -172,161 +177,163 @@ export default function VerifyOtpScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: Colors.white,
-  },
-  header: {
-    paddingTop: 56,
-    paddingHorizontal: Spacing.xxl,
-    paddingBottom: Spacing.xxxl,
-    gap: Spacing.sm,
-    overflow: 'hidden',
-  },
-  decoCircleLarge: {
-    position: 'absolute',
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: 'transparent',
-    top: -50,
-    right: -50,
-  },
-  decoCircleSmall: {
-    position: 'absolute',
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: 'transparent',
-    bottom: 20,
-    right: 60,
-  },
-  backButton: {
-    width: 38,
-    height: 38,
-    borderRadius: BorderRadius.md,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.lg,
-  },
-  iconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: 'rgba(159,187,68,0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.sm,
-  },
-  headerTitle: {
-    fontSize: FontSize.display,
-    fontWeight: '800',
-    color: Colors.white,
-  },
-  headerSub: {
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-    lineHeight: 22,
-    marginTop: 4,
-  },
-  phoneHighlight: {
-    color: Colors.lime,
-    fontWeight: '700',
-  },
-  card: {
-    flex: 1,
-    backgroundColor: Colors.white,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingHorizontal: Spacing.xxl,
-    paddingTop: Spacing.xxxl,
-    paddingBottom: 48,
-  },
-  otpRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-    marginBottom: Spacing.lg,
-  },
-  otpCell: {
-    flex: 1,
-    height: 56,
-    borderRadius: BorderRadius.lg,
-    backgroundColor: Colors.background,
-    textAlign: 'center',
-    fontSize: FontSize.xxl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-  },
-  otpCellFilled: {
-    borderColor: Colors.lime,
-    backgroundColor: `${Colors.lime}14`,
-    color: Colors.primary,
-  },
-  otpCellVerifying: {
-    opacity: 0.6,
-  },
-  progressTrack: {
-    height: 3,
-    backgroundColor: Colors.borderLight,
-    borderRadius: 2,
-    marginBottom: Spacing.lg,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: Colors.lime,
-    borderRadius: 2,
-  },
-  verifyingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    height: 28,
-    marginBottom: Spacing.md,
-  },
-  verifyingText: {
-    fontSize: FontSize.sm,
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  primaryBtn: {
-    backgroundColor: Colors.lime,
-    height: 52,
-    borderRadius: BorderRadius.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.xl,
-  },
-  primaryBtnDisabled: {
-    opacity: 0.5,
-  },
-  primaryBtnText: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  resendRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  resendLabel: {
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-  },
-  resendBtn: {
-    fontSize: FontSize.md,
-    fontWeight: '700',
-    color: Colors.primary,
-  },
-  resendDisabled: {
-    color: Colors.textTertiary,
-    fontWeight: '500',
-  },
-});
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: colors.white,
+    },
+    header: {
+      paddingTop: 56,
+      paddingHorizontal: Spacing.xxl,
+      paddingBottom: Spacing.xxxl,
+      gap: Spacing.sm,
+      overflow: 'hidden',
+    },
+    decoCircleLarge: {
+      position: 'absolute',
+      width: 200,
+      height: 200,
+      borderRadius: 100,
+      backgroundColor: 'transparent',
+      top: -50,
+      right: -50,
+    },
+    decoCircleSmall: {
+      position: 'absolute',
+      width: 90,
+      height: 90,
+      borderRadius: 45,
+      backgroundColor: 'transparent',
+      bottom: 20,
+      right: 60,
+    },
+    backButton: {
+      width: 38,
+      height: 38,
+      borderRadius: BorderRadius.md,
+      backgroundColor: 'rgba(255,255,255,0.12)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: Spacing.lg,
+    },
+    iconCircle: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: 'rgba(159,187,68,0.15)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: Spacing.sm,
+    },
+    headerTitle: {
+      fontSize: FontSize.display,
+      fontWeight: '800',
+      color: colors.white,
+    },
+    headerSub: {
+      fontSize: FontSize.md,
+      color: colors.textSecondary,
+      lineHeight: 22,
+      marginTop: 4,
+    },
+    phoneHighlight: {
+      color: colors.lime,
+      fontWeight: '700',
+    },
+    card: {
+      flex: 1,
+      backgroundColor: colors.white,
+      borderTopLeftRadius: 28,
+      borderTopRightRadius: 28,
+      paddingHorizontal: Spacing.xxl,
+      paddingTop: Spacing.xxxl,
+      paddingBottom: 48,
+    },
+    otpRow: {
+      flexDirection: 'row',
+      gap: Spacing.sm,
+      marginBottom: Spacing.lg,
+    },
+    otpCell: {
+      flex: 1,
+      height: 56,
+      borderRadius: BorderRadius.lg,
+      backgroundColor: colors.background,
+      textAlign: 'center',
+      fontSize: FontSize.xxl,
+      fontWeight: '700',
+      color: colors.textPrimary,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+    },
+    otpCellFilled: {
+      borderColor: colors.lime,
+      backgroundColor: `${colors.lime}14`,
+      color: colors.primary,
+    },
+    otpCellVerifying: {
+      opacity: 0.6,
+    },
+    progressTrack: {
+      height: 3,
+      backgroundColor: colors.borderLight,
+      borderRadius: 2,
+      marginBottom: Spacing.lg,
+      overflow: 'hidden',
+    },
+    progressFill: {
+      height: '100%',
+      backgroundColor: colors.lime,
+      borderRadius: 2,
+    },
+    verifyingRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing.sm,
+      height: 28,
+      marginBottom: Spacing.md,
+    },
+    verifyingText: {
+      fontSize: FontSize.sm,
+      color: colors.primary,
+      fontWeight: '600',
+    },
+    primaryBtn: {
+      backgroundColor: colors.lime,
+      height: 52,
+      borderRadius: BorderRadius.xl,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: Spacing.xl,
+    },
+    primaryBtnDisabled: {
+      opacity: 0.5,
+    },
+    primaryBtnText: {
+      fontSize: FontSize.lg,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    resendRow: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: Spacing.sm,
+    },
+    resendLabel: {
+      fontSize: FontSize.md,
+      color: colors.textSecondary,
+    },
+    resendBtn: {
+      fontSize: FontSize.md,
+      fontWeight: '700',
+      color: colors.primary,
+    },
+    resendDisabled: {
+      color: colors.textTertiary,
+      fontWeight: '500',
+    },
+  });
+}

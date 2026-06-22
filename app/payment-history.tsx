@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,9 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../src/constants/theme';
-
+import { Spacing, FontSize, BorderRadius, Shadow } from '../src/constants/theme';
+import type { ThemeColors } from '../src/constants/theme';
+import { useColors } from '../src/context/ThemeContext';
 
 type PaymentType = 'access_fee' | 'listing_fee';
 type PaymentStatus = 'success' | 'failed' | 'pending';
@@ -28,12 +29,6 @@ interface PaymentRecord {
 const TYPE_LABEL: Record<PaymentType, string> = {
   access_fee: 'Access Fee',
   listing_fee: 'Listing Fee',
-};
-
-const STATUS_CONFIG: Record<PaymentStatus, { label: string; color: string; bg: string; icon: string }> = {
-  success: { label: 'Successful', color: Colors.success, bg: '#E8F5E9', icon: 'checkmark-circle' },
-  failed:  { label: 'Failed',     color: Colors.error,   bg: '#FFEBEE', icon: 'close-circle' },
-  pending: { label: 'Pending',    color: '#E65100',      bg: '#FFF3E0', icon: 'time' },
 };
 
 const mockPayments: PaymentRecord[] = [
@@ -69,6 +64,14 @@ const mockPayments: PaymentRecord[] = [
 export default function PaymentHistoryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
+  const STATUS_CONFIG: Record<PaymentStatus, { label: string; color: string; bg: string; icon: string }> = {
+    success: { label: 'Successful', color: colors.success, bg: '#E8F5E9', icon: 'checkmark-circle' },
+    failed:  { label: 'Failed',     color: colors.error,   bg: '#FFEBEE', icon: 'close-circle' },
+    pending: { label: 'Pending',    color: '#E65100',      bg: '#FFF3E0', icon: 'time' },
+  };
 
   const total = mockPayments
     .filter((p) => p.status === 'success')
@@ -76,18 +79,18 @@ export default function PaymentHistoryScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Dark header + summary merged */}
+      {/* Header + summary merged */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
         <View style={styles.headerDecoA} />
         <View style={styles.headerRow}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="chevron-back" size={20} color={Colors.textPrimary} />
+            <Ionicons name="chevron-back" size={20} color={colors.textPrimary} />
           </TouchableOpacity>
           <Text style={styles.title}>Payment History</Text>
           <View style={{ width: 36 }} />
         </View>
 
-        {/* Summary card inline in dark header */}
+        {/* Summary card inline */}
         <View style={styles.summaryCard}>
           <Text style={styles.summaryLabel}>Total spent</Text>
           <Text style={styles.summaryAmount}>₦{total.toLocaleString()}</Text>
@@ -102,7 +105,7 @@ export default function PaymentHistoryScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Ionicons name="receipt-outline" size={48} color={Colors.textTertiary} />
+            <Ionicons name="receipt-outline" size={48} color={colors.textTertiary} />
             <Text style={styles.emptyTitle}>No Payments Yet</Text>
             <Text style={styles.emptySubtitle}>Your payment receipts will appear here.</Text>
           </View>
@@ -139,155 +142,157 @@ export default function PaymentHistoryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  header: {
-    backgroundColor: Colors.white,
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-  },
-  headerDecoA: {
-    position: 'absolute',
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    backgroundColor: 'transparent',
-    top: -60,
-    right: -40,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: Spacing.md,
-    marginBottom: Spacing.lg,
-  },
-  backButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: FontSize.xl,
-    fontWeight: '800',
-    color: Colors.white,
-  },
-  summaryCard: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: BorderRadius.xl,
-    padding: Spacing.xl,
-    gap: Spacing.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
-  },
-  summaryLabel: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-    fontWeight: '500',
-  },
-  summaryAmount: {
-    fontSize: FontSize.xxxl,
-    fontWeight: '800',
-    color: Colors.lime,
-  },
-  summaryNote: {
-    fontSize: FontSize.xs,
-    color: Colors.textSecondary,
-    marginTop: Spacing.xs,
-    lineHeight: 16,
-  },
-  list: {
-    paddingHorizontal: Spacing.xl,
-    gap: Spacing.md,
-  },
-  card: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
-    ...Shadow.sm,
-  },
-  cardLeft: {
-    alignItems: 'center',
-    paddingTop: 2,
-  },
-  iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cardBody: {
-    flex: 1,
-    gap: 4,
-  },
-  cardTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  cardType: {
-    fontSize: FontSize.md,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  cardAmount: {
-    fontSize: FontSize.md,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  cardDesc: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-  },
-  cardBottom: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 2,
-  },
-  cardDate: {
-    fontSize: FontSize.xs,
-    color: Colors.textTertiary,
-  },
-  statusPill: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
-    borderRadius: BorderRadius.full,
-  },
-  statusText: {
-    fontSize: FontSize.xs,
-    fontWeight: '600',
-  },
-  cardRef: {
-    fontSize: FontSize.xs,
-    color: Colors.textTertiary,
-    fontFamily: 'monospace',
-    marginTop: 2,
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: Spacing.huge * 2,
-    gap: Spacing.md,
-  },
-  emptyTitle: {
-    fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  emptySubtitle: {
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-  },
-});
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    header: {
+      backgroundColor: colors.white,
+      paddingHorizontal: Spacing.lg,
+      paddingBottom: Spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.borderLight,
+    },
+    headerDecoA: {
+      position: 'absolute',
+      width: 160,
+      height: 160,
+      borderRadius: 80,
+      backgroundColor: 'transparent',
+      top: -60,
+      right: -40,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginTop: Spacing.md,
+      marginBottom: Spacing.lg,
+    },
+    backButton: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: 'rgba(255,255,255,0.12)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    title: {
+      fontSize: FontSize.xl,
+      fontWeight: '800',
+      color: colors.textPrimary,
+    },
+    summaryCard: {
+      backgroundColor: 'rgba(255,255,255,0.1)',
+      borderRadius: BorderRadius.xl,
+      padding: Spacing.xl,
+      gap: Spacing.sm,
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.12)',
+    },
+    summaryLabel: {
+      fontSize: FontSize.sm,
+      color: colors.textSecondary,
+      fontWeight: '500',
+    },
+    summaryAmount: {
+      fontSize: FontSize.xxxl,
+      fontWeight: '800',
+      color: colors.lime,
+    },
+    summaryNote: {
+      fontSize: FontSize.xs,
+      color: colors.textSecondary,
+      marginTop: Spacing.xs,
+      lineHeight: 16,
+    },
+    list: {
+      paddingHorizontal: Spacing.xl,
+      gap: Spacing.md,
+    },
+    card: {
+      flexDirection: 'row',
+      gap: Spacing.md,
+      backgroundColor: colors.white,
+      borderRadius: BorderRadius.lg,
+      padding: Spacing.lg,
+      ...Shadow.sm,
+    },
+    cardLeft: {
+      alignItems: 'center',
+      paddingTop: 2,
+    },
+    iconCircle: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    cardBody: {
+      flex: 1,
+      gap: 4,
+    },
+    cardTop: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    cardType: {
+      fontSize: FontSize.md,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    cardAmount: {
+      fontSize: FontSize.md,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    cardDesc: {
+      fontSize: FontSize.sm,
+      color: colors.textSecondary,
+    },
+    cardBottom: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: 2,
+    },
+    cardDate: {
+      fontSize: FontSize.xs,
+      color: colors.textTertiary,
+    },
+    statusPill: {
+      paddingHorizontal: Spacing.sm,
+      paddingVertical: 2,
+      borderRadius: BorderRadius.full,
+    },
+    statusText: {
+      fontSize: FontSize.xs,
+      fontWeight: '600',
+    },
+    cardRef: {
+      fontSize: FontSize.xs,
+      color: colors.textTertiary,
+      fontFamily: 'monospace',
+      marginTop: 2,
+    },
+    emptyState: {
+      alignItems: 'center',
+      paddingVertical: Spacing.huge * 2,
+      gap: Spacing.md,
+    },
+    emptyTitle: {
+      fontSize: FontSize.xl,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    emptySubtitle: {
+      fontSize: FontSize.md,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+  });
+}

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import {
   View, Text, StyleSheet, Dimensions, TouchableOpacity,
   Animated, StatusBar, Image,
@@ -6,7 +6,9 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import type { ThemeColors } from '../../src/constants/theme';
+import { useColors } from '../../src/context/ThemeContext';
 import { useAuthStore } from '../../src/store/auth';
 
 const { width } = Dimensions.get('window');
@@ -30,7 +32,8 @@ const SLIDES = [
 ];
 
 // ── Slide 1: landscape photo + map overlay ─────────────────────
-function Slide1() {
+function Slide1({ colors }: { colors: ThemeColors }) {
+  const il = useMemo(() => makeIlStyles(colors), [colors]);
   return (
     <View style={il.root}>
       {/* White map-hint area */}
@@ -44,7 +47,7 @@ function Slide1() {
           <View style={il.pinBubble}>
             <Text style={il.pinText}>2.4 km</Text>
           </View>
-          <Ionicons name="location" size={28} color={Colors.lime} />
+          <Ionicons name="location" size={28} color={colors.lime} />
         </View>
         {/* Red origin pins */}
         <View style={[il.pinWrap, { bottom: '15%', left: '15%' }]}>
@@ -65,7 +68,8 @@ function Slide1() {
 }
 
 // ── Slide 2: stacked property cards + verification chips ────────
-function Slide2() {
+function Slide2({ colors }: { colors: ThemeColors }) {
+  const il = useMemo(() => makeIlStyles(colors), [colors]);
   const PHOTOS = [
     'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=500',
     'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=500',
@@ -107,7 +111,7 @@ function Slide2() {
       <View style={il.chipsCol}>
         {BADGES.map((label) => (
           <View key={label} style={il.chip}>
-            <Ionicons name="checkmark-circle" size={13} color={Colors.lime} />
+            <Ionicons name="checkmark-circle" size={13} color={colors.lime} />
             <Text style={il.chipText}>{label}</Text>
           </View>
         ))}
@@ -117,7 +121,8 @@ function Slide2() {
 }
 
 // ── Slide 3: calendar / schedule UI ────────────────────────────
-function Slide3() {
+function Slide3({ colors }: { colors: ThemeColors }) {
+  const il = useMemo(() => makeIlStyles(colors), [colors]);
   return (
     <View style={il.calWrap}>
       <View style={il.calCard}>
@@ -158,6 +163,9 @@ export default function OnboardingScreen() {
   const router  = useRouter();
   const insets  = useSafeAreaInsets();
   const { setOnboardingComplete } = useAuthStore();
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   const [idx, setIdx] = useState(0);
   const anim = useRef(new Animated.Value(1)).current;
 
@@ -171,7 +179,7 @@ export default function OnboardingScreen() {
   const finish  = () => { setOnboardingComplete(); router.replace('/(auth)/login'); };
   const next    = () => (idx < SLIDES.length - 1 ? goTo(idx + 1) : finish());
   const slide   = SLIDES[idx];
-  const SLIDES_IL = [<Slide1 />, <Slide2 />, <Slide3 />];
+  const SLIDES_IL = [<Slide1 colors={colors} />, <Slide2 colors={colors} />, <Slide3 colors={colors} />];
 
   return (
     <View style={styles.root}>
@@ -197,7 +205,7 @@ export default function OnboardingScreen() {
         <Text style={styles.desc}>{slide.description}</Text>
         <TouchableOpacity style={styles.cta} onPress={next} activeOpacity={0.88}>
           <Text style={styles.ctaText}>Get Started</Text>
-          <Ionicons name="arrow-forward" size={15} color={Colors.textPrimary} />
+          <Ionicons name="arrow-forward" size={15} color={colors.textPrimary} />
         </TouchableOpacity>
       </Animated.View>
 
@@ -210,143 +218,147 @@ export default function OnboardingScreen() {
 }
 
 // ── Main styles ─────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: Colors.white },
-  nav: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.xl,
-    paddingBottom: Spacing.sm,
-  },
-  dotsRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  dot: { height: 6, borderRadius: 3 },
-  dotActive: { width: 22, backgroundColor: Colors.lime },
-  dotGray:   { width: 6,  backgroundColor: Colors.border },
-  skip: { fontSize: FontSize.sm, color: Colors.textTertiary, fontWeight: '500' },
-  content: {
-    paddingHorizontal: Spacing.xl,
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.xl,
-  },
-  title: {
-    fontSize: 27,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-    lineHeight: 35,
-    marginBottom: Spacing.md,
-    letterSpacing: -0.3,
-  },
-  desc: {
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-    lineHeight: 23,
-    marginBottom: Spacing.xl,
-  },
-  cta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    alignSelf: 'flex-start',
-    backgroundColor: Colors.lime,
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: 13,
-    borderRadius: BorderRadius.full,
-  },
-  ctaText: { fontSize: FontSize.md, fontWeight: '700', color: Colors.textPrimary },
-  illustration: {
-    flex: 1,
-    marginHorizontal: Spacing.xl,
-    marginBottom: Spacing.xl,
-    borderRadius: 24,
-    overflow: 'hidden',
-    backgroundColor: Colors.surface,
-  },
-});
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    root: { flex: 1, backgroundColor: colors.white },
+    nav: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: Spacing.xl,
+      paddingBottom: Spacing.sm,
+    },
+    dotsRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    dot: { height: 6, borderRadius: 3 },
+    dotActive: { width: 22, backgroundColor: colors.lime },
+    dotGray:   { width: 6,  backgroundColor: colors.border },
+    skip: { fontSize: FontSize.sm, color: colors.textTertiary, fontWeight: '500' },
+    content: {
+      paddingHorizontal: Spacing.xl,
+      paddingTop: Spacing.md,
+      paddingBottom: Spacing.xl,
+    },
+    title: {
+      fontSize: 27,
+      fontWeight: '800',
+      color: colors.textPrimary,
+      lineHeight: 35,
+      marginBottom: Spacing.md,
+      letterSpacing: -0.3,
+    },
+    desc: {
+      fontSize: FontSize.md,
+      color: colors.textSecondary,
+      lineHeight: 23,
+      marginBottom: Spacing.xl,
+    },
+    cta: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      alignSelf: 'flex-start',
+      backgroundColor: colors.lime,
+      paddingHorizontal: Spacing.xl,
+      paddingVertical: 13,
+      borderRadius: BorderRadius.full,
+    },
+    ctaText: { fontSize: FontSize.md, fontWeight: '700', color: colors.textPrimary },
+    illustration: {
+      flex: 1,
+      marginHorizontal: Spacing.xl,
+      marginBottom: Spacing.xl,
+      borderRadius: 24,
+      overflow: 'hidden',
+      backgroundColor: colors.surface,
+    },
+  });
+}
 
 // ── Illustration sub-styles ─────────────────────────────────────
-const il = StyleSheet.create({
-  // Slide 1
-  root:    { flex: 1 },
-  mapArea: { height: '40%', backgroundColor: Colors.surface, position: 'relative' },
-  pathDot: {
-    position: 'absolute',
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    borderStyle: 'dashed',
-  },
-  pinWrap:   { position: 'absolute', alignItems: 'center' },
-  pinBubble: {
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.md,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    marginBottom: 2,
-    ...Shadow.sm,
-  },
-  pinText: { fontSize: 10, fontWeight: '700', color: Colors.textPrimary },
-  photo:   { flex: 1, width: '100%' },
+function makeIlStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    // Slide 1
+    root:    { flex: 1 },
+    mapArea: { height: '40%', backgroundColor: colors.surface, position: 'relative' },
+    pathDot: {
+      position: 'absolute',
+      width: 7,
+      height: 7,
+      borderRadius: 3.5,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      borderStyle: 'dashed',
+    },
+    pinWrap:   { position: 'absolute', alignItems: 'center' },
+    pinBubble: {
+      backgroundColor: colors.white,
+      borderRadius: BorderRadius.md,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      marginBottom: 2,
+      ...Shadow.sm,
+    },
+    pinText: { fontSize: 10, fontWeight: '700', color: colors.textPrimary },
+    photo:   { flex: 1, width: '100%' },
 
-  // Slide 2 cards
-  card: {
-    position: 'absolute',
-    top: 12,
-    bottom: 12,
-    borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOpacity: 0.18,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
-  },
-  chipsCol: {
-    position: 'absolute',
-    right: 12,
-    top: '20%',
-    gap: 12,
-    alignItems: 'flex-start',
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.full,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 4,
-  },
-  chipText: { fontSize: 11, fontWeight: '700', color: Colors.textPrimary },
+    // Slide 2 cards
+    card: {
+      position: 'absolute',
+      top: 12,
+      bottom: 12,
+      borderRadius: 20,
+      overflow: 'hidden',
+      shadowColor: '#000',
+      shadowOpacity: 0.18,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 6,
+    },
+    chipsCol: {
+      position: 'absolute',
+      right: 12,
+      top: '20%',
+      gap: 12,
+      alignItems: 'flex-start',
+    },
+    chip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      backgroundColor: colors.white,
+      borderRadius: BorderRadius.full,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      shadowColor: '#000',
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 4,
+    },
+    chipText: { fontSize: 11, fontWeight: '700', color: colors.textPrimary },
 
-  // Slide 3 calendar
-  calWrap: { flex: 1, padding: Spacing.lg, justifyContent: 'center' },
-  calCard: {
-    backgroundColor: Colors.white,
-    borderRadius: 20,
-    padding: Spacing.lg,
-    ...Shadow.md,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-  },
-  calHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  calDay:     { fontSize: FontSize.sm, fontWeight: '700', color: Colors.textTertiary, letterSpacing: 0.6 },
-  calDate:    { fontSize: FontSize.xs, color: Colors.textTertiary, fontWeight: '500' },
-  calEvent:   { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.sm, marginBottom: Spacing.lg },
-  calBar:     { width: 4, borderRadius: 2, backgroundColor: Colors.lime, alignSelf: 'stretch', minHeight: 36 },
-  calTitle:   { fontSize: FontSize.sm, fontWeight: '700', color: Colors.textPrimary, marginBottom: 3 },
-  calTime:    { fontSize: FontSize.xs, color: Colors.textSecondary },
-  calDivider: { height: 1, backgroundColor: Colors.borderLight, marginBottom: Spacing.lg },
-});
+    // Slide 3 calendar
+    calWrap: { flex: 1, padding: Spacing.lg, justifyContent: 'center' },
+    calCard: {
+      backgroundColor: colors.white,
+      borderRadius: 20,
+      padding: Spacing.lg,
+      ...Shadow.md,
+      borderWidth: 1,
+      borderColor: colors.borderLight,
+    },
+    calHeaderRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 10,
+    },
+    calDay:     { fontSize: FontSize.sm, fontWeight: '700', color: colors.textTertiary, letterSpacing: 0.6 },
+    calDate:    { fontSize: FontSize.xs, color: colors.textTertiary, fontWeight: '500' },
+    calEvent:   { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.sm, marginBottom: Spacing.lg },
+    calBar:     { width: 4, borderRadius: 2, backgroundColor: colors.lime, alignSelf: 'stretch', minHeight: 36 },
+    calTitle:   { fontSize: FontSize.sm, fontWeight: '700', color: colors.textPrimary, marginBottom: 3 },
+    calTime:    { fontSize: FontSize.xs, color: colors.textSecondary },
+    calDivider: { height: 1, backgroundColor: colors.borderLight, marginBottom: Spacing.lg },
+  });
+}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -12,13 +12,18 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
+import type { ThemeColors } from '../../src/constants/theme';
+import { useColors } from '../../src/context/ThemeContext';
 import { LandrushLogo } from '../../src/components/LandrushLogo';
 import { useAuthStore } from '../../src/store/auth';
 
 export default function SignupScreen() {
   const router = useRouter();
   const { setUser } = useAuthStore();
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -75,7 +80,7 @@ export default function SignupScreen() {
         <View style={styles.decoCircleLarge} />
         <View style={styles.decoCircleSmall} />
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
+          <Ionicons name="chevron-back" size={22} color={colors.textPrimary} />
         </TouchableOpacity>
         <LandrushLogo size={28} />
         <Text style={styles.headerTitle}>Create account</Text>
@@ -110,7 +115,7 @@ export default function SignupScreen() {
             onPress={() => handleSocialSignIn('google')}
             disabled={isSocialLoading !== null}
           >
-            <Ionicons name="logo-google" size={18} color={Colors.textPrimary} />
+            <Ionicons name="logo-google" size={18} color={colors.textPrimary} />
             <Text style={styles.socialText}>
               {isSocialLoading === 'google' ? 'Connecting…' : 'Google'}
             </Text>
@@ -120,7 +125,7 @@ export default function SignupScreen() {
             onPress={() => handleSocialSignIn('apple')}
             disabled={isSocialLoading !== null}
           >
-            <Ionicons name="logo-apple" size={18} color={Colors.textPrimary} />
+            <Ionicons name="logo-apple" size={18} color={colors.textPrimary} />
             <Text style={styles.socialText}>
               {isSocialLoading === 'apple' ? 'Connecting…' : 'Apple'}
             </Text>
@@ -136,52 +141,52 @@ export default function SignupScreen() {
         {/* Form */}
         <View style={styles.form}>
           <View style={styles.inputWrapper}>
-            <Ionicons name="mail-outline" size={18} color={Colors.textTertiary} style={styles.inputIcon} />
+            <Ionicons name="mail-outline" size={18} color={colors.textTertiary} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               value={emailOrPhone}
               onChangeText={setEmailOrPhone}
               placeholder="Email or Phone Number"
-              placeholderTextColor={Colors.textTertiary}
+              placeholderTextColor={colors.textTertiary}
               keyboardType="email-address"
               autoCapitalize="none"
             />
           </View>
 
           <View style={styles.inputWrapper}>
-            <Ionicons name="lock-closed-outline" size={18} color={Colors.textTertiary} style={styles.inputIcon} />
+            <Ionicons name="lock-closed-outline" size={18} color={colors.textTertiary} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               value={password}
               onChangeText={setPassword}
               placeholder="Password"
-              placeholderTextColor={Colors.textTertiary}
+              placeholderTextColor={colors.textTertiary}
               secureTextEntry={!showPassword}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
               <Ionicons
                 name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                 size={18}
-                color={Colors.textTertiary}
+                color={colors.textTertiary}
               />
             </TouchableOpacity>
           </View>
 
           <View style={styles.inputWrapper}>
-            <Ionicons name="shield-checkmark-outline" size={18} color={Colors.textTertiary} style={styles.inputIcon} />
+            <Ionicons name="shield-checkmark-outline" size={18} color={colors.textTertiary} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               placeholder="Confirm Password"
-              placeholderTextColor={Colors.textTertiary}
+              placeholderTextColor={colors.textTertiary}
               secureTextEntry={!showConfirmPassword}
             />
             <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeBtn}>
               <Ionicons
                 name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
                 size={18}
-                color={Colors.textTertiary}
+                color={colors.textTertiary}
               />
             </TouchableOpacity>
           </View>
@@ -218,201 +223,202 @@ export default function SignupScreen() {
   );
 }
 
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: Colors.white,
-  },
-  header: {
-    paddingTop: 56,
-    paddingHorizontal: Spacing.xxl,
-    paddingBottom: Spacing.xxxl,
-    gap: Spacing.sm,
-    overflow: 'hidden',
-  },
-  decoCircleLarge: {
-    position: 'absolute',
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: 'transparent',
-    top: -50,
-    right: -50,
-  },
-  decoCircleSmall: {
-    position: 'absolute',
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: 'transparent',
-    bottom: 16,
-    right: 50,
-  },
-  backButton: {
-    width: 38,
-    height: 38,
-    borderRadius: BorderRadius.md,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.lg,
-  },
-  headerTitle: {
-    fontSize: FontSize.display,
-    fontWeight: '800',
-    color: Colors.white,
-    marginTop: Spacing.md,
-  },
-  headerSub: {
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-  },
-  card: {
-    flex: 1,
-    backgroundColor: Colors.white,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-  },
-  cardContent: {
-    paddingHorizontal: Spacing.xxl,
-    paddingTop: Spacing.xxl,
-    paddingBottom: 48,
-  },
-  tabRow: {
-    flexDirection: 'row',
-    backgroundColor: Colors.background,
-    borderRadius: BorderRadius.xl,
-    padding: 4,
-    marginBottom: Spacing.xxl,
-  },
-  tabItem: {
-    flex: 1,
-    paddingVertical: Spacing.md,
-    alignItems: 'center',
-    borderRadius: BorderRadius.lg,
-  },
-  tabActive: {
-    backgroundColor: Colors.white,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  tabDivider: {
-    width: 1,
-    backgroundColor: Colors.borderLight,
-    marginVertical: 6,
-  },
-  tabText: {
-    fontSize: FontSize.md,
-    color: Colors.textTertiary,
-    fontWeight: '500',
-  },
-  tabTextActive: {
-    fontSize: FontSize.md,
-    color: Colors.textPrimary,
-    fontWeight: '700',
-  },
-  socialRow: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-    marginBottom: Spacing.xl,
-  },
-  socialBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    height: 48,
-    borderRadius: BorderRadius.xl,
-    backgroundColor: Colors.background,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  socialText: {
-    fontSize: FontSize.md,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  socialBtnLoading: {
-    opacity: 0.65,
-    borderColor: Colors.lime,
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-    marginBottom: Spacing.xl,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: Colors.borderLight,
-  },
-  dividerText: {
-    fontSize: FontSize.sm,
-    color: Colors.textTertiary,
-  },
-  form: {
-    gap: Spacing.md,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: 52,
-    backgroundColor: Colors.background,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    paddingHorizontal: Spacing.lg,
-  },
-  inputIcon: {
-    marginRight: Spacing.sm,
-  },
-  input: {
-    flex: 1,
-    fontSize: FontSize.md,
-    color: Colors.textPrimary,
-  },
-  eyeBtn: {
-    padding: 4,
-  },
-  primaryBtn: {
-    backgroundColor: Colors.lime,
-    height: 52,
-    borderRadius: BorderRadius.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: Spacing.sm,
-  },
-  primaryBtnDisabled: {
-    opacity: 0.55,
-  },
-  primaryBtnText: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  termsText: {
-    textAlign: 'center',
-    fontSize: FontSize.sm,
-    color: Colors.textTertiary,
-    lineHeight: 20,
-  },
-  termsLink: {
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  loginPrompt: {
-    textAlign: 'center',
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-  },
-  loginLink: {
-    color: Colors.primary,
-    fontWeight: '700',
-  },
-});
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: colors.white,
+    },
+    header: {
+      paddingTop: 56,
+      paddingHorizontal: Spacing.xxl,
+      paddingBottom: Spacing.xxxl,
+      gap: Spacing.sm,
+      overflow: 'hidden',
+    },
+    decoCircleLarge: {
+      position: 'absolute',
+      width: 200,
+      height: 200,
+      borderRadius: 100,
+      backgroundColor: 'transparent',
+      top: -50,
+      right: -50,
+    },
+    decoCircleSmall: {
+      position: 'absolute',
+      width: 90,
+      height: 90,
+      borderRadius: 45,
+      backgroundColor: 'transparent',
+      bottom: 16,
+      right: 50,
+    },
+    backButton: {
+      width: 38,
+      height: 38,
+      borderRadius: BorderRadius.md,
+      backgroundColor: 'rgba(255,255,255,0.12)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: Spacing.lg,
+    },
+    headerTitle: {
+      fontSize: FontSize.display,
+      fontWeight: '800',
+      color: colors.white,
+      marginTop: Spacing.md,
+    },
+    headerSub: {
+      fontSize: FontSize.md,
+      color: colors.textSecondary,
+    },
+    card: {
+      flex: 1,
+      backgroundColor: colors.white,
+      borderTopLeftRadius: 28,
+      borderTopRightRadius: 28,
+    },
+    cardContent: {
+      paddingHorizontal: Spacing.xxl,
+      paddingTop: Spacing.xxl,
+      paddingBottom: 48,
+    },
+    tabRow: {
+      flexDirection: 'row',
+      backgroundColor: colors.background,
+      borderRadius: BorderRadius.xl,
+      padding: 4,
+      marginBottom: Spacing.xxl,
+    },
+    tabItem: {
+      flex: 1,
+      paddingVertical: Spacing.md,
+      alignItems: 'center',
+      borderRadius: BorderRadius.lg,
+    },
+    tabActive: {
+      backgroundColor: colors.white,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.08,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    tabDivider: {
+      width: 1,
+      backgroundColor: colors.borderLight,
+      marginVertical: 6,
+    },
+    tabText: {
+      fontSize: FontSize.md,
+      color: colors.textTertiary,
+      fontWeight: '500',
+    },
+    tabTextActive: {
+      fontSize: FontSize.md,
+      color: colors.textPrimary,
+      fontWeight: '700',
+    },
+    socialRow: {
+      flexDirection: 'row',
+      gap: Spacing.md,
+      marginBottom: Spacing.xl,
+    },
+    socialBtn: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing.sm,
+      height: 48,
+      borderRadius: BorderRadius.xl,
+      backgroundColor: colors.background,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    socialText: {
+      fontSize: FontSize.md,
+      fontWeight: '600',
+      color: colors.textPrimary,
+    },
+    socialBtnLoading: {
+      opacity: 0.65,
+      borderColor: colors.lime,
+    },
+    dividerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.md,
+      marginBottom: Spacing.xl,
+    },
+    dividerLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: colors.borderLight,
+    },
+    dividerText: {
+      fontSize: FontSize.sm,
+      color: colors.textTertiary,
+    },
+    form: {
+      gap: Spacing.md,
+    },
+    inputWrapper: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      height: 52,
+      backgroundColor: colors.background,
+      borderRadius: BorderRadius.xl,
+      borderWidth: 1,
+      borderColor: colors.border,
+      paddingHorizontal: Spacing.lg,
+    },
+    inputIcon: {
+      marginRight: Spacing.sm,
+    },
+    input: {
+      flex: 1,
+      fontSize: FontSize.md,
+      color: colors.textPrimary,
+    },
+    eyeBtn: {
+      padding: 4,
+    },
+    primaryBtn: {
+      backgroundColor: colors.lime,
+      height: 52,
+      borderRadius: BorderRadius.xl,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: Spacing.sm,
+    },
+    primaryBtnDisabled: {
+      opacity: 0.55,
+    },
+    primaryBtnText: {
+      fontSize: FontSize.lg,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    termsText: {
+      textAlign: 'center',
+      fontSize: FontSize.sm,
+      color: colors.textTertiary,
+      lineHeight: 20,
+    },
+    termsLink: {
+      color: colors.primary,
+      fontWeight: '600',
+    },
+    loginPrompt: {
+      textAlign: 'center',
+      fontSize: FontSize.md,
+      color: colors.textSecondary,
+    },
+    loginLink: {
+      color: colors.primary,
+      fontWeight: '700',
+    },
+  });
+}

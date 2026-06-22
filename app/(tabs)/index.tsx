@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,12 +8,13 @@ import {
   TouchableOpacity,
   RefreshControl,
   Image,
-  TextInput,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import type { ThemeColors } from '../../src/constants/theme';
+import { useColors } from '../../src/context/ThemeContext';
 import { ListingCard } from '../../src/components/ListingCard';
 import { useListingsStore } from '../../src/store/listings';
 import { useAuthStore } from '../../src/store/auth';
@@ -35,11 +36,11 @@ const CATEGORIES: Category[] = [
   { key: 'distress', label: 'Distress',  icon: 'flame-outline'      },
 ];
 
-function Initials({ name, size = 32 }: { name: string; size?: number }) {
+function Initials({ name, size = 32, colors }: { name: string; size?: number; colors: ThemeColors }) {
   const parts = name.trim().split(' ');
   const text  = ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase();
   return (
-    <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: Colors.lime, alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: colors.lime, alignItems: 'center', justifyContent: 'center' }}>
       <Text style={{ fontSize: size * 0.38, fontWeight: '800', color: '#222' }}>{text}</Text>
     </View>
   );
@@ -52,6 +53,8 @@ export default function ExploreScreen() {
   const { filteredListings, activeCategory, searchQuery, setListings, setActiveCategory, setSearchQuery } =
     useListingsStore();
   const [refreshing, setRefreshing] = useState(false);
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   useEffect(() => { setListings(mockListings); }, []);
 
@@ -69,7 +72,7 @@ export default function ExploreScreen() {
     <ScrollView
       style={styles.root}
       showsVerticalScrollIndicator={false}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.lime} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.lime} />}
     >
       {/* ── Top bar ─────────────────────────────────────── */}
       <View style={[styles.topBar, { paddingTop: insets.top + Spacing.sm }]}>
@@ -79,12 +82,12 @@ export default function ExploreScreen() {
         </View>
         <View style={styles.topBarRight}>
           <TouchableOpacity style={styles.iconBtn} onPress={() => router.push('/notifications')}>
-            <Ionicons name="notifications-outline" size={22} color={Colors.textPrimary} />
+            <Ionicons name="notifications-outline" size={22} color={colors.textPrimary} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push('/(tabs)/profile')}>
             {user?.avatar
               ? <Image source={{ uri: user.avatar }} style={styles.avatar} />
-              : <Initials name={displayName} size={34} />
+              : <Initials name={displayName} size={34} colors={colors} />
             }
           </TouchableOpacity>
         </View>
@@ -94,13 +97,13 @@ export default function ExploreScreen() {
       <View style={styles.searchWrap}>
         <TouchableOpacity style={styles.searchBar} onPress={() => router.push('/search')} activeOpacity={0.85}>
           <View style={styles.searchIconCircle}>
-            <Ionicons name="search" size={16} color={Colors.white} />
+            <Ionicons name="search" size={16} color={colors.white} />
           </View>
           <View style={styles.searchText}>
             <Text style={styles.searchPlaceholder}>{searchQuery || 'Search land — location, size, type'}</Text>
           </View>
           <TouchableOpacity style={styles.filterBtn}>
-            <Ionicons name="options-outline" size={18} color={Colors.textPrimary} />
+            <Ionicons name="options-outline" size={18} color={colors.textPrimary} />
           </TouchableOpacity>
         </TouchableOpacity>
       </View>
@@ -121,7 +124,7 @@ export default function ExploreScreen() {
               activeOpacity={0.7}
             >
               <View style={[styles.catIconBox, active && styles.catIconBoxActive]}>
-                <Ionicons name={cat.icon} size={22} color={active ? Colors.white : Colors.textSecondary} />
+                <Ionicons name={cat.icon} size={22} color={active ? colors.white : colors.textSecondary} />
               </View>
               <Text style={[styles.catLabel, active && styles.catLabelActive]}>{cat.label}</Text>
               {active && <View style={styles.catUnderline} />}
@@ -154,13 +157,13 @@ export default function ExploreScreen() {
       {/* ── Map explore banner ──────────────────────────── */}
       <TouchableOpacity style={styles.mapBanner} onPress={() => router.push('/map' as any)} activeOpacity={0.88}>
         <View style={styles.mapBannerLeft}>
-          <Ionicons name="map-outline" size={26} color={Colors.lime} />
+          <Ionicons name="map-outline" size={26} color={colors.lime} />
           <View>
             <Text style={styles.mapBannerTitle}>Explore on Map</Text>
             <Text style={styles.mapBannerSub}>{filteredListings.length} listings visible</Text>
           </View>
         </View>
-        <Ionicons name="chevron-forward" size={18} color={Colors.textSecondary} />
+        <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
       </TouchableOpacity>
 
       {/* ── Divider ─────────────────────────────────────── */}
@@ -188,103 +191,105 @@ export default function ExploreScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: Colors.white },
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    root: { flex: 1, backgroundColor: colors.white },
 
-  // Top bar
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.md,
-    backgroundColor: Colors.white,
-  },
-  appName: { fontSize: FontSize.xxl, fontWeight: '800', color: Colors.textPrimary },
-  appTagline: { fontSize: FontSize.xs, color: Colors.textSecondary, marginTop: 1 },
-  topBarRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
-  iconBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  avatar: { width: 34, height: 34, borderRadius: 17, borderWidth: 2, borderColor: Colors.lime },
+    // Top bar
+    topBar: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: Spacing.lg,
+      paddingBottom: Spacing.md,
+      backgroundColor: colors.white,
+    },
+    appName: { fontSize: FontSize.xxl, fontWeight: '800', color: colors.textPrimary },
+    appTagline: { fontSize: FontSize.xs, color: colors.textSecondary, marginTop: 1 },
+    topBarRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
+    iconBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+    avatar: { width: 34, height: 34, borderRadius: 17, borderWidth: 2, borderColor: colors.lime },
 
-  // Search bar — Airbnb pill style
-  searchWrap: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.lg },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.full,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    paddingVertical: Spacing.md,
-    paddingLeft: Spacing.sm,
-    paddingRight: Spacing.md,
-    gap: Spacing.sm,
-    ...Shadow.md,
-  },
-  searchIconCircle: {
-    width: 34, height: 34, borderRadius: 17,
-    backgroundColor: Colors.textPrimary,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  searchText: { flex: 1 },
-  searchPlaceholder: { fontSize: FontSize.sm, color: Colors.textSecondary },
-  filterBtn: {
-    width: 34, height: 34, borderRadius: 17,
-    borderWidth: 1, borderColor: Colors.border,
-    alignItems: 'center', justifyContent: 'center',
-  },
+    // Search bar — Airbnb pill style
+    searchWrap: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.lg },
+    searchBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.white,
+      borderRadius: BorderRadius.full,
+      borderWidth: 1,
+      borderColor: colors.border,
+      paddingVertical: Spacing.md,
+      paddingLeft: Spacing.sm,
+      paddingRight: Spacing.md,
+      gap: Spacing.sm,
+      ...Shadow.md,
+    },
+    searchIconCircle: {
+      width: 34, height: 34, borderRadius: 17,
+      backgroundColor: colors.textPrimary,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    searchText: { flex: 1 },
+    searchPlaceholder: { fontSize: FontSize.sm, color: colors.textSecondary },
+    filterBtn: {
+      width: 34, height: 34, borderRadius: 17,
+      borderWidth: 1, borderColor: colors.border,
+      alignItems: 'center', justifyContent: 'center',
+    },
 
-  // Category row
-  catRow: { paddingHorizontal: Spacing.lg, gap: Spacing.xl, paddingBottom: Spacing.sm },
-  catItem: { alignItems: 'center', gap: Spacing.xs, width: 60 },
-  catIconBox: {
-    width: 52, height: 52, borderRadius: 16,
-    backgroundColor: Colors.surface,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1.5, borderColor: Colors.borderLight,
-  },
-  catIconBoxActive: {
-    backgroundColor: Colors.textPrimary,
-    borderColor: Colors.textPrimary,
-  },
-  catLabel: { fontSize: 10, color: Colors.textSecondary, fontWeight: '500', textAlign: 'center' },
-  catLabelActive: { color: Colors.textPrimary, fontWeight: '700' },
-  catUnderline: { width: 20, height: 2, borderRadius: 1, backgroundColor: Colors.textPrimary, marginTop: -2 },
+    // Category row
+    catRow: { paddingHorizontal: Spacing.lg, gap: Spacing.xl, paddingBottom: Spacing.sm },
+    catItem: { alignItems: 'center', gap: Spacing.xs, width: 60 },
+    catIconBox: {
+      width: 52, height: 52, borderRadius: 16,
+      backgroundColor: colors.surface,
+      alignItems: 'center', justifyContent: 'center',
+      borderWidth: 1.5, borderColor: colors.borderLight,
+    },
+    catIconBoxActive: {
+      backgroundColor: colors.textPrimary,
+      borderColor: colors.textPrimary,
+    },
+    catLabel: { fontSize: 10, color: colors.textSecondary, fontWeight: '500', textAlign: 'center' },
+    catLabelActive: { color: colors.textPrimary, fontWeight: '700' },
+    catUnderline: { width: 20, height: 2, borderRadius: 1, backgroundColor: colors.textPrimary, marginTop: -2 },
 
-  // Sections
-  sectionHead: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.xl,
-    paddingBottom: Spacing.md,
-  },
-  sectionTitle: { fontSize: FontSize.xl, fontWeight: '700', color: Colors.textPrimary },
-  seeAll: { fontSize: FontSize.sm, fontWeight: '600', color: Colors.textPrimary, textDecorationLine: 'underline' },
+    // Sections
+    sectionHead: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: Spacing.lg,
+      paddingTop: Spacing.xl,
+      paddingBottom: Spacing.md,
+    },
+    sectionTitle: { fontSize: FontSize.xl, fontWeight: '700', color: colors.textPrimary },
+    seeAll: { fontSize: FontSize.sm, fontWeight: '600', color: colors.textPrimary, textDecorationLine: 'underline' },
 
-  hList: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.sm },
+    hList: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.sm },
 
-  // Map banner
-  mapBanner: {
-    marginHorizontal: Spacing.lg,
-    marginTop: Spacing.lg,
-    marginBottom: Spacing.sm,
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.white,
-    ...Shadow.sm,
-  },
-  mapBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
-  mapBannerTitle: { fontSize: FontSize.md, fontWeight: '700', color: Colors.textPrimary },
-  mapBannerSub: { fontSize: FontSize.xs, color: Colors.textSecondary, marginTop: 2 },
+    // Map banner
+    mapBanner: {
+      marginHorizontal: Spacing.lg,
+      marginTop: Spacing.lg,
+      marginBottom: Spacing.sm,
+      padding: Spacing.lg,
+      borderRadius: BorderRadius.xl,
+      borderWidth: 1,
+      borderColor: colors.border,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: colors.white,
+      ...Shadow.sm,
+    },
+    mapBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
+    mapBannerTitle: { fontSize: FontSize.md, fontWeight: '700', color: colors.textPrimary },
+    mapBannerSub: { fontSize: FontSize.xs, color: colors.textSecondary, marginTop: 2 },
 
-  divider: { height: 8, backgroundColor: Colors.surface, marginTop: Spacing.lg },
+    divider: { height: 8, backgroundColor: colors.surface, marginTop: Spacing.lg },
 
-  vList: { paddingHorizontal: Spacing.lg },
-});
+    vList: { paddingHorizontal: Spacing.lg },
+  });
+}

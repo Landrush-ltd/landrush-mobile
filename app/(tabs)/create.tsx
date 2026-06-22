@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -18,18 +18,14 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import type { ThemeColors } from '../../src/constants/theme';
+import { useColors } from '../../src/context/ThemeContext';
 import type { ListingCategory } from '../../src/types/listing';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
 const STEPS = ['Type', 'Details', 'Location', 'Media', 'Price', 'Review'];
-
-const CATEGORY_OPTIONS: { key: ListingCategory; label: string; desc: string; icon: IoniconsName; color: string; bg: string }[] = [
-  { key: 'sale',     label: 'For Sale',      desc: 'Outright purchase of land',        icon: 'home-outline',  color: Colors.sale,     bg: `${Colors.sale}18` },
-  { key: 'lease',    label: 'For Lease',     desc: 'Temporary use for a fixed period', icon: 'leaf-outline',  color: Colors.lease,    bg: `${Colors.lease}18` },
-  { key: 'distress', label: 'Distress Sale', desc: 'Urgent sale at reduced price',     icon: 'flash-outline', color: Colors.distress, bg: `${Colors.distress}18` },
-];
 
 const SIZE_UNITS = ['Plot', 'Acres', 'Hectares', 'Sqm'];
 
@@ -44,9 +40,17 @@ const NG_STATES = [
 export default function CreateListingScreen() {
   const router  = useRouter();
   const insets  = useSafeAreaInsets();
+  const colors  = useColors();
+  const s       = useMemo(() => makeStyles(colors), [colors]);
   const progAnim  = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
   const uploadAnim = useRef(new Animated.Value(0)).current;
+
+  const CATEGORY_OPTIONS: { key: ListingCategory; label: string; desc: string; icon: IoniconsName; color: string; bg: string }[] = [
+    { key: 'sale',     label: 'For Sale',      desc: 'Outright purchase of land',        icon: 'home-outline',  color: colors.sale,     bg: `${colors.sale}18` },
+    { key: 'lease',    label: 'For Lease',     desc: 'Temporary use for a fixed period', icon: 'leaf-outline',  color: colors.lease,    bg: `${colors.lease}18` },
+    { key: 'distress', label: 'Distress Sale', desc: 'Urgent sale at reduced price',     icon: 'flash-outline', color: colors.distress, bg: `${colors.distress}18` },
+  ];
 
   const [step, setStep]         = useState(0);
   const [direction, setDir]     = useState<1 | -1>(1);
@@ -160,7 +164,7 @@ export default function CreateListingScreen() {
             activeOpacity={0.85}
           >
             <View style={[s.catIconWrap, { backgroundColor: active ? opt.color : `${opt.color}22` }]}>
-              <Ionicons name={opt.icon} size={22} color={active ? Colors.white : opt.color} />
+              <Ionicons name={opt.icon} size={22} color={active ? colors.white : opt.color} />
             </View>
             <View style={s.catInfo}>
               <Text style={s.catLabel}>{opt.label}</Text>
@@ -186,7 +190,7 @@ export default function CreateListingScreen() {
         value={title}
         onChangeText={setTitle}
         placeholder="e.g. 3 Plots of Land, Uyo GRA"
-        placeholderTextColor={Colors.textTertiary}
+        placeholderTextColor={colors.textTertiary}
       />
 
       <Text style={s.label}>Description</Text>
@@ -195,7 +199,7 @@ export default function CreateListingScreen() {
         value={description}
         onChangeText={setDesc}
         placeholder="Describe the land, access road, utilities, nearby landmarks…"
-        placeholderTextColor={Colors.textTertiary}
+        placeholderTextColor={colors.textTertiary}
         multiline
         numberOfLines={5}
         textAlignVertical="top"
@@ -208,7 +212,7 @@ export default function CreateListingScreen() {
           value={size}
           onChangeText={setSize}
           placeholder="Enter size"
-          placeholderTextColor={Colors.textTertiary}
+          placeholderTextColor={colors.textTertiary}
           keyboardType="numeric"
         />
       </View>
@@ -232,7 +236,7 @@ export default function CreateListingScreen() {
             value={leaseDur}
             onChangeText={setLeaseDur}
             placeholder="e.g. 2 years, 5 years"
-            placeholderTextColor={Colors.textTertiary}
+            placeholderTextColor={colors.textTertiary}
           />
         </>
       )}
@@ -250,11 +254,11 @@ export default function CreateListingScreen() {
         onPress={() => setStateModalOpen(true)}
         activeOpacity={0.8}
       >
-        <Ionicons name="map-outline" size={18} color={state ? Colors.primary : Colors.textTertiary} />
+        <Ionicons name="map-outline" size={18} color={state ? colors.primary : colors.textTertiary} />
         <Text style={[s.statePickerText, state ? s.statePickerTextFilled : undefined]}>
           {state || 'Select a state'}
         </Text>
-        <Ionicons name="chevron-down" size={16} color={Colors.textTertiary} />
+        <Ionicons name="chevron-down" size={16} color={colors.textTertiary} />
       </TouchableOpacity>
 
       <Text style={s.label}>Area / Address</Text>
@@ -263,11 +267,11 @@ export default function CreateListingScreen() {
         value={location}
         onChangeText={setLoc}
         placeholder="e.g. Behind High Court, Ikot Ekpene"
-        placeholderTextColor={Colors.textTertiary}
+        placeholderTextColor={colors.textTertiary}
       />
 
       <TouchableOpacity style={s.mapPickBtn}>
-        <Ionicons name="location-outline" size={18} color={Colors.primary} />
+        <Ionicons name="location-outline" size={18} color={colors.primary} />
         <Text style={s.mapPickText}>Pin location on map</Text>
       </TouchableOpacity>
     </View>
@@ -291,13 +295,13 @@ export default function CreateListingScreen() {
                 style={s.removeBtn}
                 onPress={() => setPhotos((p) => p.filter((_, idx) => idx !== i))}
               >
-                <Ionicons name="close-circle" size={20} color={Colors.error} />
+                <Ionicons name="close-circle" size={20} color={colors.error} />
               </TouchableOpacity>
             </View>
           ))}
           {photos.length < 8 && (
             <TouchableOpacity style={s.addMoreCell} onPress={pickPhotos}>
-              <Ionicons name="add" size={28} color={Colors.textTertiary} />
+              <Ionicons name="add" size={28} color={colors.textTertiary} />
             </TouchableOpacity>
           )}
         </View>
@@ -322,7 +326,7 @@ export default function CreateListingScreen() {
 
       {photos.length === 0 && !isUploading && (
         <TouchableOpacity style={s.dropZone} onPress={pickPhotos}>
-          <Ionicons name="cloud-upload-outline" size={44} color={Colors.textTertiary} />
+          <Ionicons name="cloud-upload-outline" size={44} color={colors.textTertiary} />
           <Text style={s.dropTitle}>Tap to add photos</Text>
           <Text style={s.dropSub}>JPG, PNG · Max 8 photos · 10 MB each</Text>
         </TouchableOpacity>
@@ -331,11 +335,11 @@ export default function CreateListingScreen() {
       {photos.length > 0 && !isUploading && (
         <View style={s.uploadBtnRow}>
           <TouchableOpacity style={s.uploadBtn} onPress={pickPhotos}>
-            <Ionicons name="images-outline" size={18} color={Colors.primary} />
+            <Ionicons name="images-outline" size={18} color={colors.primary} />
             <Text style={s.uploadBtnText}>Gallery</Text>
           </TouchableOpacity>
           <TouchableOpacity style={s.uploadBtn} onPress={takePhoto}>
-            <Ionicons name="camera-outline" size={18} color={Colors.primary} />
+            <Ionicons name="camera-outline" size={18} color={colors.primary} />
             <Text style={s.uploadBtnText}>Camera</Text>
           </TouchableOpacity>
         </View>
@@ -345,13 +349,13 @@ export default function CreateListingScreen() {
       <Text style={s.label}>Ownership Documents</Text>
       <TouchableOpacity style={s.docRow}>
         <View style={s.docIcon}>
-          <Ionicons name="document-text-outline" size={20} color={Colors.primary} />
+          <Ionicons name="document-text-outline" size={20} color={colors.primary} />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={s.docTitle}>Upload C of O, Survey, Deed…</Text>
           <Text style={s.docSub}>PDF, JPG or PNG · Max 20 MB</Text>
         </View>
-        <Ionicons name="cloud-upload-outline" size={18} color={Colors.textTertiary} />
+        <Ionicons name="cloud-upload-outline" size={18} color={colors.textTertiary} />
       </TouchableOpacity>
     </View>
   );
@@ -384,7 +388,7 @@ export default function CreateListingScreen() {
           value={price}
           onChangeText={(t) => setPrice(t.replace(/[^0-9]/g, ''))}
           placeholder="0"
-          placeholderTextColor={Colors.textTertiary}
+          placeholderTextColor={colors.textTertiary}
           keyboardType="numeric"
         />
       </View>
@@ -396,10 +400,10 @@ export default function CreateListingScreen() {
 
       {/* Tips */}
       <View style={s.tipCard}>
-        <Ionicons name="bulb-outline" size={16} color={Colors.warning} />
+        <Ionicons name="bulb-outline" size={16} color={colors.warning} />
         <Text style={s.tipText}>
           Similar listings in this area are priced between{' '}
-          <Text style={{ fontWeight: '700', color: Colors.textPrimary }}>₦2M – ₦8M</Text>.
+          <Text style={{ fontWeight: '700', color: colors.textPrimary }}>₦2M – ₦8M</Text>.
           Competitive pricing gets faster responses.
         </Text>
       </View>
@@ -437,24 +441,24 @@ export default function CreateListingScreen() {
           {fields.map((f, i) => (
             <View key={f.label} style={[s.reviewRow, i < fields.length - 1 && s.reviewRowBorder]}>
               <View style={s.reviewIconWrap}>
-                <Ionicons name={f.icon} size={15} color={Colors.primary} />
+                <Ionicons name={f.icon} size={15} color={colors.primary} />
               </View>
               <Text style={s.reviewLabel}>{f.label}</Text>
               <Text style={s.reviewVal} numberOfLines={1}>{f.value}</Text>
               {f.value !== '—' && (
-                <Ionicons name="checkmark-circle" size={16} color={Colors.success} />
+                <Ionicons name="checkmark-circle" size={16} color={colors.success} />
               )}
             </View>
           ))}
         </View>
 
         <View style={s.termsNote}>
-          <Ionicons name="information-circle-outline" size={15} color={Colors.textTertiary} />
+          <Ionicons name="information-circle-outline" size={15} color={colors.textTertiary} />
           <Text style={s.termsText}>
             By submitting you agree to Landrush's{' '}
-            <Text style={{ color: Colors.primary, fontWeight: '600' }}>Listing Guidelines</Text>
+            <Text style={{ color: colors.primary, fontWeight: '600' }}>Listing Guidelines</Text>
             {' '}and{' '}
-            <Text style={{ color: Colors.primary, fontWeight: '600' }}>Terms of Service</Text>.
+            <Text style={{ color: colors.primary, fontWeight: '600' }}>Terms of Service</Text>.
           </Text>
         </View>
       </View>
@@ -475,7 +479,7 @@ export default function CreateListingScreen() {
         <View style={s.headerRow}>
           {step > 0 ? (
             <TouchableOpacity style={s.headerBackBtn} onPress={goBack}>
-              <Ionicons name="chevron-back" size={20} color={Colors.white} />
+              <Ionicons name="chevron-back" size={20} color={colors.white} />
             </TouchableOpacity>
           ) : (
             <View style={{ width: 36 }} />
@@ -484,7 +488,7 @@ export default function CreateListingScreen() {
             <Text style={s.headerTitle}>Post a Listing</Text>
             {draftSaved && (
               <View style={s.draftPill}>
-                <Ionicons name="checkmark-circle" size={11} color={Colors.lime} />
+                <Ionicons name="checkmark-circle" size={11} color={colors.lime} />
                 <Text style={s.draftText}>Draft saved</Text>
               </View>
             )}
@@ -528,7 +532,7 @@ export default function CreateListingScreen() {
           <Ionicons
             name={step === STEPS.length - 1 ? 'checkmark-circle-outline' : 'arrow-forward'}
             size={18}
-            color={Colors.textPrimary}
+            color={colors.textPrimary}
           />
         </TouchableOpacity>
       </View>
@@ -540,22 +544,22 @@ export default function CreateListingScreen() {
             <View style={s.modalHeader}>
               <Text style={s.modalTitle}>Select State</Text>
               <TouchableOpacity onPress={() => { setStateModalOpen(false); setStateQuery(''); }}>
-                <Ionicons name="close" size={22} color={Colors.textPrimary} />
+                <Ionicons name="close" size={22} color={colors.textPrimary} />
               </TouchableOpacity>
             </View>
             <View style={s.modalSearch}>
-              <Ionicons name="search-outline" size={16} color={Colors.textTertiary} />
+              <Ionicons name="search-outline" size={16} color={colors.textTertiary} />
               <TextInput
                 style={s.modalSearchInput}
                 placeholder="Search states…"
-                placeholderTextColor={Colors.textTertiary}
+                placeholderTextColor={colors.textTertiary}
                 value={stateQuery}
                 onChangeText={setStateQuery}
                 autoFocus
               />
               {stateQuery.length > 0 && (
                 <TouchableOpacity onPress={() => setStateQuery('')}>
-                  <Ionicons name="close-circle" size={16} color={Colors.textTertiary} />
+                  <Ionicons name="close-circle" size={16} color={colors.textTertiary} />
                 </TouchableOpacity>
               )}
             </View>
@@ -572,7 +576,7 @@ export default function CreateListingScreen() {
                     {item}
                   </Text>
                   {state === item && (
-                    <Ionicons name="checkmark-circle" size={18} color={Colors.lime} />
+                    <Ionicons name="checkmark-circle" size={18} color={colors.lime} />
                   )}
                 </TouchableOpacity>
               )}
@@ -585,522 +589,522 @@ export default function CreateListingScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  // ── Header ────────────────────────────────────────────────────
-  header: {
-    backgroundColor: Colors.textPrimary,
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.lg,
-    overflow: 'hidden',
-  },
-  headerDecoA: {
-    position: 'absolute',
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    backgroundColor: 'rgba(159,187,68,0.06)',
-    top: -60,
-    right: -40,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.lg,
-  },
-  headerBackBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerCenter: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  headerTitle: {
-    fontSize: FontSize.lg,
-    fontWeight: '800',
-    color: Colors.white,
-  },
-  draftPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    backgroundColor: 'rgba(159,187,68,0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: BorderRadius.full,
-  },
-  draftText: {
-    fontSize: 10,
-    color: Colors.lime,
-    fontWeight: '600',
-  },
-  headerStep: {
-    fontSize: FontSize.sm,
-    fontWeight: '700',
-    color: 'rgba(255,255,255,0.6)',
-  },
-  progressBar: {
-    height: 4,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    borderRadius: 2,
-    overflow: 'hidden',
-    marginBottom: Spacing.sm,
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: Colors.lime,
-    borderRadius: 2,
-  },
-  stepLabel: {
-    fontSize: FontSize.xs,
-    fontWeight: '700',
-    color: Colors.lime,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
+    // ── Header ────────────────────────────────────────────────────
+    header: {
+      backgroundColor: colors.textPrimary,
+      paddingHorizontal: Spacing.lg,
+      paddingBottom: Spacing.lg,
+      overflow: 'hidden',
+    },
+    headerDecoA: {
+      position: 'absolute',
+      width: 160,
+      height: 160,
+      borderRadius: 80,
+      backgroundColor: 'rgba(159,187,68,0.06)',
+      top: -60,
+      right: -40,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: Spacing.lg,
+    },
+    headerBackBtn: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: 'rgba(255,255,255,0.12)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    headerCenter: {
+      alignItems: 'center',
+      gap: 4,
+    },
+    headerTitle: {
+      fontSize: FontSize.lg,
+      fontWeight: '800',
+      color: colors.white,
+    },
+    draftPill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 3,
+      backgroundColor: 'rgba(159,187,68,0.2)',
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: BorderRadius.full,
+    },
+    draftText: {
+      fontSize: 10,
+      color: colors.lime,
+      fontWeight: '600',
+    },
+    headerStep: {
+      fontSize: FontSize.sm,
+      fontWeight: '700',
+      color: 'rgba(255,255,255,0.6)',
+    },
+    progressBar: {
+      height: 4,
+      backgroundColor: 'rgba(255,255,255,0.15)',
+      borderRadius: 2,
+      overflow: 'hidden',
+      marginBottom: Spacing.sm,
+    },
+    progressBarFill: {
+      height: '100%',
+      backgroundColor: colors.lime,
+      borderRadius: 2,
+    },
+    stepLabel: {
+      fontSize: FontSize.xs,
+      fontWeight: '700',
+      color: colors.lime,
+      textTransform: 'uppercase',
+      letterSpacing: 0.8,
+    },
 
-  // ── Scroll ────────────────────────────────────────────────────
-  scroll: {
-    flex: 1,
-  },
-  stepWrap: {
-    padding: Spacing.xl,
-    gap: Spacing.sm,
-  },
-  stepTitle: {
-    fontSize: FontSize.xxl,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-  },
-  stepSub: {
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-    marginBottom: Spacing.md,
-  },
+    // ── Scroll ────────────────────────────────────────────────────
+    scroll: {
+      flex: 1,
+    },
+    stepWrap: {
+      padding: Spacing.xl,
+      gap: Spacing.sm,
+    },
+    stepTitle: {
+      fontSize: FontSize.xxl,
+      fontWeight: '800',
+      color: colors.textPrimary,
+    },
+    stepSub: {
+      fontSize: FontSize.md,
+      color: colors.textSecondary,
+      marginBottom: Spacing.md,
+    },
 
-  // ── Category cards ────────────────────────────────────────────
-  catCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    backgroundColor: Colors.white,
-    gap: Spacing.md,
-    marginBottom: Spacing.sm,
-    ...Shadow.sm,
-  },
-  catIconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  catInfo: { flex: 1 },
-  catLabel: { fontSize: FontSize.lg, fontWeight: '700', color: Colors.textPrimary },
-  catDesc:  { fontSize: FontSize.sm, color: Colors.textSecondary, marginTop: 2 },
-  radio: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: Colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
+    // ── Category cards ────────────────────────────────────────────
+    catCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: Spacing.lg,
+      borderRadius: BorderRadius.xl,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      backgroundColor: colors.white,
+      gap: Spacing.md,
+      marginBottom: Spacing.sm,
+      ...Shadow.sm,
+    },
+    catIconWrap: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    catInfo: { flex: 1 },
+    catLabel: { fontSize: FontSize.lg, fontWeight: '700', color: colors.textPrimary },
+    catDesc:  { fontSize: FontSize.sm, color: colors.textSecondary, marginTop: 2 },
+    radio: {
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      borderWidth: 2,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    radioDot: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+    },
 
-  // ── Inputs ────────────────────────────────────────────────────
-  label: {
-    fontSize: FontSize.sm,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginTop: Spacing.lg,
-    marginBottom: 6,
-  },
-  input: {
-    height: 52,
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.xl,
-    paddingHorizontal: Spacing.lg,
-    fontSize: FontSize.md,
-    color: Colors.textPrimary,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  textarea: {
-    height: 120,
-    paddingTop: Spacing.md,
-    textAlignVertical: 'top',
-  },
-  sizeRow: { flexDirection: 'row', gap: Spacing.md },
-  unitRow: { gap: Spacing.sm, marginTop: Spacing.sm },
-  unitChip: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 7,
-    borderRadius: BorderRadius.full,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    backgroundColor: Colors.white,
-  },
-  unitChipActive: { borderColor: Colors.lime, backgroundColor: `${Colors.lime}18` },
-  unitText:       { fontSize: FontSize.sm, color: Colors.textSecondary, fontWeight: '500' },
-  unitTextActive: { color: Colors.primary, fontWeight: '700' },
+    // ── Inputs ────────────────────────────────────────────────────
+    label: {
+      fontSize: FontSize.sm,
+      fontWeight: '700',
+      color: colors.textPrimary,
+      marginTop: Spacing.lg,
+      marginBottom: 6,
+    },
+    input: {
+      height: 52,
+      backgroundColor: colors.white,
+      borderRadius: BorderRadius.xl,
+      paddingHorizontal: Spacing.lg,
+      fontSize: FontSize.md,
+      color: colors.textPrimary,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    textarea: {
+      height: 120,
+      paddingTop: Spacing.md,
+      textAlignVertical: 'top',
+    },
+    sizeRow: { flexDirection: 'row', gap: Spacing.md },
+    unitRow: { gap: Spacing.sm, marginTop: Spacing.sm },
+    unitChip: {
+      paddingHorizontal: Spacing.md,
+      paddingVertical: 7,
+      borderRadius: BorderRadius.full,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      backgroundColor: colors.white,
+    },
+    unitChipActive: { borderColor: colors.lime, backgroundColor: `${colors.lime}18` },
+    unitText:       { fontSize: FontSize.sm, color: colors.textSecondary, fontWeight: '500' },
+    unitTextActive: { color: colors.primary, fontWeight: '700' },
 
-  // ── Location ──────────────────────────────────────────────────
-  // State picker button
-  statePickerBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-    height: 52,
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    paddingHorizontal: Spacing.lg,
-  },
-  statePickerBtnFilled: {
-    borderColor: Colors.lime,
-  },
-  statePickerText: {
-    flex: 1,
-    fontSize: FontSize.md,
-    color: Colors.textTertiary,
-  },
-  statePickerTextFilled: {
-    color: Colors.textPrimary,
-    fontWeight: '600',
-  },
-  // State picker modal
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    justifyContent: 'flex-end',
-  },
-  modalSheet: {
-    backgroundColor: Colors.white,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '80%',
-    paddingTop: Spacing.lg,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.xl,
-    paddingBottom: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-  },
-  modalTitle: {
-    fontSize: FontSize.lg,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-  },
-  modalSearch: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    margin: Spacing.lg,
-    paddingHorizontal: Spacing.md,
-    height: 44,
-    backgroundColor: Colors.background,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  modalSearchInput: {
-    flex: 1,
-    fontSize: FontSize.md,
-    color: Colors.textPrimary,
-  },
-  stateOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
-  },
-  stateOptionText: {
-    fontSize: FontSize.md,
-    color: Colors.textPrimary,
-  },
-  stateOptionActive: {
-    color: Colors.primary,
-    fontWeight: '700',
-  },
-  stateOptionSep: {
-    height: 1,
-    backgroundColor: Colors.borderLight,
-    marginLeft: Spacing.xl,
-  },
-  mapPickBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    marginTop: Spacing.lg,
-    paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1.5,
-    borderColor: Colors.primary,
-    borderStyle: 'dashed',
-  },
-  mapPickText: { fontSize: FontSize.md, color: Colors.primary, fontWeight: '600' },
+    // ── Location ──────────────────────────────────────────────────
+    statePickerBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.md,
+      height: 52,
+      backgroundColor: colors.white,
+      borderRadius: BorderRadius.xl,
+      borderWidth: 1,
+      borderColor: colors.border,
+      paddingHorizontal: Spacing.lg,
+    },
+    statePickerBtnFilled: {
+      borderColor: colors.lime,
+    },
+    statePickerText: {
+      flex: 1,
+      fontSize: FontSize.md,
+      color: colors.textTertiary,
+    },
+    statePickerTextFilled: {
+      color: colors.textPrimary,
+      fontWeight: '600',
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+      justifyContent: 'flex-end',
+    },
+    modalSheet: {
+      backgroundColor: colors.white,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      maxHeight: '80%',
+      paddingTop: Spacing.lg,
+    },
+    modalHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: Spacing.xl,
+      paddingBottom: Spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.borderLight,
+    },
+    modalTitle: {
+      fontSize: FontSize.lg,
+      fontWeight: '800',
+      color: colors.textPrimary,
+    },
+    modalSearch: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.sm,
+      margin: Spacing.lg,
+      paddingHorizontal: Spacing.md,
+      height: 44,
+      backgroundColor: colors.background,
+      borderRadius: BorderRadius.xl,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    modalSearchInput: {
+      flex: 1,
+      fontSize: FontSize.md,
+      color: colors.textPrimary,
+    },
+    stateOption: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: Spacing.xl,
+      paddingVertical: Spacing.md,
+    },
+    stateOptionText: {
+      fontSize: FontSize.md,
+      color: colors.textPrimary,
+    },
+    stateOptionActive: {
+      color: colors.primary,
+      fontWeight: '700',
+    },
+    stateOptionSep: {
+      height: 1,
+      backgroundColor: colors.borderLight,
+      marginLeft: Spacing.xl,
+    },
+    mapPickBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing.sm,
+      marginTop: Spacing.lg,
+      paddingVertical: Spacing.lg,
+      borderRadius: BorderRadius.xl,
+      borderWidth: 1.5,
+      borderColor: colors.primary,
+      borderStyle: 'dashed',
+    },
+    mapPickText: { fontSize: FontSize.md, color: colors.primary, fontWeight: '600' },
 
-  // ── Media ─────────────────────────────────────────────────────
-  photoGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-    marginBottom: Spacing.md,
-  },
-  photoCell: {
-    width: 90,
-    height: 90,
-    borderRadius: BorderRadius.md,
-    position: 'relative',
-  },
-  photoImg: {
-    width: 90,
-    height: 90,
-    borderRadius: BorderRadius.md,
-  },
-  coverBadge: {
-    position: 'absolute',
-    bottom: 4,
-    left: 4,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  coverBadgeText: { fontSize: 9, color: Colors.white, fontWeight: '700' },
-  removeBtn: {
-    position: 'absolute',
-    top: -6,
-    right: -6,
-    backgroundColor: Colors.white,
-    borderRadius: 10,
-  },
-  addMoreCell: {
-    width: 90,
-    height: 90,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.white,
-  },
-  progressWrap:   { gap: 6, marginBottom: Spacing.md },
-  progressTopRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  progressLabel:  { fontSize: FontSize.sm, color: Colors.textSecondary },
-  progressPct:    { fontSize: FontSize.sm, fontWeight: '700', color: Colors.primary },
-  progressTrack:  { height: 6, backgroundColor: Colors.border, borderRadius: 3, overflow: 'hidden' },
-  progressFill:   { height: '100%', backgroundColor: Colors.lime, borderRadius: 3 },
-  dropZone: {
-    height: 180,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 2,
-    borderColor: Colors.border,
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    backgroundColor: Colors.white,
-    marginBottom: Spacing.md,
-  },
-  dropTitle: { fontSize: FontSize.md, fontWeight: '600', color: Colors.textSecondary },
-  dropSub:   { fontSize: FontSize.xs, color: Colors.textTertiary },
-  uploadBtnRow: { flexDirection: 'row', gap: Spacing.md, marginBottom: Spacing.lg },
-  uploadBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    height: 46,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.white,
-  },
-  uploadBtnText: { fontSize: FontSize.md, color: Colors.primary, fontWeight: '600' },
-  docRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.white,
-  },
-  docIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.md,
-    backgroundColor: `${Colors.lime}18`,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  docTitle: { fontSize: FontSize.md, fontWeight: '600', color: Colors.primary },
-  docSub:   { fontSize: FontSize.xs, color: Colors.textTertiary, marginTop: 2 },
+    // ── Media ─────────────────────────────────────────────────────
+    photoGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: Spacing.sm,
+      marginBottom: Spacing.md,
+    },
+    photoCell: {
+      width: 90,
+      height: 90,
+      borderRadius: BorderRadius.md,
+      position: 'relative',
+    },
+    photoImg: {
+      width: 90,
+      height: 90,
+      borderRadius: BorderRadius.md,
+    },
+    coverBadge: {
+      position: 'absolute',
+      bottom: 4,
+      left: 4,
+      backgroundColor: 'rgba(0,0,0,0.55)',
+      paddingHorizontal: 5,
+      paddingVertical: 2,
+      borderRadius: 4,
+    },
+    coverBadgeText: { fontSize: 9, color: colors.white, fontWeight: '700' },
+    removeBtn: {
+      position: 'absolute',
+      top: -6,
+      right: -6,
+      backgroundColor: colors.white,
+      borderRadius: 10,
+    },
+    addMoreCell: {
+      width: 90,
+      height: 90,
+      borderRadius: BorderRadius.md,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      borderStyle: 'dashed',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.white,
+    },
+    progressWrap:   { gap: 6, marginBottom: Spacing.md },
+    progressTopRow: { flexDirection: 'row', justifyContent: 'space-between' },
+    progressLabel:  { fontSize: FontSize.sm, color: colors.textSecondary },
+    progressPct:    { fontSize: FontSize.sm, fontWeight: '700', color: colors.primary },
+    progressTrack:  { height: 6, backgroundColor: colors.border, borderRadius: 3, overflow: 'hidden' },
+    progressFill:   { height: '100%', backgroundColor: colors.lime, borderRadius: 3 },
+    dropZone: {
+      height: 180,
+      borderRadius: BorderRadius.xl,
+      borderWidth: 2,
+      borderColor: colors.border,
+      borderStyle: 'dashed',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing.sm,
+      backgroundColor: colors.white,
+      marginBottom: Spacing.md,
+    },
+    dropTitle: { fontSize: FontSize.md, fontWeight: '600', color: colors.textSecondary },
+    dropSub:   { fontSize: FontSize.xs, color: colors.textTertiary },
+    uploadBtnRow: { flexDirection: 'row', gap: Spacing.md, marginBottom: Spacing.lg },
+    uploadBtn: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing.sm,
+      height: 46,
+      borderRadius: BorderRadius.xl,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.white,
+    },
+    uploadBtnText: { fontSize: FontSize.md, color: colors.primary, fontWeight: '600' },
+    docRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.md,
+      padding: Spacing.lg,
+      borderRadius: BorderRadius.xl,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.white,
+    },
+    docIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: BorderRadius.md,
+      backgroundColor: `${colors.lime}18`,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    docTitle: { fontSize: FontSize.md, fontWeight: '600', color: colors.primary },
+    docSub:   { fontSize: FontSize.xs, color: colors.textTertiary, marginTop: 2 },
 
-  // ── Price ─────────────────────────────────────────────────────
-  priceToggle: {
-    flexDirection: 'row',
-    backgroundColor: Colors.background,
-    borderRadius: BorderRadius.xl,
-    padding: 4,
-    marginBottom: Spacing.sm,
-  },
-  priceToggleItem: {
-    flex: 1,
-    paddingVertical: Spacing.sm,
-    alignItems: 'center',
-    borderRadius: BorderRadius.lg,
-  },
-  priceToggleActive: {
-    backgroundColor: Colors.white,
-    ...Shadow.sm,
-  },
-  priceToggleText:       { fontSize: FontSize.sm, color: Colors.textSecondary, fontWeight: '500' },
-  priceToggleTextActive: { color: Colors.textPrimary, fontWeight: '700' },
-  priceInputWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: 56,
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.sm,
-  },
-  pricePrefix: { fontSize: FontSize.xl, fontWeight: '700', color: Colors.primary },
-  priceInput:  { flex: 1, fontSize: FontSize.xl, fontWeight: '700', color: Colors.textPrimary },
-  priceFormatted: {
-    fontSize: FontSize.md,
-    color: Colors.primary,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginTop: Spacing.sm,
-  },
-  tipCard: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-    backgroundColor: '#FFF8E1',
-    borderRadius: BorderRadius.xl,
-    padding: Spacing.lg,
-    marginTop: Spacing.xl,
-    alignItems: 'flex-start',
-    borderWidth: 1,
-    borderColor: '#FFE082',
-  },
-  tipText: {
-    flex: 1,
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-    lineHeight: 20,
-  },
+    // ── Price ─────────────────────────────────────────────────────
+    priceToggle: {
+      flexDirection: 'row',
+      backgroundColor: colors.background,
+      borderRadius: BorderRadius.xl,
+      padding: 4,
+      marginBottom: Spacing.sm,
+    },
+    priceToggleItem: {
+      flex: 1,
+      paddingVertical: Spacing.sm,
+      alignItems: 'center',
+      borderRadius: BorderRadius.lg,
+    },
+    priceToggleActive: {
+      backgroundColor: colors.white,
+      ...Shadow.sm,
+    },
+    priceToggleText:       { fontSize: FontSize.sm, color: colors.textSecondary, fontWeight: '500' },
+    priceToggleTextActive: { color: colors.textPrimary, fontWeight: '700' },
+    priceInputWrap: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      height: 56,
+      backgroundColor: colors.white,
+      borderRadius: BorderRadius.xl,
+      borderWidth: 1,
+      borderColor: colors.border,
+      paddingHorizontal: Spacing.lg,
+      gap: Spacing.sm,
+    },
+    pricePrefix: { fontSize: FontSize.xl, fontWeight: '700', color: colors.primary },
+    priceInput:  { flex: 1, fontSize: FontSize.xl, fontWeight: '700', color: colors.textPrimary },
+    priceFormatted: {
+      fontSize: FontSize.md,
+      color: colors.primary,
+      fontWeight: '700',
+      textAlign: 'center',
+      marginTop: Spacing.sm,
+    },
+    tipCard: {
+      flexDirection: 'row',
+      gap: Spacing.sm,
+      backgroundColor: '#FFF8E1',
+      borderRadius: BorderRadius.xl,
+      padding: Spacing.lg,
+      marginTop: Spacing.xl,
+      alignItems: 'flex-start',
+      borderWidth: 1,
+      borderColor: '#FFE082',
+    },
+    tipText: {
+      flex: 1,
+      fontSize: FontSize.sm,
+      color: colors.textSecondary,
+      lineHeight: 20,
+    },
 
-  // ── Review ────────────────────────────────────────────────────
-  reviewPhotoStrip: {
-    gap: Spacing.sm,
-    marginBottom: Spacing.lg,
-  },
-  reviewPhoto: {
-    width: 100,
-    height: 80,
-    borderRadius: BorderRadius.md,
-  },
-  reviewCard: {
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.xl,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-    ...Shadow.sm,
-  },
-  reviewRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-  },
-  reviewRowBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-  },
-  reviewIconWrap: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    backgroundColor: `${Colors.lime}18`,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  reviewLabel: { fontSize: FontSize.sm, color: Colors.textSecondary, width: 64 },
-  reviewVal:   { flex: 1, fontSize: FontSize.sm, fontWeight: '600', color: Colors.textPrimary },
-  termsNote: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-    alignItems: 'flex-start',
-    marginTop: Spacing.xl,
-  },
-  termsText: {
-    flex: 1,
-    fontSize: FontSize.sm,
-    color: Colors.textTertiary,
-    lineHeight: 20,
-  },
+    // ── Review ────────────────────────────────────────────────────
+    reviewPhotoStrip: {
+      gap: Spacing.sm,
+      marginBottom: Spacing.lg,
+    },
+    reviewPhoto: {
+      width: 100,
+      height: 80,
+      borderRadius: BorderRadius.md,
+    },
+    reviewCard: {
+      backgroundColor: colors.white,
+      borderRadius: BorderRadius.xl,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: colors.borderLight,
+      ...Shadow.sm,
+    },
+    reviewRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.md,
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.md,
+    },
+    reviewRowBorder: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.borderLight,
+    },
+    reviewIconWrap: {
+      width: 28,
+      height: 28,
+      borderRadius: 8,
+      backgroundColor: `${colors.lime}18`,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    reviewLabel: { fontSize: FontSize.sm, color: colors.textSecondary, width: 64 },
+    reviewVal:   { flex: 1, fontSize: FontSize.sm, fontWeight: '600', color: colors.textPrimary },
+    termsNote: {
+      flexDirection: 'row',
+      gap: Spacing.sm,
+      alignItems: 'flex-start',
+      marginTop: Spacing.xl,
+    },
+    termsText: {
+      flex: 1,
+      fontSize: FontSize.sm,
+      color: colors.textTertiary,
+      lineHeight: 20,
+    },
 
-  // ── Footer ────────────────────────────────────────────────────
-  footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: Spacing.xl,
-    paddingTop: Spacing.md,
-    backgroundColor: Colors.white,
-    borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
-  },
-  nextBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    height: 52,
-    backgroundColor: Colors.lime,
-    borderRadius: BorderRadius.xl,
-  },
-  nextBtnText: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-});
+    // ── Footer ────────────────────────────────────────────────────
+    footer: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      paddingHorizontal: Spacing.xl,
+      paddingTop: Spacing.md,
+      backgroundColor: colors.white,
+      borderTopWidth: 1,
+      borderTopColor: colors.borderLight,
+    },
+    nextBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing.sm,
+      height: 52,
+      backgroundColor: colors.lime,
+      borderRadius: BorderRadius.xl,
+    },
+    nextBtnText: {
+      fontSize: FontSize.lg,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+  });
+}

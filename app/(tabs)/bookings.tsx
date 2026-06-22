@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,9 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import type { ThemeColors } from '../../src/constants/theme';
+import { useColors } from '../../src/context/ThemeContext';
 
 type BookingStatus = 'pending' | 'upcoming' | 'rescheduled' | 'past' | 'cancelled';
 type FilterTab = 'pending' | 'upcoming' | 'past';
@@ -75,18 +77,20 @@ const TABS: { key: FilterTab; label: string; count: (b: Booking[]) => number }[]
   { key: 'past',     label: 'Past',     count: (b) => b.filter((x) => x.status === 'past' || x.status === 'cancelled').length },
 ];
 
-const STATUS: Record<BookingStatus, { label: string; color: string; bg: string; icon: string }> = {
-  pending:     { label: 'Pending Confirmation', color: '#E65100', bg: '#FFF3E0', icon: 'time-outline' },
-  upcoming:    { label: 'Confirmed',            color: Colors.primary, bg: `${Colors.lime}22`, icon: 'checkmark-circle-outline' },
-  rescheduled: { label: 'Reschedule Requested', color: '#5C6BC0', bg: '#EDE7F6', icon: 'refresh-outline' },
-  past:        { label: 'Completed',            color: Colors.info, bg: '#E3F2FD', icon: 'archive-outline' },
-  cancelled:   { label: 'Cancelled',            color: Colors.error, bg: '#FFEBEE', icon: 'close-circle-outline' },
-};
-
 export default function BookingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<FilterTab>('pending');
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
+  const STATUS: Record<BookingStatus, { label: string; color: string; bg: string; icon: string }> = {
+    pending:     { label: 'Pending Confirmation', color: '#E65100', bg: '#FFF3E0', icon: 'time-outline' },
+    upcoming:    { label: 'Confirmed',            color: colors.primary, bg: `${colors.lime}22`, icon: 'checkmark-circle-outline' },
+    rescheduled: { label: 'Reschedule Requested', color: '#5C6BC0', bg: '#EDE7F6', icon: 'refresh-outline' },
+    past:        { label: 'Completed',            color: colors.info, bg: '#E3F2FD', icon: 'archive-outline' },
+    cancelled:   { label: 'Cancelled',            color: colors.error, bg: '#FFEBEE', icon: 'close-circle-outline' },
+  };
 
   const filtered = MOCK.filter((b) => {
     if (activeTab === 'pending')  return b.status === 'pending' || b.status === 'rescheduled';
@@ -131,7 +135,7 @@ export default function BookingsScreen() {
         {filtered.length === 0 ? (
           <View style={styles.empty}>
             <View style={styles.emptyIcon}>
-              <Ionicons name="calendar-outline" size={40} color={Colors.textTertiary} />
+              <Ionicons name="calendar-outline" size={40} color={colors.textTertiary} />
             </View>
             <Text style={styles.emptyTitle}>
               No {activeTab} bookings
@@ -169,15 +173,15 @@ export default function BookingsScreen() {
 
                   <View style={styles.metaGrid}>
                     <View style={styles.metaItem}>
-                      <Ionicons name="location-outline" size={13} color={Colors.textTertiary} />
+                      <Ionicons name="location-outline" size={13} color={colors.textTertiary} />
                       <Text style={styles.metaText} numberOfLines={1}>{booking.location}</Text>
                     </View>
                     <View style={styles.metaItem}>
-                      <Ionicons name="calendar-outline" size={13} color={Colors.textTertiary} />
+                      <Ionicons name="calendar-outline" size={13} color={colors.textTertiary} />
                       <Text style={styles.metaText}>{booking.date}</Text>
                     </View>
                     <View style={styles.metaItem}>
-                      <Ionicons name="time-outline" size={13} color={Colors.textTertiary} />
+                      <Ionicons name="time-outline" size={13} color={colors.textTertiary} />
                       <Text style={styles.metaText}>{booking.time}</Text>
                     </View>
                   </View>
@@ -190,7 +194,7 @@ export default function BookingsScreen() {
                       style={styles.msgBtn}
                       onPress={() => router.push({ pathname: '/chat/[conversationId]', params: { conversationId: 'conv-1' } })}
                     >
-                      <Ionicons name="chatbubble-outline" size={14} color={Colors.primary} />
+                      <Ionicons name="chatbubble-outline" size={14} color={colors.primary} />
                       <Text style={styles.msgBtnText}>Message</Text>
                     </TouchableOpacity>
                   </View>
@@ -202,7 +206,7 @@ export default function BookingsScreen() {
                         style={styles.acceptBtn}
                         onPress={() => Alert.alert('Booking Accepted', 'Your inspection has been confirmed.')}
                       >
-                        <Ionicons name="checkmark" size={16} color={Colors.textPrimary} />
+                        <Ionicons name="checkmark" size={16} color={colors.textPrimary} />
                         <Text style={styles.acceptBtnText}>Accept</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
@@ -235,7 +239,7 @@ export default function BookingsScreen() {
                         )
                       }
                     >
-                      <Ionicons name="calendar-outline" size={15} color={Colors.primary} />
+                      <Ionicons name="calendar-outline" size={15} color={colors.primary} />
                       <Text style={styles.calBtnText}>Add to Calendar</Text>
                     </TouchableOpacity>
                   )}
@@ -250,286 +254,288 @@ export default function BookingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  // ── Header ────────────────────────────────────────────────────
-  header: {
-    backgroundColor: Colors.white,
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-  },
-  headerTitle: {
-    fontSize: FontSize.xxl,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-    marginBottom: 2,
-  },
-  headerSub: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-    marginBottom: Spacing.md,
-  },
-  tabRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  tab: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 7,
-    borderRadius: BorderRadius.full,
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-  },
-  tabActive: {
-    backgroundColor: Colors.textPrimary,
-    borderColor: Colors.textPrimary,
-  },
-  tabText: {
-    fontSize: FontSize.sm,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-  },
-  tabTextActive: {
-    color: Colors.white,
-  },
-  tabBadge: {
-    backgroundColor: Colors.border,
-    borderRadius: BorderRadius.full,
-    minWidth: 18,
-    height: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-  tabBadgeActive: {
-    backgroundColor: 'rgba(255,255,255,0.25)',
-  },
-  tabBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: Colors.textSecondary,
-  },
-  tabBadgeTextActive: {
-    color: Colors.white,
-  },
+    // ── Header ────────────────────────────────────────────────────
+    header: {
+      backgroundColor: colors.white,
+      paddingHorizontal: Spacing.lg,
+      paddingBottom: Spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.borderLight,
+    },
+    headerTitle: {
+      fontSize: FontSize.xxl,
+      fontWeight: '800',
+      color: colors.textPrimary,
+      marginBottom: 2,
+    },
+    headerSub: {
+      fontSize: FontSize.sm,
+      color: colors.textSecondary,
+      marginBottom: Spacing.md,
+    },
+    tabRow: {
+      flexDirection: 'row',
+      gap: Spacing.sm,
+    },
+    tab: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      paddingHorizontal: Spacing.md,
+      paddingVertical: 7,
+      borderRadius: BorderRadius.full,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.borderLight,
+    },
+    tabActive: {
+      backgroundColor: colors.textPrimary,
+      borderColor: colors.textPrimary,
+    },
+    tabText: {
+      fontSize: FontSize.sm,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    tabTextActive: {
+      color: colors.white,
+    },
+    tabBadge: {
+      backgroundColor: colors.border,
+      borderRadius: BorderRadius.full,
+      minWidth: 18,
+      height: 18,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 4,
+    },
+    tabBadgeActive: {
+      backgroundColor: 'rgba(255,255,255,0.25)',
+    },
+    tabBadgeText: {
+      fontSize: 10,
+      fontWeight: '700',
+      color: colors.textSecondary,
+    },
+    tabBadgeTextActive: {
+      color: colors.white,
+    },
 
-  // ── Scroll / Cards ────────────────────────────────────────────
-  scroll: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: Spacing.lg,
-    gap: Spacing.lg,
-  },
-  card: {
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.xl,
-    overflow: 'hidden',
-    ...Shadow.md,
-  },
-  cardImageWrap: {
-    height: 160,
-    position: 'relative',
-  },
-  cardImage: {
-    width: '100%',
-    height: '100%',
-  },
-  statusChip: {
-    position: 'absolute',
-    top: Spacing.md,
-    left: Spacing.md,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.full,
-  },
-  statusText: {
-    fontSize: FontSize.xs,
-    fontWeight: '700',
-  },
-  cardPrice: {
-    position: 'absolute',
-    bottom: Spacing.md,
-    right: Spacing.md,
-    fontSize: FontSize.md,
-    fontWeight: '800',
-    color: Colors.white,
-    textShadowColor: 'rgba(0,0,0,0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
-  },
-  cardBody: {
-    padding: Spacing.lg,
-    gap: Spacing.md,
-  },
-  cardTitle: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  metaGrid: {
-    gap: 6,
-  },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  metaText: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-    flex: 1,
-  },
-  agentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    paddingTop: Spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
-  },
-  agentAvatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-  },
-  agentName: {
-    flex: 1,
-    fontSize: FontSize.sm,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-  },
-  msgBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 5,
-    borderRadius: BorderRadius.full,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-  },
-  msgBtnText: {
-    fontSize: FontSize.xs,
-    fontWeight: '600',
-    color: Colors.primary,
-  },
+    // ── Scroll / Cards ────────────────────────────────────────────
+    scroll: {
+      flex: 1,
+    },
+    scrollContent: {
+      padding: Spacing.lg,
+      gap: Spacing.lg,
+    },
+    card: {
+      backgroundColor: colors.white,
+      borderRadius: BorderRadius.xl,
+      overflow: 'hidden',
+      ...Shadow.md,
+    },
+    cardImageWrap: {
+      height: 160,
+      position: 'relative',
+    },
+    cardImage: {
+      width: '100%',
+      height: '100%',
+    },
+    statusChip: {
+      position: 'absolute',
+      top: Spacing.md,
+      left: Spacing.md,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      paddingHorizontal: Spacing.sm,
+      paddingVertical: 4,
+      borderRadius: BorderRadius.full,
+    },
+    statusText: {
+      fontSize: FontSize.xs,
+      fontWeight: '700',
+    },
+    cardPrice: {
+      position: 'absolute',
+      bottom: Spacing.md,
+      right: Spacing.md,
+      fontSize: FontSize.md,
+      fontWeight: '800',
+      color: colors.white,
+      textShadowColor: 'rgba(0,0,0,0.5)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 3,
+    },
+    cardBody: {
+      padding: Spacing.lg,
+      gap: Spacing.md,
+    },
+    cardTitle: {
+      fontSize: FontSize.lg,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    metaGrid: {
+      gap: 6,
+    },
+    metaItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+    },
+    metaText: {
+      fontSize: FontSize.sm,
+      color: colors.textSecondary,
+      flex: 1,
+    },
+    agentRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.sm,
+      paddingTop: Spacing.sm,
+      borderTopWidth: 1,
+      borderTopColor: colors.borderLight,
+    },
+    agentAvatar: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+    },
+    agentName: {
+      flex: 1,
+      fontSize: FontSize.sm,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    msgBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      paddingHorizontal: Spacing.md,
+      paddingVertical: 5,
+      borderRadius: BorderRadius.full,
+      borderWidth: 1,
+      borderColor: colors.primary,
+    },
+    msgBtnText: {
+      fontSize: FontSize.xs,
+      fontWeight: '600',
+      color: colors.primary,
+    },
 
-  // ── Action buttons ────────────────────────────────────────────
-  actionRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  acceptBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    height: 40,
-    backgroundColor: Colors.lime,
-    borderRadius: BorderRadius.lg,
-  },
-  acceptBtnText: {
-    fontSize: FontSize.sm,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  rescheduleBtn: {
-    flex: 1,
-    height: 40,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  rescheduleBtnText: {
-    fontSize: FontSize.sm,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  cancelBtn: {
-    flex: 1,
-    height: 40,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    borderColor: Colors.error,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cancelBtnText: {
-    fontSize: FontSize.sm,
-    fontWeight: '600',
-    color: Colors.error,
-  },
-  calBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    height: 42,
-    borderRadius: BorderRadius.lg,
-    backgroundColor: `${Colors.lime}20`,
-    borderWidth: 1,
-    borderColor: `${Colors.lime}50`,
-  },
-  calBtnText: {
-    fontSize: FontSize.sm,
-    fontWeight: '700',
-    color: Colors.primary,
-  },
+    // ── Action buttons ────────────────────────────────────────────
+    actionRow: {
+      flexDirection: 'row',
+      gap: Spacing.sm,
+    },
+    acceptBtn: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 4,
+      height: 40,
+      backgroundColor: colors.lime,
+      borderRadius: BorderRadius.lg,
+    },
+    acceptBtnText: {
+      fontSize: FontSize.sm,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    rescheduleBtn: {
+      flex: 1,
+      height: 40,
+      borderRadius: BorderRadius.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    rescheduleBtnText: {
+      fontSize: FontSize.sm,
+      fontWeight: '600',
+      color: colors.textPrimary,
+    },
+    cancelBtn: {
+      flex: 1,
+      height: 40,
+      borderRadius: BorderRadius.lg,
+      borderWidth: 1,
+      borderColor: colors.error,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    cancelBtnText: {
+      fontSize: FontSize.sm,
+      fontWeight: '600',
+      color: colors.error,
+    },
+    calBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing.sm,
+      height: 42,
+      borderRadius: BorderRadius.lg,
+      backgroundColor: `${colors.lime}20`,
+      borderWidth: 1,
+      borderColor: `${colors.lime}50`,
+    },
+    calBtnText: {
+      fontSize: FontSize.sm,
+      fontWeight: '700',
+      color: colors.primary,
+    },
 
-  // ── Empty state ───────────────────────────────────────────────
-  empty: {
-    alignItems: 'center',
-    paddingVertical: 80,
-    gap: Spacing.md,
-  },
-  emptyIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: Colors.borderLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.sm,
-  },
-  emptyTitle: {
-    fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  emptySub: {
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    paddingHorizontal: Spacing.xxl,
-    lineHeight: 22,
-  },
-  emptyBtn: {
-    marginTop: Spacing.md,
-    backgroundColor: Colors.lime,
-    paddingHorizontal: Spacing.xxl,
-    paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.full,
-  },
-  emptyBtnText: {
-    fontSize: FontSize.md,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-});
+    // ── Empty state ───────────────────────────────────────────────
+    empty: {
+      alignItems: 'center',
+      paddingVertical: 80,
+      gap: Spacing.md,
+    },
+    emptyIcon: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: colors.borderLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: Spacing.sm,
+    },
+    emptyTitle: {
+      fontSize: FontSize.xl,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    emptySub: {
+      fontSize: FontSize.md,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      paddingHorizontal: Spacing.xxl,
+      lineHeight: 22,
+    },
+    emptyBtn: {
+      marginTop: Spacing.md,
+      backgroundColor: colors.lime,
+      paddingHorizontal: Spacing.xxl,
+      paddingVertical: Spacing.lg,
+      borderRadius: BorderRadius.full,
+    },
+    emptyBtnText: {
+      fontSize: FontSize.md,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+  });
+}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,9 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import type { ThemeColors } from '../../src/constants/theme';
+import { useColors } from '../../src/context/ThemeContext';
 import {
   mockConversations,
   formatMessageTime,
@@ -23,6 +25,8 @@ export default function MessagesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [search, setSearch] = useState('');
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const filtered = mockConversations.filter(
     (c) =>
@@ -86,17 +90,17 @@ export default function MessagesScreen() {
       {/* Search bar */}
       <View style={styles.searchWrap}>
         <View style={styles.searchBox}>
-          <Ionicons name="search-outline" size={16} color={Colors.textTertiary} />
+          <Ionicons name="search-outline" size={16} color={colors.textTertiary} />
           <TextInput
             style={styles.searchInput}
             value={search}
             onChangeText={setSearch}
             placeholder="Search conversations…"
-            placeholderTextColor={Colors.textTertiary}
+            placeholderTextColor={colors.textTertiary}
           />
           {search.length > 0 && (
             <TouchableOpacity onPress={() => setSearch('')}>
-              <Ionicons name="close-circle" size={16} color={Colors.textTertiary} />
+              <Ionicons name="close-circle" size={16} color={colors.textTertiary} />
             </TouchableOpacity>
           )}
         </View>
@@ -112,7 +116,7 @@ export default function MessagesScreen() {
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Ionicons name="chatbubbles-outline" size={48} color={Colors.textTertiary} />
+            <Ionicons name="chatbubbles-outline" size={48} color={colors.textTertiary} />
             <Text style={styles.emptyTitle}>No conversations yet</Text>
             <Text style={styles.emptySub}>
               Message an agent from any listing to start chatting
@@ -124,157 +128,159 @@ export default function MessagesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  header: {
-    backgroundColor: Colors.white,
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-  },
-  headerTitle: {
-    fontSize: FontSize.xxl,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-    marginBottom: 2,
-  },
-  headerSub: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-  },
-  searchWrap: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.lg,
-    backgroundColor: Colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-  },
-  searchBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    height: 44,
-    backgroundColor: Colors.background,
-    borderRadius: BorderRadius.xl,
-    paddingHorizontal: Spacing.lg,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: FontSize.md,
-    color: Colors.textPrimary,
-  },
-  list: {
-    paddingBottom: 100,
-    backgroundColor: Colors.white,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.lg,
-    gap: Spacing.md,
-    backgroundColor: Colors.white,
-  },
-  avatarWrap: {
-    position: 'relative',
-  },
-  avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-  },
-  onlineDot: {
-    position: 'absolute',
-    bottom: 1,
-    right: 1,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: Colors.success,
-    borderWidth: 2,
-    borderColor: Colors.white,
-  },
-  rowContent: {
-    flex: 1,
-    gap: 2,
-  },
-  rowTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  rowName: {
-    flex: 1,
-    fontSize: FontSize.md,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginRight: Spacing.sm,
-  },
-  rowTime: {
-    fontSize: FontSize.xs,
-    color: Colors.textTertiary,
-  },
-  rowListing: {
-    fontSize: FontSize.xs,
-    color: Colors.primary,
-    fontWeight: '500',
-  },
-  rowBottom: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  rowMsg: {
-    flex: 1,
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-    marginRight: Spacing.sm,
-  },
-  rowMsgUnread: {
-    color: Colors.textPrimary,
-    fontWeight: '600',
-  },
-  badge: {
-    minWidth: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: Colors.lime,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 5,
-  },
-  badgeText: {
-    fontSize: FontSize.xs,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: Colors.borderLight,
-    marginLeft: 52 + Spacing.lg + Spacing.md,
-  },
-  empty: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 80,
-    paddingHorizontal: Spacing.xxl,
-    gap: Spacing.md,
-  },
-  emptyTitle: {
-    fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  emptySub: {
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-});
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    header: {
+      backgroundColor: colors.white,
+      paddingHorizontal: Spacing.lg,
+      paddingBottom: Spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.borderLight,
+    },
+    headerTitle: {
+      fontSize: FontSize.xxl,
+      fontWeight: '800',
+      color: colors.textPrimary,
+      marginBottom: 2,
+    },
+    headerSub: {
+      fontSize: FontSize.sm,
+      color: colors.textSecondary,
+    },
+    searchWrap: {
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.lg,
+      backgroundColor: colors.white,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.borderLight,
+    },
+    searchBox: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.sm,
+      height: 44,
+      backgroundColor: colors.background,
+      borderRadius: BorderRadius.xl,
+      paddingHorizontal: Spacing.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    searchInput: {
+      flex: 1,
+      fontSize: FontSize.md,
+      color: colors.textPrimary,
+    },
+    list: {
+      paddingBottom: 100,
+      backgroundColor: colors.white,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.lg,
+      gap: Spacing.md,
+      backgroundColor: colors.white,
+    },
+    avatarWrap: {
+      position: 'relative',
+    },
+    avatar: {
+      width: 52,
+      height: 52,
+      borderRadius: 26,
+    },
+    onlineDot: {
+      position: 'absolute',
+      bottom: 1,
+      right: 1,
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      backgroundColor: colors.success,
+      borderWidth: 2,
+      borderColor: colors.white,
+    },
+    rowContent: {
+      flex: 1,
+      gap: 2,
+    },
+    rowTop: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    rowName: {
+      flex: 1,
+      fontSize: FontSize.md,
+      fontWeight: '700',
+      color: colors.textPrimary,
+      marginRight: Spacing.sm,
+    },
+    rowTime: {
+      fontSize: FontSize.xs,
+      color: colors.textTertiary,
+    },
+    rowListing: {
+      fontSize: FontSize.xs,
+      color: colors.primary,
+      fontWeight: '500',
+    },
+    rowBottom: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    rowMsg: {
+      flex: 1,
+      fontSize: FontSize.sm,
+      color: colors.textSecondary,
+      marginRight: Spacing.sm,
+    },
+    rowMsgUnread: {
+      color: colors.textPrimary,
+      fontWeight: '600',
+    },
+    badge: {
+      minWidth: 20,
+      height: 20,
+      borderRadius: 10,
+      backgroundColor: colors.lime,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 5,
+    },
+    badgeText: {
+      fontSize: FontSize.xs,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    separator: {
+      height: 1,
+      backgroundColor: colors.borderLight,
+      marginLeft: 52 + Spacing.lg + Spacing.md,
+    },
+    empty: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 80,
+      paddingHorizontal: Spacing.xxl,
+      gap: Spacing.md,
+    },
+    emptyTitle: {
+      fontSize: FontSize.xl,
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    emptySub: {
+      fontSize: FontSize.md,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 22,
+    },
+  });
+}

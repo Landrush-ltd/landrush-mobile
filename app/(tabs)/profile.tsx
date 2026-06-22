@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import type { ThemeColors } from '../../src/constants/theme';
+import { useColors, useTheme } from '../../src/context/ThemeContext';
 import { useAuthStore } from '../../src/store/auth';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
@@ -22,7 +24,9 @@ export default function ProfileScreen() {
   const router  = useRouter();
   const insets  = useSafeAreaInsets();
   const { logout, user } = useAuthStore();
-  const [darkMode, setDarkMode] = useState(false);
+  const { isDark, toggleTheme } = useTheme();
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const displayName = user ? `${user.firstName} ${user.lastName}` : 'Landrush User';
   const initials    = ((user?.firstName?.[0] ?? '') + (user?.lastName?.[0] ?? '')).toUpperCase();
@@ -41,7 +45,18 @@ export default function ProfileScreen() {
         { icon: 'person-outline',            label: 'Personal Information', onPress: () => router.push('/personal-information') },
         { icon: 'shield-checkmark-outline',  label: 'Verification',        onPress: () => router.push('/verification') },
         { icon: 'notifications-outline',     label: 'Notifications',       onPress: () => router.push('/notifications') },
-        { icon: 'moon-outline',              label: 'Dark Mode',           right: <Switch value={darkMode} onValueChange={setDarkMode} trackColor={{ false: Colors.border, true: Colors.lime }} thumbColor={Colors.white} /> },
+        {
+          icon: 'moon-outline',
+          label: 'Dark Mode',
+          right: (
+            <Switch
+              value={isDark}
+              onValueChange={toggleTheme}
+              trackColor={{ false: colors.border, true: colors.lime }}
+              thumbColor={colors.white}
+            />
+          ),
+        },
       ],
     },
     {
@@ -77,7 +92,7 @@ export default function ProfileScreen() {
             : <View style={styles.avatarInitials}><Text style={styles.avatarInitialsText}>{initials}</Text></View>
           }
           <TouchableOpacity style={styles.editAvatarBtn}>
-            <Ionicons name="camera-outline" size={14} color={Colors.white} />
+            <Ionicons name="camera-outline" size={14} color={colors.white} />
           </TouchableOpacity>
         </View>
         <View style={styles.avatarInfo}>
@@ -85,7 +100,7 @@ export default function ProfileScreen() {
           <Text style={styles.roleText}>{role}</Text>
           {user?.isVerified && (
             <View style={styles.verifiedRow}>
-              <Ionicons name="checkmark-circle" size={14} color={Colors.lime} />
+              <Ionicons name="checkmark-circle" size={14} color={colors.lime} />
               <Text style={styles.verifiedText}>Verified member</Text>
             </View>
           )}
@@ -115,9 +130,9 @@ export default function ProfileScreen() {
                   onPress={item.onPress}
                   activeOpacity={item.onPress ? 0.7 : 1}
                 >
-                  <Ionicons name={item.icon} size={20} color={Colors.textSecondary} />
+                  <Ionicons name={item.icon} size={20} color={colors.textSecondary} />
                   <Text style={styles.menuLabel}>{item.label}</Text>
-                  {item.right ?? <Ionicons name="chevron-forward" size={16} color={Colors.textTertiary} />}
+                  {item.right ?? <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />}
                 </TouchableOpacity>
               ))}
             </View>
@@ -125,7 +140,7 @@ export default function ProfileScreen() {
         ))}
 
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={18} color={Colors.error} />
+          <Ionicons name="log-out-outline" size={18} color={colors.error} />
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
 
@@ -136,34 +151,36 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: Colors.surface },
-  header: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.md, backgroundColor: Colors.white, borderBottomWidth: 1, borderBottomColor: Colors.borderLight },
-  headerTitle: { fontSize: FontSize.xxl, fontWeight: '800', color: Colors.textPrimary },
-  avatarCard: { flexDirection: 'row', alignItems: 'center', gap: Spacing.lg, backgroundColor: Colors.white, padding: Spacing.xl, marginBottom: 1 },
-  avatarWrap: { position: 'relative' },
-  avatar: { width: 72, height: 72, borderRadius: 36 },
-  avatarInitials: { width: 72, height: 72, borderRadius: 36, backgroundColor: `${Colors.lime}22`, borderWidth: 2, borderColor: Colors.lime, alignItems: 'center', justifyContent: 'center' },
-  avatarInitialsText: { fontSize: FontSize.xxl, fontWeight: '800', color: Colors.lime },
-  editAvatarBtn: { position: 'absolute', bottom: 0, right: 0, width: 24, height: 24, borderRadius: 12, backgroundColor: Colors.textPrimary, alignItems: 'center', justifyContent: 'center' },
-  avatarInfo: { flex: 1, gap: 3 },
-  displayName: { fontSize: FontSize.xl, fontWeight: '700', color: Colors.textPrimary },
-  roleText: { fontSize: FontSize.sm, color: Colors.textSecondary },
-  verifiedRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
-  verifiedText: { fontSize: FontSize.sm, color: Colors.lime, fontWeight: '600' },
-  statsRow: { flexDirection: 'row', backgroundColor: Colors.white, marginBottom: 8 },
-  statItem: { flex: 1, alignItems: 'center', paddingVertical: Spacing.lg, gap: 3 },
-  statItemBorder: { borderRightWidth: 1, borderRightColor: Colors.borderLight },
-  statValue: { fontSize: FontSize.xxl, fontWeight: '800', color: Colors.textPrimary },
-  statLabel: { fontSize: FontSize.xs, color: Colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5 },
-  menuArea: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg, gap: 2 },
-  group: { marginBottom: Spacing.xl },
-  groupTitle: { fontSize: FontSize.xs, fontWeight: '700', color: Colors.textTertiary, textTransform: 'uppercase', letterSpacing: 0.8, paddingLeft: 4, marginBottom: Spacing.sm },
-  groupCard: { backgroundColor: Colors.white, borderRadius: BorderRadius.xl, overflow: 'hidden', borderWidth: 1, borderColor: Colors.borderLight },
-  menuRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, paddingVertical: 15, paddingHorizontal: Spacing.lg },
-  menuRowBorder: { borderBottomWidth: 1, borderBottomColor: Colors.borderLight },
-  menuLabel: { flex: 1, fontSize: FontSize.md, color: Colors.textPrimary, fontWeight: '500' },
-  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.sm, paddingVertical: Spacing.lg, borderRadius: BorderRadius.xl, borderWidth: 1.5, borderColor: `${Colors.error}40`, backgroundColor: Colors.white, marginTop: Spacing.md },
-  logoutText: { fontSize: FontSize.md, fontWeight: '700', color: Colors.error },
-  version: { textAlign: 'center', fontSize: FontSize.xs, color: Colors.textTertiary, marginTop: Spacing.lg },
-});
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    root: { flex: 1, backgroundColor: colors.surface },
+    header: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.md, backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.borderLight },
+    headerTitle: { fontSize: FontSize.xxl, fontWeight: '800', color: colors.textPrimary },
+    avatarCard: { flexDirection: 'row', alignItems: 'center', gap: Spacing.lg, backgroundColor: colors.white, padding: Spacing.xl, marginBottom: 1 },
+    avatarWrap: { position: 'relative' },
+    avatar: { width: 72, height: 72, borderRadius: 36 },
+    avatarInitials: { width: 72, height: 72, borderRadius: 36, backgroundColor: `${colors.lime}22`, borderWidth: 2, borderColor: colors.lime, alignItems: 'center', justifyContent: 'center' },
+    avatarInitialsText: { fontSize: FontSize.xxl, fontWeight: '800', color: colors.lime },
+    editAvatarBtn: { position: 'absolute', bottom: 0, right: 0, width: 24, height: 24, borderRadius: 12, backgroundColor: colors.textPrimary, alignItems: 'center', justifyContent: 'center' },
+    avatarInfo: { flex: 1, gap: 3 },
+    displayName: { fontSize: FontSize.xl, fontWeight: '700', color: colors.textPrimary },
+    roleText: { fontSize: FontSize.sm, color: colors.textSecondary },
+    verifiedRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+    verifiedText: { fontSize: FontSize.sm, color: colors.lime, fontWeight: '600' },
+    statsRow: { flexDirection: 'row', backgroundColor: colors.white, marginBottom: 8 },
+    statItem: { flex: 1, alignItems: 'center', paddingVertical: Spacing.lg, gap: 3 },
+    statItemBorder: { borderRightWidth: 1, borderRightColor: colors.borderLight },
+    statValue: { fontSize: FontSize.xxl, fontWeight: '800', color: colors.textPrimary },
+    statLabel: { fontSize: FontSize.xs, color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5 },
+    menuArea: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg, gap: 2 },
+    group: { marginBottom: Spacing.xl },
+    groupTitle: { fontSize: FontSize.xs, fontWeight: '700', color: colors.textTertiary, textTransform: 'uppercase', letterSpacing: 0.8, paddingLeft: 4, marginBottom: Spacing.sm },
+    groupCard: { backgroundColor: colors.white, borderRadius: BorderRadius.xl, overflow: 'hidden', borderWidth: 1, borderColor: colors.borderLight },
+    menuRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, paddingVertical: 15, paddingHorizontal: Spacing.lg },
+    menuRowBorder: { borderBottomWidth: 1, borderBottomColor: colors.borderLight },
+    menuLabel: { flex: 1, fontSize: FontSize.md, color: colors.textPrimary, fontWeight: '500' },
+    logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.sm, paddingVertical: Spacing.lg, borderRadius: BorderRadius.xl, borderWidth: 1.5, borderColor: `${colors.error}40`, backgroundColor: colors.white, marginTop: Spacing.md },
+    logoutText: { fontSize: FontSize.md, fontWeight: '700', color: colors.error },
+    version: { textAlign: 'center', fontSize: FontSize.xs, color: colors.textTertiary, marginTop: Spacing.lg },
+  });
+}

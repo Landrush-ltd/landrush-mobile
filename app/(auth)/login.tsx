@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
   KeyboardAvoidingView, Platform, ScrollView, Alert,
@@ -7,7 +7,9 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as LocalAuthentication from 'expo-local-authentication';
-import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import type { ThemeColors } from '../../src/constants/theme';
+import { useColors } from '../../src/context/ThemeContext';
 import { LandrushLogo } from '../../src/components/LandrushLogo';
 import { useAuthStore } from '../../src/store/auth';
 
@@ -15,6 +17,8 @@ export default function LoginScreen() {
   const router  = useRouter();
   const insets  = useSafeAreaInsets();
   const { setUser } = useAuthStore();
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const [emailOrPhone, setEmailOrPhone]       = useState('');
   const [password, setPassword]               = useState('');
@@ -59,7 +63,7 @@ export default function LoginScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
+          <Ionicons name="chevron-back" size={22} color={colors.textPrimary} />
         </TouchableOpacity>
       </View>
 
@@ -82,11 +86,11 @@ export default function LoginScreen() {
         {/* Social */}
         <View style={styles.socialRow}>
           <TouchableOpacity style={[styles.socialBtn, isSocialLoading === 'google' && styles.socialBtnLoading]} onPress={() => handleSocialSignIn('google')} disabled={isSocialLoading !== null}>
-            <Ionicons name="logo-google" size={18} color={Colors.textPrimary} />
+            <Ionicons name="logo-google" size={18} color={colors.textPrimary} />
             <Text style={styles.socialText}>{isSocialLoading === 'google' ? 'Connecting…' : 'Google'}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.socialBtn, isSocialLoading === 'apple' && styles.socialBtnLoading]} onPress={() => handleSocialSignIn('apple')} disabled={isSocialLoading !== null}>
-            <Ionicons name="logo-apple" size={18} color={Colors.textPrimary} />
+            <Ionicons name="logo-apple" size={18} color={colors.textPrimary} />
             <Text style={styles.socialText}>{isSocialLoading === 'apple' ? 'Connecting…' : 'Apple'}</Text>
           </TouchableOpacity>
         </View>
@@ -100,14 +104,14 @@ export default function LoginScreen() {
         {/* Form */}
         <View style={styles.form}>
           <View style={styles.inputWrap}>
-            <Ionicons name="mail-outline" size={18} color={Colors.textTertiary} />
-            <TextInput style={styles.input} value={emailOrPhone} onChangeText={setEmailOrPhone} placeholder="Email or phone number" placeholderTextColor={Colors.textTertiary} keyboardType="email-address" autoCapitalize="none" />
+            <Ionicons name="mail-outline" size={18} color={colors.textTertiary} />
+            <TextInput style={styles.input} value={emailOrPhone} onChangeText={setEmailOrPhone} placeholder="Email or phone number" placeholderTextColor={colors.textTertiary} keyboardType="email-address" autoCapitalize="none" />
           </View>
           <View style={styles.inputWrap}>
-            <Ionicons name="lock-closed-outline" size={18} color={Colors.textTertiary} />
-            <TextInput style={styles.input} value={password} onChangeText={setPassword} placeholder="Password" placeholderTextColor={Colors.textTertiary} secureTextEntry={!showPassword} />
+            <Ionicons name="lock-closed-outline" size={18} color={colors.textTertiary} />
+            <TextInput style={styles.input} value={password} onChangeText={setPassword} placeholder="Password" placeholderTextColor={colors.textTertiary} secureTextEntry={!showPassword} />
             <TouchableOpacity onPress={() => setShowPassword((s) => !s)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={18} color={Colors.textTertiary} />
+              <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={18} color={colors.textTertiary} />
             </TouchableOpacity>
           </View>
           <TouchableOpacity style={styles.forgotRow}>
@@ -120,7 +124,7 @@ export default function LoginScreen() {
 
           {biometricType && (
             <TouchableOpacity style={styles.biometricBtn} onPress={handleBiometricLogin}>
-              <Ionicons name={biometricType === 'face' ? 'scan-outline' : 'finger-print-outline'} size={22} color={Colors.primary} />
+              <Ionicons name={biometricType === 'face' ? 'scan-outline' : 'finger-print-outline'} size={22} color={colors.primary} />
               <Text style={styles.biometricText}>{biometricType === 'face' ? 'Sign in with Face ID' : 'Sign in with Fingerprint'}</Text>
             </TouchableOpacity>
           )}
@@ -135,36 +139,38 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: Colors.white },
-  header: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.sm },
-  backBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  body: { flex: 1 },
-  bodyContent: { paddingHorizontal: Spacing.xxl, paddingBottom: 48 },
-title: { fontSize: FontSize.xxxl, fontWeight: '800', color: Colors.textPrimary, marginBottom: Spacing.xs },
-  subtitle: { fontSize: FontSize.md, color: Colors.textSecondary, marginBottom: Spacing.xxl },
-  toggle: { flexDirection: 'row', backgroundColor: Colors.surface, borderRadius: BorderRadius.xl, padding: 4, marginBottom: Spacing.xxl },
-  toggleItem: { flex: 1, paddingVertical: Spacing.md, alignItems: 'center', borderRadius: BorderRadius.lg },
-  toggleActive: { backgroundColor: Colors.white, ...Shadow.sm },
-  toggleText: { fontSize: FontSize.md, color: Colors.textSecondary, fontWeight: '500' },
-  toggleTextActive: { fontSize: FontSize.md, color: Colors.textPrimary, fontWeight: '700' },
-  socialRow: { flexDirection: 'row', gap: Spacing.md, marginBottom: Spacing.xl },
-  socialBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.sm, height: 50, borderRadius: BorderRadius.xl, borderWidth: 1.5, borderColor: Colors.border, backgroundColor: Colors.white },
-  socialBtnLoading: { opacity: 0.6, borderColor: Colors.lime },
-  socialText: { fontSize: FontSize.md, fontWeight: '600', color: Colors.textPrimary },
-  orRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, marginBottom: Spacing.xl },
-  orLine: { flex: 1, height: 1, backgroundColor: Colors.borderLight },
-  orText: { fontSize: FontSize.sm, color: Colors.textTertiary },
-  form: { gap: Spacing.md },
-  inputWrap: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, height: 52, backgroundColor: Colors.white, borderRadius: BorderRadius.xl, borderWidth: 1.5, borderColor: Colors.border, paddingHorizontal: Spacing.lg },
-  input: { flex: 1, fontSize: FontSize.md, color: Colors.textPrimary },
-  forgotRow: { alignItems: 'flex-end', marginTop: -4 },
-  forgotText: { fontSize: FontSize.sm, color: Colors.textPrimary, fontWeight: '600', textDecorationLine: 'underline' },
-  cta: { backgroundColor: Colors.lime, height: 54, borderRadius: BorderRadius.xl, alignItems: 'center', justifyContent: 'center', marginTop: Spacing.sm },
-  ctaDisabled: { opacity: 0.5 },
-  ctaText: { fontSize: FontSize.lg, fontWeight: '700', color: Colors.textPrimary },
-  biometricBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.sm, paddingVertical: Spacing.lg, borderRadius: BorderRadius.xl, borderWidth: 1.5, borderColor: Colors.border },
-  biometricText: { fontSize: FontSize.md, color: Colors.primary, fontWeight: '600' },
-  signupPrompt: { textAlign: 'center', fontSize: FontSize.md, color: Colors.textSecondary, marginTop: Spacing.sm },
-  signupLink: { color: Colors.textPrimary, fontWeight: '700', textDecorationLine: 'underline' },
-});
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    root: { flex: 1, backgroundColor: colors.white },
+    header: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.sm },
+    backBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+    body: { flex: 1 },
+    bodyContent: { paddingHorizontal: Spacing.xxl, paddingBottom: 48 },
+    title: { fontSize: FontSize.xxxl, fontWeight: '800', color: colors.textPrimary, marginBottom: Spacing.xs },
+    subtitle: { fontSize: FontSize.md, color: colors.textSecondary, marginBottom: Spacing.xxl },
+    toggle: { flexDirection: 'row', backgroundColor: colors.surface, borderRadius: BorderRadius.xl, padding: 4, marginBottom: Spacing.xxl },
+    toggleItem: { flex: 1, paddingVertical: Spacing.md, alignItems: 'center', borderRadius: BorderRadius.lg },
+    toggleActive: { backgroundColor: colors.white, ...Shadow.sm },
+    toggleText: { fontSize: FontSize.md, color: colors.textSecondary, fontWeight: '500' },
+    toggleTextActive: { fontSize: FontSize.md, color: colors.textPrimary, fontWeight: '700' },
+    socialRow: { flexDirection: 'row', gap: Spacing.md, marginBottom: Spacing.xl },
+    socialBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.sm, height: 50, borderRadius: BorderRadius.xl, borderWidth: 1.5, borderColor: colors.border, backgroundColor: colors.white },
+    socialBtnLoading: { opacity: 0.6, borderColor: colors.lime },
+    socialText: { fontSize: FontSize.md, fontWeight: '600', color: colors.textPrimary },
+    orRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, marginBottom: Spacing.xl },
+    orLine: { flex: 1, height: 1, backgroundColor: colors.borderLight },
+    orText: { fontSize: FontSize.sm, color: colors.textTertiary },
+    form: { gap: Spacing.md },
+    inputWrap: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, height: 52, backgroundColor: colors.white, borderRadius: BorderRadius.xl, borderWidth: 1.5, borderColor: colors.border, paddingHorizontal: Spacing.lg },
+    input: { flex: 1, fontSize: FontSize.md, color: colors.textPrimary },
+    forgotRow: { alignItems: 'flex-end', marginTop: -4 },
+    forgotText: { fontSize: FontSize.sm, color: colors.textPrimary, fontWeight: '600', textDecorationLine: 'underline' },
+    cta: { backgroundColor: colors.lime, height: 54, borderRadius: BorderRadius.xl, alignItems: 'center', justifyContent: 'center', marginTop: Spacing.sm },
+    ctaDisabled: { opacity: 0.5 },
+    ctaText: { fontSize: FontSize.lg, fontWeight: '700', color: colors.textPrimary },
+    biometricBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.sm, paddingVertical: Spacing.lg, borderRadius: BorderRadius.xl, borderWidth: 1.5, borderColor: colors.border },
+    biometricText: { fontSize: FontSize.md, color: colors.primary, fontWeight: '600' },
+    signupPrompt: { textAlign: 'center', fontSize: FontSize.md, color: colors.textSecondary, marginTop: Spacing.sm },
+    signupLink: { color: colors.textPrimary, fontWeight: '700', textDecorationLine: 'underline' },
+  });
+}
