@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, TextInput, StyleSheet } from 'react-native';
+import { Text, TextInput, StyleSheet, Platform } from 'react-native';
 
 /**
  * React Native does NOT synthesize font weights from a single family — each
@@ -27,7 +27,10 @@ const WEIGHT_TO_FAMILY: Record<string, string> = {
 let patched = false;
 
 export function applySoraFont() {
-  if (patched) return;
+  // On web, CSS handles font-family/font-weight natively via @font-face.
+  // Patching render() on web crashes because the returned element is a DOM
+  // node (span), not a React Native element, so StyleSheet.flatten fails.
+  if (patched || Platform.OS === 'web') return;
   patched = true;
   patchComponent(Text);
   patchComponent(TextInput);

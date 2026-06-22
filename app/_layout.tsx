@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -57,7 +58,9 @@ export default function RootLayout() {
     if (fontsLoaded) SplashScreen.hideAsync().catch(() => {});
   }, [fontsLoaded]);
 
-  if (!fontsLoaded) return null;
+  // On web, fonts load as CSS @font-face — blocking here just produces a blank
+  // screen while the TTF downloads. Render immediately; the font swaps in.
+  if (!fontsLoaded && Platform.OS !== 'web') return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
