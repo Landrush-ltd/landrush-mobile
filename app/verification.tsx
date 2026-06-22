@@ -146,8 +146,11 @@ export default function VerificationScreen() {
   }
 
   // ── Form ──────────────────────────────────────────────────────
+  // Display order: First Middle Last (Given names before surname)
   const fullName = ninRecord
-    ? [ninRecord.firstName, ninRecord.middleName, ninRecord.lastName].filter(Boolean).join(' ')
+    ? [ninRecord.firstName, ninRecord.middleName, ninRecord.lastName]
+        .filter(Boolean)
+        .join(' ')
     : '';
 
   return (

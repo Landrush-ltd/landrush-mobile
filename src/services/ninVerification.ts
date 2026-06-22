@@ -55,14 +55,39 @@ export async function lookupNIN(nin: string): Promise<NINRecord> {
       throw new NINLookupError(json.detail ?? 'NIN not found in NIMC database');
     }
 
-    const d = json.nin_data ?? json.data ?? {};
+    // Prembly can nest nin_data at different levels depending on API version:
+    //   json.nin_data            (v1)
+    //   json.data.nin_data       (v2 wrapper)
+    //   json.data                (fallback)
+    const d = json.nin_data ?? json.data?.nin_data ?? json.data ?? {};
+
+    // NIMC field names vary — handle all known variants
+    const firstName  = d.firstname   ?? d.first_name   ?? d.firstName   ?? '';
+    const lastName   = d.surname     ?? d.last_name    ?? d.lastName    ?? d.lastname ?? '';
+    const middleName = d.middlename  ?? d.middle_name  ?? d.middleName  ?? '';
+
+    // Sanity-check: if firstName looks like a surname (ALL_CAPS single token
+    // and lastName is empty) swap them so display is always Given → Family.
+    // NIMC occasionally returns records with reversed name fields.
+    if (lastName === '' && firstName.includes(' ')) {
+      const parts = firstName.trim().split(/\s+/);
+      return {
+        firstName:  parts.slice(1).join(' '),
+        lastName:   parts[0],
+        middleName,
+        gender:     (d.gender ?? '').toLowerCase() === 'm' ? 'Male' : (d.gender ?? '').toLowerCase() === 'f' ? 'Female' : d.gender ?? '',
+        dob:        d.birthdate ?? d.dob ?? '',
+        phone:      d.phone ?? '',
+      };
+    }
+
     return {
-      firstName:  d.firstname  ?? d.first_name  ?? '',
-      lastName:   d.surname    ?? d.last_name   ?? '',
-      middleName: d.middlename ?? d.middle_name ?? '',
-      gender:     d.gender     ?? '',
-      dob:        d.birthdate  ?? d.dob         ?? '',
-      phone:      d.phone      ?? '',
+      firstName,
+      lastName,
+      middleName,
+      gender:  (d.gender ?? '').toLowerCase() === 'm' ? 'Male' : (d.gender ?? '').toLowerCase() === 'f' ? 'Female' : d.gender ?? '',
+      dob:     d.birthdate ?? d.dob ?? '',
+      phone:   d.phone ?? '',
     };
   }
 
