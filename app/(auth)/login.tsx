@@ -7,7 +7,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as LocalAuthentication from 'expo-local-authentication';
-import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Spacing, FontSize, FontFamily, BorderRadius, Shadow, LetterSpacing } from '../../src/constants/theme';
 import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
 import { LandrushLogo } from '../../src/components/LandrushLogo';
@@ -146,7 +146,7 @@ function makeStyles(colors: ThemeColors) {
     backBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
     body: { flex: 1 },
     bodyContent: { paddingHorizontal: Spacing.xxl, paddingBottom: 48 },
-    title: { fontSize: FontSize.xxxl, fontWeight: '800', color: colors.textPrimary, marginBottom: Spacing.xs },
+    title: { fontSize: FontSize.xxxl, fontFamily: FontFamily.extraBold, fontWeight: '800', color: colors.textPrimary, letterSpacing: LetterSpacing.tight, marginBottom: Spacing.xs },
     subtitle: { fontSize: FontSize.md, color: colors.textSecondary, marginBottom: Spacing.xxl },
     toggle: { flexDirection: 'row', backgroundColor: colors.surface, borderRadius: BorderRadius.xl, padding: 4, marginBottom: Spacing.xxl },
     toggleItem: { flex: 1, paddingVertical: Spacing.md, alignItems: 'center', borderRadius: BorderRadius.lg },
@@ -167,7 +167,7 @@ function makeStyles(colors: ThemeColors) {
     forgotText: { fontSize: FontSize.sm, color: colors.textPrimary, fontWeight: '600', textDecorationLine: 'underline' },
     cta: { backgroundColor: colors.lime, height: 54, borderRadius: BorderRadius.xl, alignItems: 'center', justifyContent: 'center', marginTop: Spacing.sm },
     ctaDisabled: { opacity: 0.5 },
-    ctaText: { fontSize: FontSize.lg, fontWeight: '700', color: colors.textPrimary },
+    ctaText: { fontSize: FontSize.lg, fontFamily: FontFamily.bold, fontWeight: '700', color: colors.textPrimary },
     biometricBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.sm, paddingVertical: Spacing.lg, borderRadius: BorderRadius.xl, borderWidth: 1.5, borderColor: colors.border },
     biometricText: { fontSize: FontSize.md, color: colors.primary, fontWeight: '600' },
     signupPrompt: { textAlign: 'center', fontSize: FontSize.md, color: colors.textSecondary, marginTop: Spacing.sm },

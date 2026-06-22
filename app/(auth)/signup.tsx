@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
+import { Spacing, FontSize, FontFamily, BorderRadius, LetterSpacing } from '../../src/constants/theme';
 import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
 import { LandrushLogo } from '../../src/components/LandrushLogo';
@@ -265,8 +265,10 @@ function makeStyles(colors: ThemeColors) {
     },
     headerTitle: {
       fontSize: FontSize.display,
+      fontFamily: FontFamily.extraBold,
       fontWeight: '800',
       color: colors.white,
+      letterSpacing: LetterSpacing.tight,
       marginTop: Spacing.md,
     },
     headerSub: {
@@ -398,6 +400,7 @@ function makeStyles(colors: ThemeColors) {
     },
     primaryBtnText: {
       fontSize: FontSize.lg,
+      fontFamily: FontFamily.bold,
       fontWeight: '700',
       color: colors.textPrimary,
     },

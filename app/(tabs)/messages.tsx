@@ -11,7 +11,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Spacing, FontSize, FontFamily, BorderRadius, Shadow, LetterSpacing } from '../../src/constants/theme';
 import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
 import {
@@ -143,8 +143,10 @@ function makeStyles(colors: ThemeColors) {
     },
     headerTitle: {
       fontSize: FontSize.xxl,
+      fontFamily: FontFamily.extraBold,
       fontWeight: '800',
       color: colors.textPrimary,
+      letterSpacing: LetterSpacing.tight,
       marginBottom: 2,
     },
     headerSub: {

@@ -9,7 +9,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Spacing, FontSize, BorderRadius, Shadow } from '../src/constants/theme';
+import { Spacing, FontSize, FontFamily, BorderRadius, Shadow, LetterSpacing } from '../src/constants/theme';
 import type { ThemeColors } from '../src/constants/theme';
 import { useColors } from '../src/context/ThemeContext';
 
@@ -181,8 +181,10 @@ function makeStyles(colors: ThemeColors) {
     },
     title: {
       fontSize: FontSize.xl,
+      fontFamily: FontFamily.extraBold,
       fontWeight: '800',
       color: colors.textPrimary,
+      letterSpacing: LetterSpacing.snug,
     },
     summaryCard: {
       backgroundColor: 'rgba(255,255,255,0.1)',
@@ -199,8 +201,10 @@ function makeStyles(colors: ThemeColors) {
     },
     summaryAmount: {
       fontSize: FontSize.xxxl,
+      fontFamily: FontFamily.extraBold,
       fontWeight: '800',
-      color: colors.lime,
+      color: colors.textPrimary,
+      letterSpacing: LetterSpacing.tight,
     },
     summaryNote: {
       fontSize: FontSize.xs,

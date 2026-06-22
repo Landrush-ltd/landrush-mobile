@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Al
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Spacing, FontSize, FontFamily, BorderRadius, Shadow, LetterSpacing } from '../../src/constants/theme';
 import type { ThemeColors } from '../../src/constants/theme';
 import { useColors, useTheme } from '../../src/context/ThemeContext';
 import { useAuthStore } from '../../src/store/auth';
@@ -155,7 +155,7 @@ function makeStyles(colors: ThemeColors) {
   return StyleSheet.create({
     root: { flex: 1, backgroundColor: colors.surface },
     header: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.md, backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.borderLight },
-    headerTitle: { fontSize: FontSize.xxl, fontWeight: '800', color: colors.textPrimary },
+    headerTitle: { fontSize: FontSize.xxl, fontFamily: FontFamily.extraBold, fontWeight: '800', color: colors.textPrimary, letterSpacing: LetterSpacing.tight },
     avatarCard: { flexDirection: 'row', alignItems: 'center', gap: Spacing.lg, backgroundColor: colors.white, padding: Spacing.xl, marginBottom: 1 },
     avatarWrap: { position: 'relative' },
     avatar: { width: 72, height: 72, borderRadius: 36 },
@@ -163,14 +163,14 @@ function makeStyles(colors: ThemeColors) {
     avatarInitialsText: { fontSize: FontSize.xxl, fontWeight: '800', color: colors.lime },
     editAvatarBtn: { position: 'absolute', bottom: 0, right: 0, width: 24, height: 24, borderRadius: 12, backgroundColor: colors.textPrimary, alignItems: 'center', justifyContent: 'center' },
     avatarInfo: { flex: 1, gap: 3 },
-    displayName: { fontSize: FontSize.xl, fontWeight: '700', color: colors.textPrimary },
+    displayName: { fontSize: FontSize.xl, fontFamily: FontFamily.bold, fontWeight: '700', color: colors.textPrimary, letterSpacing: LetterSpacing.snug },
     roleText: { fontSize: FontSize.sm, color: colors.textSecondary },
     verifiedRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
     verifiedText: { fontSize: FontSize.sm, color: colors.lime, fontWeight: '600' },
     statsRow: { flexDirection: 'row', backgroundColor: colors.white, marginBottom: 8 },
     statItem: { flex: 1, alignItems: 'center', paddingVertical: Spacing.lg, gap: 3 },
     statItemBorder: { borderRightWidth: 1, borderRightColor: colors.borderLight },
-    statValue: { fontSize: FontSize.xxl, fontWeight: '800', color: colors.textPrimary },
+    statValue: { fontSize: FontSize.xxl, fontFamily: FontFamily.extraBold, fontWeight: '800', color: colors.textPrimary, letterSpacing: LetterSpacing.tight },
     statLabel: { fontSize: FontSize.xs, color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5 },
     menuArea: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg, gap: 2 },
     group: { marginBottom: Spacing.xl },
