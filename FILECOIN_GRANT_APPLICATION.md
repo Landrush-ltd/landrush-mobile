@@ -141,39 +141,29 @@ LANDRUSH MARKETPLACE
 ### Phase 2: Filecoin Integration (Weeks 11–14, Oct 2026) [Grant-funded]
 
 **Deliverables:**
-1. **Web3.storage SDK Integration** (2 weeks)
+1. **Web3.storage SDK Integration**
    - Implement `uploadDocument()` in backend
    - Handle IPFS/Filecoin upload of deeds, certifications, surveys
    - Store IPFS CID (content hash) in database
    - Implement retrieval with automatic retry logic
-   - Cost: ~$2,000 (development + testing)
 
-2. **Document Verification Smart Contract** (1 week)
-   - Deploy simple Solidity contract on Filecoin/Ethereum
+2. **Document Verification Smart Contract**
+   - Deploy Solidity contract on Filecoin/Ethereum
    - Verify deed ownership on-chain
    - Allow agents to register certifications
    - Emit events for auditing
-   - Cost: ~$1,000 (deployment + audit)
 
-3. **UI/UX for Blockchain Features** (1 week)
+3. **UI/UX for Blockchain Features**
    - "Verified Land Records" badge on listings
    - Show IPFS hash + Filecoin deal status to users
    - Allow buyers to audit ownership history
    - Display agent certification status
-   - Cost: ~$1,000 (design + implementation)
 
-4. **Impact Tracking & Reporting** (ongoing)
+4. **Impact Tracking & Reporting**
    - Dashboard: # documents stored on Filecoin
    - Metrics: gigabytes archived, deal redundancy, retrieval success rate
    - Quarterly reports to Filecoin Foundation
    - Public impact case studies
-   - Cost: ~$500 (reporting infrastructure)
-
-**Total Grant Budget: $25,000**
-- Development: $15,000
-- Infrastructure/Testing: $5,000
-- Reporting & Documentation: $3,000
-- Contingency: $2,000
 
 **Timeline:**
 - Week 1 (Oct 1–7): Web3.storage integration & testing
@@ -266,25 +256,23 @@ LANDRUSH MARKETPLACE
 
 ---
 
-## 8. Budget Breakdown
+## 8. Use of Grant Funds
 
-| Category | Amount | Notes |
-|----------|--------|-------|
-| **Development** | | |
-| Web3.storage integration | $5,000 | 2 weeks backend work |
-| Smart contract (Solidity) | $3,000 | 1 week + audit |
-| UI/UX (Verified Records) | $2,000 | 1 week frontend work |
-| Testing & QA | $2,000 | Security, integration tests |
-| **Infrastructure** | | |
-| Filecoin storage (3TB test) | $1,000 | For performance benchmarking |
-| Smart contract deployment | $2,000 | Gas fees, testnet, mainnet |
-| Monitoring & logging | $1,000 | Sentry, data aggregation |
-| **Reporting & Marketing** | | |
-| Impact dashboard | $1,500 | Real-time metrics for Filecoin Foundation |
-| Case studies & documentation | $1,000 | 3 detailed case studies |
-| Media & PR | $500 | Press release distribution |
-| **Contingency (10%)** | $2,000 | Unexpected costs, optimizations |
-| **TOTAL** | **$25,000** | |
+**Total Grant Request: $25,000 USD**
+
+The $25,000 grant will be allocated to fund the complete Phase 2 Filecoin integration:
+
+- **Backend Development:** Web3.storage SDK integration, IPFS/Filecoin document upload and retrieval systems, database optimization for IPFS CIDs
+
+- **Smart Contract Development:** Solidity contract deployment for deed verification, on-chain certification registry, auditing capabilities
+
+- **Frontend & UI/UX:** Verified Land Records interface, IPFS hash and Filecoin deal status display, ownership history audit tools, agent certification verification UI
+
+- **Testing & Quality Assurance:** Security testing, integration testing, performance benchmarking on Filecoin network
+
+- **Infrastructure & Deployment:** Filecoin storage and retrieval services, smart contract deployment costs, monitoring and logging infrastructure
+
+- **Impact Tracking & Documentation:** Real-time impact dashboard, quarterly reports to Filecoin Foundation, case studies, media and PR coordination
 
 ---
 
