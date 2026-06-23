@@ -213,20 +213,31 @@ LANDRUSH MARKETPLACE
 
 ## 6. Team & Expertise
 
-### Kenneth Umoekpe (Founder & Lead)
-- **Background:** Full-stack engineer, 8+ years building mobile & web apps
-- **Relevant:** Built Prembly NIN verification (200K+ users), real estate marketplace prototypes
-- **Role:** Product, architecture, fundraising
+**The Landrush technical team brings a combined 17 years of hands-on engineering and product development experience directly relevant to building scalable mobile marketplace applications and decentralized infrastructure integrations.**
 
-### Technical Team (To be hired with grant)
-- **Backend Engineer** (Node.js + Blockchain): 1 FTE
-- **Blockchain Engineer** (Solidity, Filecoin): 1 contractor
-- **DevOps/Infrastructure:** Shared resource
+### Core Team
 
-### Advisors (Pending confirmation)
-- **Real Estate Expert:** [Nigerian real estate agent association contact]
-- **Blockchain:** [Filecoin community member]
-- **Government:** [Lagos State digital government initiative contact]
+**Lead Full-Stack Developer — Arinze Obasi**
+- LinkedIn: https://www.linkedin.com/in/arinze-obasi-161618233/
+- Full-stack expertise in marketplace applications, React Native, backend systems
+
+**Full-Stack Developer — Unsteady Teddy (Raphael James)**
+- GitHub: https://github.com/Raphaelj1
+- Mobile-first development, cross-platform optimization, API integration
+
+**Backend Developer — Ubongabasi Jerome**
+- LinkedIn: https://linkedin.com/in/ubongabasi-jerome
+- Node.js, database architecture, API design and optimization
+
+**Engineering Intern — Godspower Ufot**
+- LinkedIn: https://www.linkedin.com/in/godspower-ufot-1b0967363
+- Full-stack development, testing, documentation
+
+**Product Designer — Aniebiet Peter**
+- LinkedIn: https://www.linkedin.com/in/aniebiet-peter-5ba80323a
+- UI/UX design, user research, design systems
+
+**All team members are publicly listed on the Landrush GitHub organization and maintain active professional profiles.**
 
 ---
 
@@ -390,8 +401,8 @@ Nov 2026            ▓ Launch Filecoin Features + Impact Report
 
 ### D. Questions & Contact
 **Email:** kennethumoekpe@gmail.com  
-**GitHub:** [Landrush repositories]  
-**Website:** landrush.app  
+**Website:** https://www.landrushafrica.com/  
+**GitHub:** https://github.com/Landrush-ltd  
 **Demo:** [Video link showing MVP in action]
 
 ---
