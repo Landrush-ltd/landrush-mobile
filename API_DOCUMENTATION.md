@@ -14,7 +14,8 @@
 4. [Bookings & Inspections](#bookings--inspections)
 5. [Notifications](#notifications)
 6. [Users](#users)
-7. [Error Handling](#error-handling)
+7. [Agent Profiles](#agent-profiles)
+8. [Error Handling](#error-handling)
 
 ---
 
@@ -866,6 +867,353 @@ Authorization: Bearer {token}
 ```json
 {
   "message": "Push token registered"
+}
+```
+
+---
+
+## Agent Profiles
+
+### 1. Get Public Agent Profile
+
+**Endpoint:** `GET /agents/{id}`
+
+**Response (200 OK):**
+```json
+{
+  "data": {
+    "id": "agent_1",
+    "name": "Adebayo Ogunlade",
+    "avatar": "https://i.pravatar.cc/150?img=11",
+    "phone": "+2348012345678",
+    "email": "agent@landrush.com",
+    "bio": "Experienced land agent with over 10 years in real estate",
+    "isVerified": true,
+    "totalListings": 42,
+    "activeListing": 18,
+    "rating": 4.8,
+    "reviewCount": 127,
+    "responseTime": "2 hours",
+    "joinedDate": "2024-01-15T00:00:00Z",
+    "certifications": ["NAREB", "NLA"],
+    "specializations": ["Farmland", "Commercial"]
+  }
+}
+```
+
+---
+
+### 2. Get My Agent Profile (Authenticated)
+
+**Endpoint:** `GET /agents/me`
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Response (200 OK):**
+```json
+{
+  "data": {
+    "id": "agent_1",
+    "name": "Adebayo Ogunlade",
+    "avatar": "https://i.pravatar.cc/150?img=11",
+    "phone": "+2348012345678",
+    "email": "agent@landrush.com",
+    "bio": "Experienced land agent with over 10 years in real estate",
+    "isVerified": true,
+    "totalListings": 42,
+    "activeListing": 18,
+    "rating": 4.8,
+    "reviewCount": 127,
+    "responseTime": "2 hours",
+    "joinedDate": "2024-01-15T00:00:00Z",
+    "certifications": ["NAREB", "NLA"],
+    "specializations": ["Farmland", "Commercial"],
+    "bankAccount": {
+      "accountNumber": "1234567890",
+      "bankCode": "007",
+      "accountName": "Adebayo Ogunlade"
+    },
+    "withdrawalBalance": 2500000
+  }
+}
+```
+
+---
+
+### 3. Update Agent Profile
+
+**Endpoint:** `PATCH /agents/me`
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Request:**
+```json
+{
+  "name": "Adebayo Ogunlade",
+  "bio": "Experienced land agent with over 10 years in real estate",
+  "avatar": "https://...",
+  "phone": "+2348012345678",
+  "certifications": ["NAREB", "NLA"],
+  "specializations": ["Farmland", "Commercial", "Distress"],
+  "bankAccount": {
+    "accountNumber": "1234567890",
+    "bankCode": "007"
+  }
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "data": { /* Updated agent profile */ }
+}
+```
+
+---
+
+### 4. Get Agent's Listings
+
+**Endpoint:** `GET /agents/{agentId}/listings`
+
+**Query Parameters:**
+| Param | Type | Description |
+|-------|------|-------------|
+| `status` | string | Filter: 'active', 'sold', 'expired' |
+| `limit` | number | Results per page (default: 20) |
+| `offset` | number | Pagination offset (default: 0) |
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    { /* Listing objects */ }
+  ],
+  "total": 42,
+  "limit": 20,
+  "offset": 0
+}
+```
+
+---
+
+### 5. Get Agent Reviews
+
+**Endpoint:** `GET /agents/{agentId}/reviews`
+
+**Query Parameters:**
+| Param | Type | Description |
+|-------|------|-------------|
+| `rating` | number | Filter by star rating (1-5) |
+| `limit` | number | Results per page (default: 20) |
+| `offset` | number | Pagination offset (default: 0) |
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": "review_1",
+      "agentId": "agent_1",
+      "buyerId": "user_2",
+      "buyerName": "John Doe",
+      "buyerAvatar": "https://...",
+      "rating": 5,
+      "title": "Excellent service",
+      "comment": "Very professional and responsive agent. Highly recommended!",
+      "listingId": "listing_5",
+      "createdAt": "2026-06-20T10:00:00Z"
+    }
+  ],
+  "total": 127,
+  "averageRating": 4.8,
+  "limit": 20,
+  "offset": 0
+}
+```
+
+---
+
+### 6. Leave a Review for Agent
+
+**Endpoint:** `POST /agents/{agentId}/reviews`
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Request:**
+```json
+{
+  "rating": 5,
+  "title": "Excellent service",
+  "comment": "Very professional and responsive agent. Highly recommended!",
+  "listingId": "listing_5"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "data": { /* Created review object */ }
+}
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "You can only review agents you've transacted with"
+}
+```
+
+---
+
+### 7. List Agents (Discovery)
+
+**Endpoint:** `GET /agents`
+
+**Query Parameters:**
+| Param | Type | Description |
+|-------|------|-------------|
+| `search` | string | Search by name or location |
+| `specialization` | string | Filter by specialization |
+| `minRating` | number | Minimum rating (1-5) |
+| `verifiedOnly` | boolean | Show only verified agents |
+| `limit` | number | Results per page (default: 20) |
+| `offset` | number | Pagination offset (default: 0) |
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": "agent_1",
+      "name": "Adebayo Ogunlade",
+      "avatar": "https://...",
+      "isVerified": true,
+      "totalListings": 42,
+      "activeListing": 18,
+      "rating": 4.8,
+      "reviewCount": 127,
+      "specializations": ["Farmland", "Commercial"],
+      "responseTime": "2 hours"
+    }
+  ],
+  "total": 342,
+  "limit": 20,
+  "offset": 0
+}
+```
+
+---
+
+### 8. Get Agent Statistics
+
+**Endpoint:** `GET /agents/me/statistics`
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Response (200 OK):**
+```json
+{
+  "data": {
+    "totalListings": 42,
+    "activeListings": 18,
+    "soldListings": 24,
+    "totalViews": 18234,
+    "totalInquiries": 156,
+    "conversions": 24,
+    "conversionRate": 15.4,
+    "averageResponseTime": 120,
+    "avgDaysToSell": 45,
+    "totalRevenue": 45000000,
+    "thisMonthRevenue": 3500000,
+    "thisMonthListings": 5,
+    "rating": 4.8,
+    "reviewCount": 127,
+    "joinedDate": "2024-01-15T00:00:00Z",
+    "nextPayoutDate": "2026-07-01T00:00:00Z"
+  }
+}
+```
+
+---
+
+### 9. Request Payout
+
+**Endpoint:** `POST /agents/me/payouts`
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Request:**
+```json
+{
+  "amount": 500000,
+  "reason": "Monthly earnings"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "data": {
+    "id": "payout_1",
+    "agentId": "agent_1",
+    "amount": 500000,
+    "status": "pending",
+    "reason": "Monthly earnings",
+    "requestedAt": "2026-06-23T10:00:00Z",
+    "expectedDate": "2026-07-01T00:00:00Z"
+  }
+}
+```
+
+---
+
+### 10. Get Payout History
+
+**Endpoint:** `GET /agents/me/payouts`
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+| Param | Type | Description |
+|-------|------|-------------|
+| `status` | string | Filter: 'pending', 'completed', 'failed' |
+| `limit` | number | Results per page (default: 20) |
+| `offset` | number | Pagination offset (default: 0) |
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": "payout_1",
+      "amount": 500000,
+      "status": "completed",
+      "reason": "Monthly earnings",
+      "requestedAt": "2026-06-15T10:00:00Z",
+      "completedAt": "2026-06-20T10:00:00Z"
+    }
+  ],
+  "total": 12,
+  "limit": 20,
+  "offset": 0
 }
 ```
 

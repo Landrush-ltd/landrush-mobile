@@ -26,6 +26,8 @@ tags:
     description: Push notifications
   - name: Users
     description: User profile management
+  - name: Agents
+    description: Agent profile and management
 
 paths:
   /auth/signup:
@@ -778,6 +780,290 @@ paths:
         200:
           description: Push token registered
 
+  /agents:
+    get:
+      tags:
+        - Agents
+      summary: List agents with discovery
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: specialization
+          in: query
+          schema:
+            type: string
+        - name: minRating
+          in: query
+          schema:
+            type: number
+        - name: verifiedOnly
+          in: query
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        200:
+          description: Agents list retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Agent'
+
+  /agents/{id}:
+    get:
+      tags:
+        - Agents
+      summary: Get public agent profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Agent profile retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Agent'
+
+  /agents/me:
+    get:
+      tags:
+        - Agents
+      summary: Get my agent profile (authenticated)
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: My agent profile retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AgentProfile'
+    patch:
+      tags:
+        - Agents
+      summary: Update my agent profile
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                bio:
+                  type: string
+                avatar:
+                  type: string
+                phone:
+                  type: string
+                certifications:
+                  type: array
+                  items:
+                    type: string
+                specializations:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        200:
+          description: Agent profile updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AgentProfile'
+
+  /agents/{agentId}/listings:
+    get:
+      tags:
+        - Agents
+      summary: Get agent's listings
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: Agent's listings retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Listing'
+
+  /agents/{agentId}/reviews:
+    get:
+      tags:
+        - Agents
+      summary: Get agent reviews
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: rating
+          in: query
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Agent reviews retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Review'
+    post:
+      tags:
+        - Agents
+      summary: Leave a review for agent
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                title:
+                  type: string
+                comment:
+                  type: string
+                listingId:
+                  type: string
+      responses:
+        201:
+          description: Review created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Review'
+
+  /agents/me/statistics:
+    get:
+      tags:
+        - Agents
+      summary: Get agent statistics
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Agent statistics retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AgentStatistics'
+
+  /agents/me/payouts:
+    get:
+      tags:
+        - Agents
+      summary: Get payout history
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: Payout history retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Payout'
+    post:
+      tags:
+        - Agents
+      summary: Request payout
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                reason:
+                  type: string
+      responses:
+        201:
+          description: Payout requested
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Payout'
+
 components:
   securitySchemes:
     BearerAuth:
@@ -1030,6 +1316,145 @@ components:
         - title
         - state
         - price
+
+    Agent:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        avatar:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        bio:
+          type: string
+        isVerified:
+          type: boolean
+        totalListings:
+          type: integer
+        activeListing:
+          type: integer
+        rating:
+          type: number
+        reviewCount:
+          type: integer
+        responseTime:
+          type: string
+        specializations:
+          type: array
+          items:
+            type: string
+        joinedDate:
+          type: string
+          format: date-time
+
+    AgentProfile:
+      allOf:
+        - $ref: '#/components/schemas/Agent'
+        - type: object
+          properties:
+            certifications:
+              type: array
+              items:
+                type: string
+            bankAccount:
+              type: object
+              properties:
+                accountNumber:
+                  type: string
+                bankCode:
+                  type: string
+                accountName:
+                  type: string
+            withdrawalBalance:
+              type: number
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: string
+        agentId:
+          type: string
+        buyerId:
+          type: string
+        buyerName:
+          type: string
+        buyerAvatar:
+          type: string
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        title:
+          type: string
+        comment:
+          type: string
+        listingId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    AgentStatistics:
+      type: object
+      properties:
+        totalListings:
+          type: integer
+        activeListings:
+          type: integer
+        soldListings:
+          type: integer
+        totalViews:
+          type: integer
+        totalInquiries:
+          type: integer
+        conversions:
+          type: integer
+        conversionRate:
+          type: number
+        averageResponseTime:
+          type: integer
+        avgDaysToSell:
+          type: integer
+        totalRevenue:
+          type: number
+        thisMonthRevenue:
+          type: number
+        thisMonthListings:
+          type: integer
+        rating:
+          type: number
+        reviewCount:
+          type: integer
+        nextPayoutDate:
+          type: string
+          format: date-time
+
+    Payout:
+      type: object
+      properties:
+        id:
+          type: string
+        agentId:
+          type: string
+        amount:
+          type: number
+        status:
+          type: string
+          enum: [pending, completed, failed]
+        reason:
+          type: string
+        requestedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
 
   responses:
     BadRequest:
