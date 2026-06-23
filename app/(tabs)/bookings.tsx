@@ -14,62 +14,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, FontSize, FontFamily, BorderRadius, Shadow, LetterSpacing } from '../../src/constants/theme';
 import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
+import { useBookings, useCancelBooking } from '../../src/hooks/useBookings';
+import type { Booking } from '../../src/hooks/useBookings';
 
-type BookingStatus = 'pending' | 'upcoming' | 'rescheduled' | 'past' | 'cancelled';
+type BookingStatus = Booking['status'];
 type FilterTab = 'pending' | 'upcoming' | 'past';
-
-interface Booking {
-  id: string;
-  listingTitle: string;
-  listingImage: string;
-  location: string;
-  price: string;
-  date: string;
-  time: string;
-  status: BookingStatus;
-  agentName: string;
-  agentAvatar: string;
-}
-
-
-const MOCK: Booking[] = [
-  {
-    id: '1',
-    listingTitle: '12 Acres of Farmland',
-    listingImage: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400',
-    location: 'Ikot Ekpene, Akwa Ibom',
-    price: '₦4,500,000',
-    date: 'Monday, 12 May 2026',
-    time: '10:00 AM – 11:30 AM',
-    status: 'pending',
-    agentName: 'Adewale Properties',
-    agentAvatar: 'https://i.pravatar.cc/150?img=52',
-  },
-  {
-    id: '2',
-    listingTitle: '5 Plots Industrial Zone',
-    listingImage: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400',
-    location: 'Ota, Ogun State',
-    price: '₦2,800,000',
-    date: 'Friday, 20 Jun 2026',
-    time: '2:00 PM – 3:30 PM',
-    status: 'rescheduled',
-    agentName: 'Gideon Etim',
-    agentAvatar: 'https://i.pravatar.cc/150?img=67',
-  },
-  {
-    id: '3',
-    listingTitle: '8 Plots Corner Piece',
-    listingImage: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400',
-    location: 'Lekki, Lagos',
-    price: '₦7,200,000',
-    date: 'Wed, 2 Jul 2026',
-    time: '9:00 AM – 10:00 AM',
-    status: 'upcoming',
-    agentName: 'Prime Realty',
-    agentAvatar: 'https://i.pravatar.cc/150?img=49',
-  },
-];
 
 const TABS: { key: FilterTab; label: string; count: (b: Booking[]) => number }[] = [
   { key: 'pending',  label: 'Pending',  count: (b) => b.filter((x) => x.status === 'pending' || x.status === 'rescheduled').length },
@@ -83,6 +32,8 @@ export default function BookingsScreen() {
   const [activeTab, setActiveTab] = useState<FilterTab>('pending');
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { data: bookings = [], isLoading } = useBookings();
+  const cancelBooking = useCancelBooking();
 
   const STATUS: Record<BookingStatus, { label: string; color: string; bg: string; icon: string }> = {
     pending:     { label: 'Pending Confirmation', color: '#E65100', bg: '#FFF3E0', icon: 'time-outline' },
@@ -92,7 +43,7 @@ export default function BookingsScreen() {
     cancelled:   { label: 'Cancelled',            color: colors.error, bg: '#FFEBEE', icon: 'close-circle-outline' },
   };
 
-  const filtered = MOCK.filter((b) => {
+  const filtered = bookings.filter((b) => {
     if (activeTab === 'pending')  return b.status === 'pending' || b.status === 'rescheduled';
     if (activeTab === 'upcoming') return b.status === 'upcoming';
     return b.status === 'past' || b.status === 'cancelled';
@@ -103,10 +54,10 @@ export default function BookingsScreen() {
       {/* White header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
         <Text style={styles.headerTitle}>Bookings</Text>
-        <Text style={styles.headerSub}>{MOCK.length} inspection requests</Text>
+        <Text style={styles.headerSub}>{bookings.length} inspection requests</Text>
         <View style={styles.tabRow}>
           {TABS.map((tab) => {
-            const count  = tab.count(MOCK);
+            const count  = tab.count(bookings);
             const active = activeTab === tab.key;
             return (
               <TouchableOpacity
@@ -220,7 +171,7 @@ export default function BookingsScreen() {
                         onPress={() =>
                           Alert.alert('Cancel Inspection?', 'This action cannot be undone.', [
                             { text: 'No', style: 'cancel' },
-                            { text: 'Yes, Cancel', style: 'destructive', onPress: () => {} },
+                            { text: 'Yes, Cancel', style: 'destructive', onPress: () => cancelBooking.mutate(booking.id) },
                           ])
                         }
                       >

@@ -17,6 +17,7 @@ import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
 import { LandrushLogo } from '../../src/components/LandrushLogo';
 import { useAuthStore } from '../../src/store/auth';
+import { signupWithEmail, loginWithSocial } from '../../src/services/authService';
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -32,29 +33,20 @@ export default function SignupScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSocialLoading, setIsSocialLoading] = useState<'google' | 'apple' | null>(null);
 
-  const handleSocialSignIn = (provider: 'google' | 'apple') => {
+  const handleSocialSignIn = async (provider: 'google' | 'apple') => {
     setIsSocialLoading(provider);
-    setTimeout(() => {
-      setUser(
-        {
-          id: '1',
-          firstName: 'Kenneth',
-          lastName: 'Umoekpe',
-          email: 'kennethumoekpe@gmail.com',
-          phone: '',
-          avatar: 'https://i.pravatar.cc/150?img=11',
-          role: 'seeker',
-          isVerified: true,
-          createdAt: new Date().toISOString(),
-        },
-        'mock-jwt-token',
-      );
-      setIsSocialLoading(null);
+    try {
+      const { user, token } = await loginWithSocial(provider, 'oauth-id-token');
+      setUser(user, token);
       router.replace('/(tabs)');
-    }, 1200);
+    } catch (e: any) {
+      Alert.alert('Sign in failed', e?.message ?? 'Please try again.');
+    } finally {
+      setIsSocialLoading(null);
+    }
   };
 
-  const handleSignup = () => {
+  const handleSignup = async () => {
     if (!emailOrPhone || !password || !confirmPassword) {
       Alert.alert('Missing Fields', 'Please fill in all fields.');
       return;
@@ -64,10 +56,14 @@ export default function SignupScreen() {
       return;
     }
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await signupWithEmail(emailOrPhone, password);
       router.push({ pathname: '/(auth)/verify-otp', params: { phone: emailOrPhone } });
-    }, 1000);
+    } catch (e: any) {
+      Alert.alert('Sign up failed', e?.message ?? 'Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

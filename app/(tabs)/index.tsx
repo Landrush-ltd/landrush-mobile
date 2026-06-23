@@ -18,7 +18,7 @@ import { useColors } from '../../src/context/ThemeContext';
 import { ListingCard } from '../../src/components/ListingCard';
 import { useListingsStore } from '../../src/store/listings';
 import { useAuthStore } from '../../src/store/auth';
-import { mockListings } from '../../src/services/mockData';
+import { useListings } from '../../src/hooks/useListings';
 import type { Listing, ListingCategory } from '../../src/types/listing';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
@@ -52,15 +52,19 @@ export default function ExploreScreen() {
   const { user } = useAuthStore();
   const { filteredListings, activeCategory, searchQuery, setListings, setActiveCategory, setSearchQuery } =
     useListingsStore();
+  const { data: apiListings, isLoading: listingsLoading, refetch } = useListings();
   const [refreshing, setRefreshing] = useState(false);
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
-  useEffect(() => { setListings(mockListings); }, []);
+  useEffect(() => {
+    if (apiListings) setListings(apiListings);
+  }, [apiListings]);
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    setTimeout(() => { setListings(mockListings); setRefreshing(false); }, 800);
+    await refetch();
+    setRefreshing(false);
   };
 
   const handlePress  = (l: Listing) => router.push(`/listing/${l.id}`);

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -12,23 +12,44 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, FontSize, FontFamily, BorderRadius, Shadow, LetterSpacing } from '../src/constants/theme';
 import type { ThemeColors } from '../src/constants/theme';
 import { useColors } from '../src/context/ThemeContext';
+import {
+  useNotificationsData,
+  useMarkNotificationRead,
+  useMarkAllRead,
+  type AppNotification,
+} from '../src/hooks/useNotificationsData';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
-interface NotificationItem {
-  id: string;
-  icon: IoniconsName;
-  iconColor: string;
-  iconBg: string;
-  title: string;
-  subtitle: string;
-  time: string;
-  unread?: boolean;
+type NotificationGroup = { label: string; items: AppNotification[] };
+
+function typeToIcon(
+  type: AppNotification['type'],
+  colors: ReturnType<typeof useColors>,
+): { icon: IoniconsName; iconColor: string; iconBg: string } {
+  switch (type) {
+    case 'inspection': return { icon: 'calendar',         iconColor: colors.primary,  iconBg: `${colors.lime}28` };
+    case 'payment':    return { icon: 'checkmark-circle', iconColor: '#1565C0',        iconBg: '#E3F2FD' };
+    case 'message':    return { icon: 'chatbubble',       iconColor: colors.info,      iconBg: '#E3F2FD' };
+    case 'listing':    return { icon: 'pricetag',         iconColor: colors.success,   iconBg: '#E8F5E9' };
+    case 'system':     return { icon: 'person-circle',    iconColor: colors.warning,   iconBg: '#FFF8E1' };
+  }
 }
 
-interface NotificationGroup {
-  label: string;
-  items: NotificationItem[];
+function groupByDate(items: AppNotification[]): NotificationGroup[] {
+  const groups: Record<string, AppNotification[]> = {};
+  const today = new Date(); today.setHours(0,0,0,0);
+  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+
+  for (const item of items) {
+    let label = item.time;
+    const t = item.time.toLowerCase();
+    if (t.includes('ago') || t.includes('h ago') || t.includes('m ago')) label = 'Today';
+    else if (t === 'yesterday') label = 'Yesterday';
+    if (!groups[label]) groups[label] = [];
+    groups[label].push(item);
+  }
+  return Object.entries(groups).map(([label, items]) => ({ label, items }));
 }
 
 export default function NotificationsScreen() {
@@ -36,90 +57,15 @@ export default function NotificationsScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
-  const [readIds, setReadIds] = useState<Set<string>>(new Set());
 
-  const groups: NotificationGroup[] = [
-    {
-      label: 'Today',
-      items: [
-        {
-          id: '1',
-          icon: 'calendar',
-          iconColor: colors.primary,
-          iconBg: `${colors.lime}28`,
-          title: 'Inspection Confirmed',
-          subtitle: 'Your inspection for 12 Acres of Farmland has been confirmed for Monday, 12 May at 10:00 AM.',
-          time: '2m ago',
-          unread: true,
-        },
-        {
-          id: '2',
-          icon: 'checkmark-circle',
-          iconColor: '#1565C0',
-          iconBg: '#E3F2FD',
-          title: 'Payment Successful',
-          subtitle: 'Your access fee payment of ₦5,000 was processed successfully.',
-          time: '1h ago',
-          unread: true,
-        },
-      ],
-    },
-    {
-      label: 'Yesterday',
-      items: [
-        {
-          id: '3',
-          icon: 'close-circle',
-          iconColor: colors.error,
-          iconBg: '#FFEBEE',
-          title: 'Listing Rejected',
-          subtitle: 'Your listing "5 Plots Industrial Zone" was rejected. Please review the feedback and resubmit.',
-          time: '3:45 PM',
-        },
-        {
-          id: '4',
-          icon: 'checkmark-circle',
-          iconColor: colors.success,
-          iconBg: '#E8F5E9',
-          title: 'Listing Approved',
-          subtitle: 'Your listing "8 Plots Corner Piece, Lekki" is now live on Landrush.',
-          time: '10:12 AM',
-        },
-      ],
-    },
-    {
-      label: 'June 3',
-      items: [
-        {
-          id: '5',
-          icon: 'person',
-          iconColor: colors.warning,
-          iconBg: '#FFF8E1',
-          title: 'New Booking Request',
-          subtitle: 'Adewale Properties has requested an inspection for your listing.',
-          time: '8:00 AM',
-        },
-        {
-          id: '6',
-          icon: 'chatbubble',
-          iconColor: colors.info,
-          iconBg: '#E3F2FD',
-          title: 'New Message',
-          subtitle: 'Chukwu Okafor sent you a message about "3 Plots of Land — Uyo GRA".',
-          time: '7:14 AM',
-        },
-      ],
-    },
-  ];
+  const { data: notifications = [] } = useNotificationsData();
+  const markRead = useMarkNotificationRead();
+  const markAllReadMutation = useMarkAllRead();
 
-  const totalUnread = groups
-    .flatMap((g) => g.items)
-    .filter((i) => i.unread && !readIds.has(i.id)).length;
+  const groups = groupByDate(notifications);
+  const totalUnread = notifications.filter((n) => n.unread).length;
 
-  const markAllRead = () => {
-    const allIds = groups.flatMap((g) => g.items.map((i) => i.id));
-    setReadIds(new Set(allIds));
-  };
+  const markAllRead = () => markAllReadMutation.mutate();
 
   return (
     <View style={styles.root}>
@@ -161,7 +107,8 @@ export default function NotificationsScreen() {
             <Text style={styles.groupLabel}>{group.label}</Text>
             <View style={styles.groupItems}>
               {group.items.map((item, ii) => {
-                const isUnread = item.unread && !readIds.has(item.id);
+                const isUnread = item.unread;
+                const { icon, iconColor, iconBg } = typeToIcon(item.type, colors);
                 return (
                   <TouchableOpacity
                     key={item.id}
@@ -170,14 +117,14 @@ export default function NotificationsScreen() {
                       ii < group.items.length - 1 && styles.itemBorder,
                       isUnread && styles.itemUnread,
                     ]}
-                    onPress={() => setReadIds((prev) => new Set([...prev, item.id]))}
+                    onPress={() => { if (isUnread) markRead.mutate(item.id); }}
                     activeOpacity={0.7}
                   >
                     {/* Unread dot */}
                     {isUnread && <View style={styles.unreadDot} />}
 
-                    <View style={[styles.iconCircle, { backgroundColor: item.iconBg }]}>
-                      <Ionicons name={item.icon} size={22} color={item.iconColor} />
+                    <View style={[styles.iconCircle, { backgroundColor: iconBg }]}>
+                      <Ionicons name={icon} size={22} color={iconColor} />
                     </View>
 
                     <View style={styles.itemText}>

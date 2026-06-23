@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, FontSize, FontFamily, BorderRadius, Shadow, LetterSpacing } from '../src/constants/theme';
 import type { ThemeColors } from '../src/constants/theme';
 import { useColors } from '../src/context/ThemeContext';
-import { mockListings } from '../src/services/mockData';
+import { useSavedListings, useUnsaveListing } from '../src/hooks/useListings';
 import type { Listing } from '../src/types/listing';
 
 export default function SavedListingsScreen() {
@@ -21,7 +21,8 @@ export default function SavedListingsScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
-  const [saved, setSaved] = useState<Listing[]>(mockListings.slice(0, 3));
+  const { data: saved = [] } = useSavedListings();
+  const unsave = useUnsaveListing();
 
   const CATEGORY_COLOR: Record<string, string> = {
     sale:     colors.primary,
@@ -29,8 +30,7 @@ export default function SavedListingsScreen() {
     distress: colors.distress,
   };
 
-  const handleUnsave = (id: string) =>
-    setSaved((prev) => prev.filter((l) => l.id !== id));
+  const handleUnsave = (id: string) => unsave.mutate(id);
 
   const Header = () => (
     <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>

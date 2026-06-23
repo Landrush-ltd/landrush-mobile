@@ -17,6 +17,16 @@
         {
           "cameraPermission": "Landrush needs your camera to verify your face against your NIN record."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#004230",
+          "sounds": [],
+          "androidMode": "default",
+          "androidCollapsedTitle": "Landrush"
+        }
       ]
     ],
     "ios": {

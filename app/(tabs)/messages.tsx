@@ -14,11 +14,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, FontSize, FontFamily, BorderRadius, Shadow, LetterSpacing } from '../../src/constants/theme';
 import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
-import {
-  mockConversations,
-  formatMessageTime,
-} from '../../src/services/mockChatData';
+import { formatMessageTime } from '../../src/services/mockChatData';
 import type { Conversation } from '../../src/types/chat';
+import { useConversations } from '../../src/hooks/useConversations';
 
 
 export default function MessagesScreen() {
@@ -27,14 +25,15 @@ export default function MessagesScreen() {
   const [search, setSearch] = useState('');
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { data: conversations = [] } = useConversations();
 
-  const filtered = mockConversations.filter(
+  const filtered = conversations.filter(
     (c) =>
       c.agentName.toLowerCase().includes(search.toLowerCase()) ||
       c.listingTitle.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const totalUnread = mockConversations.reduce((n, c) => n + c.unreadCount, 0);
+  const totalUnread = conversations.reduce((n, c) => n + c.unreadCount, 0);
 
   const renderItem = ({ item }: { item: Conversation }) => (
     <TouchableOpacity

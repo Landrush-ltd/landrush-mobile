@@ -15,7 +15,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, FontSize, FontFamily, BorderRadius, Shadow, LetterSpacing } from '../src/constants/theme';
 import type { ThemeColors } from '../src/constants/theme';
 import { useColors } from '../src/context/ThemeContext';
-import { mockListings } from '../src/services/mockData';
+import { useMyListings } from '../src/hooks/useListings';
+import { useQueryClient } from '@tanstack/react-query';
+import { api } from '../src/services/api';
+import { useAuthStore } from '../src/store/auth';
 
 
 type ListingStatus = 'live' | 'pending' | 'rejected' | 'draft';
@@ -30,23 +33,24 @@ interface MyListing {
   status: ListingStatus;
 }
 
-const myListings: MyListing[] = mockListings.slice(0, 4).map((l, i) => ({
-  id: l.id,
-  title: l.title,
-  image: l.media[0]?.uri ?? '',
-  location: l.location,
-  price: l.price,
-  size: `${l.size} ${l.sizeUnit}`,
-  status: (['live', 'pending', 'live', 'draft'] as ListingStatus[])[i],
-}));
-
 export default function MyListingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
-  const [listings, setListings] = useState<MyListing[]>(myListings);
+  const { data: rawListings = [] } = useMyListings();
+  const listings: MyListing[] = rawListings.map((l, i) => ({
+    id: l.id,
+    title: l.title,
+    image: l.media[0]?.uri ?? '',
+    location: l.location,
+    price: l.price,
+    size: `${l.size} ${l.sizeUnit}`,
+    status: (['live', 'pending', 'live', 'draft'] as ListingStatus[])[i % 4],
+  }));
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const { token } = useAuthStore();
+  const qc = useQueryClient();
 
   const STATUS_CONFIG: Record<ListingStatus, { label: string; color: string; bg: string }> = {
     live:     { label: 'Live',    color: colors.success, bg: '#E8F5E9' },
@@ -55,10 +59,16 @@ export default function MyListingsScreen() {
     draft:    { label: 'Draft',   color: colors.textTertiary, bg: colors.chipInactive },
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!deleteTarget) return;
-    setListings((prev) => prev.filter((l) => l.id !== deleteTarget));
+    const id = deleteTarget;
     setDeleteTarget(null);
+    qc.setQueryData<import('../src/types/listing').Listing[]>(['listings', 'mine'], (prev) =>
+      prev?.filter((l) => l.id !== id),
+    );
+    if (process.env.EXPO_PUBLIC_API_URL) {
+      await api.delete(`/listings/${id}`, token ?? undefined).catch(() => {});
+    }
   };
 
   return (

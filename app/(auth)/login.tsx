@@ -12,6 +12,7 @@ import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
 import { LandrushLogo } from '../../src/components/LandrushLogo';
 import { useAuthStore } from '../../src/store/auth';
+import { loginWithEmail, loginWithSocial } from '../../src/services/authService';
 
 export default function LoginScreen() {
   const router  = useRouter();
@@ -38,13 +39,17 @@ export default function LoginScreen() {
     })();
   }, []);
 
-  const handleSocialSignIn = (provider: 'google' | 'apple') => {
+  const handleSocialSignIn = async (provider: 'google' | 'apple') => {
     setIsSocialLoading(provider);
-    setTimeout(() => {
-      setUser({ id: '1', firstName: 'Kenneth', lastName: 'Umoekpe', email: 'kennethumoekpe@gmail.com', phone: '', avatar: '', role: 'seeker', isVerified: true, createdAt: new Date().toISOString() }, 'mock-jwt-token');
-      setIsSocialLoading(null);
+    try {
+      const { user, token } = await loginWithSocial(provider, 'oauth-id-token');
+      setUser(user, token);
       router.replace('/(tabs)');
-    }, 1200);
+    } catch (e: any) {
+      Alert.alert('Sign in failed', e?.message ?? 'Please try again.');
+    } finally {
+      setIsSocialLoading(null);
+    }
   };
 
   const handleBiometricLogin = async () => {
@@ -52,10 +57,18 @@ export default function LoginScreen() {
     if (result.success) router.replace('/(tabs)');
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!emailOrPhone || !password) { Alert.alert('Missing fields', 'Please fill in all fields.'); return; }
     setIsLoading(true);
-    setTimeout(() => { setIsLoading(false); router.replace('/(tabs)'); }, 1000);
+    try {
+      const { user, token } = await loginWithEmail(emailOrPhone, password);
+      setUser(user, token);
+      router.replace('/(tabs)');
+    } catch (e: any) {
+      Alert.alert('Login failed', e?.message ?? 'Invalid credentials. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
