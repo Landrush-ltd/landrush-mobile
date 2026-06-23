@@ -22,6 +22,7 @@ import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/the
 import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
 import type { ListingCategory } from '../../src/types/listing';
+import { useCreateListing } from '../../src/hooks/useListings';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -51,6 +52,8 @@ export default function CreateListingScreen() {
     { key: 'lease',    label: 'For Lease',     desc: 'Temporary use for a fixed period', icon: 'leaf-outline',  color: colors.lease,    bg: `${colors.lease}18` },
     { key: 'distress', label: 'Distress Sale', desc: 'Urgent sale at reduced price',     icon: 'flash-outline', color: colors.distress, bg: `${colors.distress}18` },
   ];
+
+  const createListing = useCreateListing();
 
   const [step, setStep]         = useState(0);
   const [direction, setDir]     = useState<1 | -1>(1);
@@ -101,9 +104,34 @@ export default function CreateListingScreen() {
     if (step === 0 && !category) { Alert.alert('Select a type', 'Please choose a listing type.'); return; }
     if (step < STEPS.length - 1) { setDir(1); animateSlide(1, () => setStep((s) => s + 1)); }
     else {
-      Alert.alert('Listing Submitted!', 'Your listing is now under review and will go live shortly.', [
-        { text: 'Go to Home', onPress: () => router.replace('/(tabs)') },
-      ]);
+      if (!category) return;
+      createListing.mutate(
+        {
+          category,
+          title,
+          description,
+          state,
+          location,
+          size: parseFloat(size) || 0,
+          sizeUnit: sizeUnit.toLowerCase(),
+          price: parseInt(price.replace(/,/g, ''), 10) || 0,
+          priceUnit: category === 'lease' && leaseDur
+            ? `per ${leaseDur}`
+            : priceType === 'per_unit'
+            ? `per ${sizeUnit.toLowerCase()}`
+            : '',
+          leaseDuration: leaseDur || undefined,
+          mediaUris: photos,
+        },
+        {
+          onSuccess: () =>
+            Alert.alert('Listing Submitted!', 'Your listing is under review and will go live shortly.', [
+              { text: 'Go to Home', onPress: () => router.replace('/(tabs)') },
+            ]),
+          onError: (e: any) =>
+            Alert.alert('Submission failed', e?.message ?? 'Please try again.'),
+        },
+      );
     }
   };
 
@@ -522,12 +550,17 @@ export default function CreateListingScreen() {
       {/* Footer */}
       <View style={[s.footer, { paddingBottom: Math.max(insets.bottom, Spacing.lg) }]}>
         <TouchableOpacity
-          style={s.nextBtn}
+          style={[s.nextBtn, createListing.isPending && { opacity: 0.6 }]}
           onPress={goNext}
           activeOpacity={0.88}
+          disabled={createListing.isPending}
         >
           <Text style={s.nextBtnText}>
-            {step === STEPS.length - 1 ? 'Submit Listing' : 'Continue'}
+            {createListing.isPending
+              ? 'Submitting…'
+              : step === STEPS.length - 1
+              ? 'Submit Listing'
+              : 'Continue'}
           </Text>
           <Ionicons
             name={step === STEPS.length - 1 ? 'checkmark-circle-outline' : 'arrow-forward'}

@@ -15,11 +15,8 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
-import {
-  mockConversations,
-  formatMessageTime,
-} from '../../src/services/mockChatData';
 import type { ChatMessage } from '../../src/types/chat';
+import { useConversation, useSendMessage } from '../../src/hooks/useConversations';
 
 const MY_ID = 'me';
 
@@ -46,10 +43,19 @@ export default function ChatScreen() {
   const inputRef = useRef<TextInput>(null);
   const sendBtnScale = useRef(new Animated.Value(1)).current;
 
-  const conversation = mockConversations.find((c) => c.id === conversationId);
-  const [messages, setMessages] = useState<ChatMessage[]>(conversation?.messages ?? []);
+  const { data: conversation } = useConversation(conversationId ?? '');
+  const sendMessage = useSendMessage();
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const initializedRef = useRef(false);
+
+  useEffect(() => {
+    if (conversation?.messages && !initializedRef.current) {
+      setMessages(conversation.messages);
+      initializedRef.current = true;
+    }
+  }, [conversation]);
 
   useEffect(() => {
     // Simulate agent typing indicator after user sends a message
@@ -85,11 +91,12 @@ export default function ChatScreen() {
       Animated.spring(sendBtnScale, { toValue: 1, tension: 200, friction: 8, useNativeDriver: true }),
     ]).start();
 
+    const text = draft.trim();
     const newMsg: ChatMessage = {
       id: `m-${Date.now()}`,
       conversationId: conversationId ?? '',
       senderId: MY_ID,
-      text: draft.trim(),
+      text,
       createdAt: new Date().toISOString(),
       status: 'sent',
       type: 'text',
@@ -97,6 +104,7 @@ export default function ChatScreen() {
     setMessages((prev) => [...prev, newMsg]);
     setDraft('');
     setIsTyping(true);
+    sendMessage.mutate({ conversationId: conversationId ?? '', text });
   };
 
   if (!conversation) {

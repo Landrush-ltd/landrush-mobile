@@ -13,6 +13,7 @@ import { Spacing, FontSize, FontFamily, BorderRadius, LetterSpacing } from '../.
 import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
 import { useAuthStore } from '../../src/store/auth';
+import { verifyOtp, signupWithEmail } from '../../src/services/authService';
 
 const OTP_LENGTH = 6;
 
@@ -55,33 +56,29 @@ export default function VerifyOtpScreen() {
     }
   };
 
-  const handleVerify = (code: string) => {
+  const handleVerify = async (code: string) => {
+    if (!phone) return;
     setIsVerifying(true);
-    setTimeout(() => {
-      setIsVerifying(false);
-      setUser(
-        {
-          id: '1',
-          firstName: 'Kenneth',
-          lastName: 'Umoekpe',
-          email: 'kennethumoekpe@gmail.com',
-          phone: phone || '+234...',
-          avatar: 'https://i.pravatar.cc/150?img=11',
-          role: 'seeker',
-          isVerified: true,
-          createdAt: new Date().toISOString(),
-        },
-        'mock-jwt-token',
-      );
+    try {
+      const { user, token } = await verifyOtp(phone, code);
+      setUser(user, token);
       router.replace('/(tabs)');
-    }, 1500);
+    } catch (e: any) {
+      Alert.alert('Verification failed', e?.message ?? 'Invalid code. Please try again.');
+      setOtp(Array(OTP_LENGTH).fill(''));
+      setTimeout(() => inputRefs.current[0]?.focus(), 50);
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
-  const handleResend = () => {
-    if (countdown === 0) {
-      setCountdown(60);
-      Alert.alert('Code Resent', 'A new verification code has been sent.');
-    }
+  const handleResend = async () => {
+    if (countdown > 0) return;
+    try {
+      await signupWithEmail(phone ?? '', '');
+    } catch {}
+    setCountdown(60);
+    Alert.alert('Code Resent', 'A new verification code has been sent.');
   };
 
   const filled = otp.filter(Boolean).length;
