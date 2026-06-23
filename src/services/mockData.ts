@@ -17,8 +17,8 @@ export const mockListings: Listing[] = [
     size: 5,
     sizeUnit: 'acres',
     media: [
-      { id: 'm1', uri: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800', type: 'image' },
-      { id: 'm2', uri: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800', type: 'image' },
+      { id: 'm1', uri: 'https://images.unsplash.com/photo-1704230093402-c903d87735b4?w=800&auto=format&fit=crop', type: 'image' },
+      { id: 'm2', uri: 'https://images.unsplash.com/photo-1685266326473-5b99c3d08a7e?w=800&auto=format&fit=crop', type: 'image' },
     ],
     agent: {
       id: 'a1',
@@ -50,8 +50,8 @@ export const mockListings: Listing[] = [
     size: 1,
     sizeUnit: 'plots',
     media: [
-      { id: 'm3', uri: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800', type: 'image' },
-      { id: 'm4', uri: 'https://images.unsplash.com/photo-1500076656116-558758c991c1?w=800', type: 'image' },
+      { id: 'm3', uri: 'https://images.unsplash.com/photo-1685266326195-76ad098af5d8?w=800&auto=format&fit=crop', type: 'image' },
+      { id: 'm4', uri: 'https://images.unsplash.com/photo-1685266326184-0b570fe834fa?w=800&auto=format&fit=crop', type: 'image' },
     ],
     agent: {
       id: 'a2',
@@ -82,7 +82,7 @@ export const mockListings: Listing[] = [
     size: 0.5,
     sizeUnit: 'plots',
     media: [
-      { id: 'm5', uri: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800', type: 'image' },
+      { id: 'm5', uri: 'https://images.unsplash.com/photo-1684853693031-ab9e3f8c9d5e?w=800&auto=format&fit=crop', type: 'image' },
     ],
     agent: {
       id: 'a3',
@@ -113,7 +113,7 @@ export const mockListings: Listing[] = [
     size: 2,
     sizeUnit: 'acres',
     media: [
-      { id: 'm6', uri: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=800', type: 'image' },
+      { id: 'm6', uri: 'https://images.unsplash.com/photo-1577900190299-7316c32fe85f?w=800&auto=format&fit=crop', type: 'image' },
     ],
     agent: {
       id: 'a4',
@@ -145,8 +145,8 @@ export const mockListings: Listing[] = [
     size: 3,
     sizeUnit: 'plots',
     media: [
-      { id: 'm7', uri: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800', type: 'image' },
-      { id: 'm8', uri: 'https://images.unsplash.com/photo-1500076656116-558758c991c1?w=800', type: 'image' },
+      { id: 'm7', uri: 'https://images.unsplash.com/photo-1704230093731-8dad84d386a9?w=800&auto=format&fit=crop', type: 'image' },
+      { id: 'm8', uri: 'https://images.unsplash.com/photo-1537372023620-37161b1ad8ac?w=800&auto=format&fit=crop', type: 'image' },
     ],
     agent: {
       id: 'a5',
@@ -177,7 +177,7 @@ export const mockListings: Listing[] = [
     size: 1,
     sizeUnit: 'acres',
     media: [
-      { id: 'm9', uri: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800', type: 'image' },
+      { id: 'm9', uri: 'https://images.unsplash.com/photo-1685266326473-5b99c3d08a7e?w=800&auto=format&fit=crop', type: 'image' },
     ],
     agent: {
       id: 'a6',
