@@ -59,7 +59,7 @@ function Slide1({ colors }: { colors: ThemeColors }) {
       </View>
       {/* Landscape photo */}
       <Image
-        source={{ uri: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800' }}
+        source={{ uri: 'https://images.unsplash.com/photo-1537372023620-37161b1ad8ac?w=800&auto=format&fit=crop' }}
         style={il.photo}
         resizeMode="cover"
       />
@@ -71,9 +71,12 @@ function Slide1({ colors }: { colors: ThemeColors }) {
 function Slide2({ colors }: { colors: ThemeColors }) {
   const il = useMemo(() => makeIlStyles(colors), [colors]);
   const PHOTOS = [
-    'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=500',
-    'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=500',
-    'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=500',
+    // African green field with houses — Kenya
+    'https://images.unsplash.com/photo-1734036871909-906fb9b3d474?w=500&auto=format&fit=crop',
+    // Bodija Market, Ibadan, Nigeria — Tunde Buremo
+    'https://images.unsplash.com/photo-1734255026082-82fdc81991f0?w=500&auto=format&fit=crop',
+    // African community on brown ground — Ian Macharia
+    'https://images.unsplash.com/photo-1515658323406-25d61c141a6e?w=500&auto=format&fit=crop',
   ];
   const BADGES = ['Accessible Location', 'Documents Uploaded', 'Verified Owner'];
 
