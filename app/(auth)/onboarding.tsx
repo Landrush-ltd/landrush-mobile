@@ -59,7 +59,7 @@ function Slide1({ colors }: { colors: ThemeColors }) {
       </View>
       {/* Landscape photo */}
       <Image
-        source={{ uri: 'https://images.unsplash.com/photo-1537372023620-37161b1ad8ac?w=800&auto=format&fit=crop' }}
+        source={{ uri: 'https://images.unsplash.com/photo-1704230093402-c903d87735b4?w=800&auto=format&fit=crop' }}
         style={il.photo}
         resizeMode="cover"
       />
@@ -71,12 +71,12 @@ function Slide1({ colors }: { colors: ThemeColors }) {
 function Slide2({ colors }: { colors: ThemeColors }) {
   const il = useMemo(() => makeIlStyles(colors), [colors]);
   const PHOTOS = [
-    // African green field with houses — Kenya
-    'https://images.unsplash.com/photo-1734036871909-906fb9b3d474?w=500&auto=format&fit=crop',
-    // Bodija Market, Ibadan, Nigeria — Tunde Buremo
-    'https://images.unsplash.com/photo-1734255026082-82fdc81991f0?w=500&auto=format&fit=crop',
-    // African community on brown ground — Ian Macharia
-    'https://images.unsplash.com/photo-1515658323406-25d61c141a6e?w=500&auto=format&fit=crop',
+    // Aerial — Inikorogha Community, Edo State, Nigeria
+    'https://images.unsplash.com/photo-1684853693031-ab9e3f8c9d5e?w=500&auto=format&fit=crop',
+    // Aerial — Rayfield Gardens Estate, Ibadan, Nigeria (land parcels)
+    'https://images.unsplash.com/photo-1685266326195-76ad098af5d8?w=500&auto=format&fit=crop',
+    // Aerial — Residential with trees, Ibadan, Nigeria
+    'https://images.unsplash.com/photo-1685266326473-5b99c3d08a7e?w=500&auto=format&fit=crop',
   ];
   const BADGES = ['Accessible Location', 'Documents Uploaded', 'Verified Owner'];
 
