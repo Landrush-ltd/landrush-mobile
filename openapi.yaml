@@ -1,0 +1,1069 @@
+openapi: 3.0.3
+info:
+  title: Landrush API
+  description: Real estate marketplace API for buying, selling, and leasing land in Nigeria
+  version: 1.0.0
+  contact:
+    name: Landrush Support
+    email: support@landrush.com
+
+servers:
+  - url: https://api.landrush.com
+    description: Production
+  - url: http://localhost:3000
+    description: Development
+
+tags:
+  - name: Authentication
+    description: User login, signup, and OAuth
+  - name: Listings
+    description: Land listings management
+  - name: Conversations
+    description: Chat and messaging
+  - name: Bookings
+    description: Inspection bookings
+  - name: Notifications
+    description: Push notifications
+  - name: Users
+    description: User profile management
+
+paths:
+  /auth/signup:
+    post:
+      tags:
+        - Authentication
+      summary: Sign up with email/phone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                emailOrPhone:
+                  type: string
+                  example: user@example.com
+                password:
+                  type: string
+                  example: hashedPassword123
+              required:
+                - emailOrPhone
+                - password
+      responses:
+        200:
+          description: OTP sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OTP sent to your email/phone
+        400:
+          $ref: '#/components/responses/BadRequest'
+
+  /auth/verify-otp:
+    post:
+      tags:
+        - Authentication
+      summary: Verify OTP and complete signup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                emailOrPhone:
+                  type: string
+                otp:
+                  type: string
+                  example: "123456"
+              required:
+                - emailOrPhone
+                - otp
+      responses:
+        200:
+          description: Successfully verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        401:
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login with email/phone and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                emailOrPhone:
+                  type: string
+                password:
+                  type: string
+              required:
+                - emailOrPhone
+                - password
+      responses:
+        200:
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+        401:
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/oauth/google:
+    post:
+      tags:
+        - Authentication
+      summary: Sign in with Google
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                accessToken:
+                  type: string
+              required:
+                - accessToken
+      responses:
+        200:
+          description: Google sign-in successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+
+  /auth/oauth/apple:
+    post:
+      tags:
+        - Authentication
+      summary: Sign in with Apple
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                identityToken:
+                  type: string
+                email:
+                  type: string
+                  nullable: true
+                fullName:
+                  type: object
+                  properties:
+                    givenName:
+                      type: string
+                    familyName:
+                      type: string
+              required:
+                - identityToken
+      responses:
+        200:
+          description: Apple sign-in successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh JWT token
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: New token generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+
+  /listings:
+    get:
+      tags:
+        - Listings
+      summary: Get all listings
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [sale, lease, distress]
+        - name: state
+          in: query
+          schema:
+            type: string
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        200:
+          description: Listings retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Listing'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+    post:
+      tags:
+        - Listings
+      summary: Create a new listing
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateListingRequest'
+      responses:
+        201:
+          description: Listing created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Listing'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+
+  /listings/{id}:
+    get:
+      tags:
+        - Listings
+      summary: Get a single listing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Listing retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Listing'
+        404:
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags:
+        - Listings
+      summary: Update a listing
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateListingRequest'
+      responses:
+        200:
+          description: Listing updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Listing'
+    delete:
+      tags:
+        - Listings
+      summary: Delete a listing
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: Listing deleted
+
+  /listings/mine:
+    get:
+      tags:
+        - Listings
+      summary: Get current user's listings
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: User's listings retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Listing'
+
+  /listings/saved:
+    get:
+      tags:
+        - Listings
+      summary: Get saved listings
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Saved listings retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Listing'
+    post:
+      tags:
+        - Listings
+      summary: Save a listing
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                listingId:
+                  type: string
+      responses:
+        200:
+          description: Listing saved
+
+  /listings/saved/{listingId}:
+    delete:
+      tags:
+        - Listings
+      summary: Unsave a listing
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: Listing unsaved
+
+  /conversations:
+    get:
+      tags:
+        - Conversations
+      summary: Get all conversations
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        200:
+          description: Conversations retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Conversation'
+    post:
+      tags:
+        - Conversations
+      summary: Start a new conversation
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agentId:
+                  type: string
+                listingId:
+                  type: string
+                initialMessage:
+                  type: string
+      responses:
+        201:
+          description: Conversation created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Conversation'
+
+  /conversations/{id}:
+    get:
+      tags:
+        - Conversations
+      summary: Get a conversation with messages
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Conversation retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Conversation'
+
+  /conversations/{conversationId}/messages:
+    post:
+      tags:
+        - Conversations
+      summary: Send a message
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+      responses:
+        201:
+          description: Message sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ChatMessage'
+
+  /bookings:
+    get:
+      tags:
+        - Bookings
+      summary: Get all bookings
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, confirmed, rescheduled, cancelled]
+      responses:
+        200:
+          description: Bookings retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Booking'
+    post:
+      tags:
+        - Bookings
+      summary: Create a booking
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                listingId:
+                  type: string
+                preferredDate:
+                  type: string
+                  format: date
+                preferredTime:
+                  type: string
+                message:
+                  type: string
+      responses:
+        201:
+          description: Booking created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Booking'
+
+  /bookings/{id}:
+    patch:
+      tags:
+        - Bookings
+      summary: Update booking status
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [cancelled, rescheduled]
+      responses:
+        200:
+          description: Booking updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Booking'
+
+  /notifications:
+    get:
+      tags:
+        - Notifications
+      summary: Get all notifications
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: unreadOnly
+          in: query
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        200:
+          description: Notifications retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+
+  /notifications/{id}/read:
+    patch:
+      tags:
+        - Notifications
+      summary: Mark notification as read
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Notification'
+
+  /notifications/read-all:
+    post:
+      tags:
+        - Notifications
+      summary: Mark all notifications as read
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: All notifications marked as read
+
+  /users/me:
+    get:
+      tags:
+        - Users
+      summary: Get current user
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: User retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/User'
+    patch:
+      tags:
+        - Users
+      summary: Update user profile
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                avatar:
+                  type: string
+      responses:
+        200:
+          description: User updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/User'
+
+  /users/push-token:
+    post:
+      tags:
+        - Users
+      summary: Register push notification token
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pushToken:
+                  type: string
+      responses:
+        200:
+          description: Push token registered
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        avatar:
+          type: string
+        role:
+          type: string
+          enum: [seeker, agent]
+        isVerified:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    Listing:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum: [sale, lease, distress]
+        status:
+          type: string
+          enum: [available, taken, closed]
+        price:
+          type: number
+        priceUnit:
+          type: string
+        location:
+          type: string
+        state:
+          type: string
+        lga:
+          type: string
+        coordinates:
+          type: object
+          properties:
+            latitude:
+              type: number
+            longitude:
+              type: number
+        size:
+          type: number
+        sizeUnit:
+          type: string
+        media:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              uri:
+                type: string
+              type:
+                type: string
+        agent:
+          $ref: '#/components/schemas/Agent'
+        features:
+          type: array
+          items:
+            type: string
+        leaseDuration:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    Agent:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        avatar:
+          type: string
+        phone:
+          type: string
+        isVerified:
+          type: boolean
+        totalListings:
+          type: integer
+        rating:
+          type: number
+
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: string
+        agentId:
+          type: string
+        agentName:
+          type: string
+        agentAvatar:
+          type: string
+        agentOnline:
+          type: boolean
+        listingId:
+          type: string
+        listingTitle:
+          type: string
+        listingPrice:
+          type: number
+        listingImageUri:
+          type: string
+        lastMessage:
+          type: string
+        lastMessageAt:
+          type: string
+          format: date-time
+        unreadCount:
+          type: integer
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: string
+        conversationId:
+          type: string
+        senderId:
+          type: string
+        text:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [sent, delivered, read]
+        type:
+          type: string
+          enum: [text, image]
+
+    Booking:
+      type: object
+      properties:
+        id:
+          type: string
+        listingId:
+          type: string
+        listingTitle:
+          type: string
+        listingImage:
+          type: string
+        location:
+          type: string
+        price:
+          type: number
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+        status:
+          type: string
+          enum: [pending, confirmed, rescheduled, cancelled]
+        agentName:
+          type: string
+        agentAvatar:
+          type: string
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [inspection, payment, message, listing, system]
+        title:
+          type: string
+        subtitle:
+          type: string
+        time:
+          type: string
+          format: date-time
+        unread:
+          type: boolean
+        listingId:
+          type: string
+        bookingId:
+          type: string
+        conversationId:
+          type: string
+
+    CreateListingRequest:
+      type: object
+      properties:
+        category:
+          type: string
+          enum: [sale, lease, distress]
+        title:
+          type: string
+        description:
+          type: string
+        state:
+          type: string
+        location:
+          type: string
+        size:
+          type: number
+        sizeUnit:
+          type: string
+        price:
+          type: number
+        priceUnit:
+          type: string
+        leaseDuration:
+          type: string
+        mediaUris:
+          type: array
+          items:
+            type: string
+        features:
+          type: array
+          items:
+            type: string
+      required:
+        - category
+        - title
+        - state
+        - price
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: string
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: string
+
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: string
