@@ -23,6 +23,13 @@ export async function fetchGoogleUser(accessToken: string): Promise<GoogleUser> 
   return res.json();
 }
 
+// True only when at least one OAuth client ID is set in .env
+export const hasGoogleClientIds = !!(
+  process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
+  process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ||
+  process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID
+);
+
 // Hook — call this inside a React component
 export function useGoogleAuth() {
   const [request, response, promptAsync] = Google.useAuthRequest({

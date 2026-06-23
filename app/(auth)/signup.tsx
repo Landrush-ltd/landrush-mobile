@@ -18,7 +18,7 @@ import { useColors } from '../../src/context/ThemeContext';
 import { LandrushLogo } from '../../src/components/LandrushLogo';
 import { useAuthStore } from '../../src/store/auth';
 import { signupWithEmail, loginWithGoogle, loginWithApple } from '../../src/services/authService';
-import { useGoogleAuth } from '../../src/services/googleAuth';
+import { useGoogleAuth, hasGoogleClientIds } from '../../src/services/googleAuth';
 import { signInWithApple, checkAppleAuthAvailable } from '../../src/services/appleAuth';
 
 export default function SignupScreen() {
@@ -48,7 +48,7 @@ export default function SignupScreen() {
   }, [googleResponse]);
 
   const handleGoogleSignIn = () => {
-    if (!googleRequest) {
+    if (!hasGoogleClientIds) {
       setIsSocialLoading('google');
       loginWithGoogle('mock-access-token')
         .then(({ user, token }) => { setUser(user, token); router.replace('/(tabs)'); })

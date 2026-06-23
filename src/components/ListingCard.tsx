@@ -71,7 +71,7 @@ export function ListingCard({ listing, onPress, variant = 'horizontal' }: Listin
           <Text style={styles.subtitle} numberOfLines={1}>{listing.title}</Text>
           <View style={styles.priceRow}>
             <Text style={styles.hPrice}>{price}</Text>
-            {listing.priceUnit && <Text style={styles.priceUnit}> /{listing.priceUnit}</Text>}
+            {listing.priceUnit ? <Text style={styles.priceUnit}> /{listing.priceUnit}</Text> : null}
           </View>
         </View>
       </TouchableOpacity>

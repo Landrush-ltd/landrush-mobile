@@ -13,7 +13,7 @@ import { useColors } from '../../src/context/ThemeContext';
 import { LandrushLogo } from '../../src/components/LandrushLogo';
 import { useAuthStore } from '../../src/store/auth';
 import { loginWithEmail, loginWithGoogle, loginWithApple } from '../../src/services/authService';
-import { useGoogleAuth } from '../../src/services/googleAuth';
+import { useGoogleAuth, hasGoogleClientIds } from '../../src/services/googleAuth';
 import { signInWithApple, checkAppleAuthAvailable } from '../../src/services/appleAuth';
 
 export default function LoginScreen() {
@@ -58,7 +58,7 @@ export default function LoginScreen() {
   }, [googleResponse]);
 
   const handleGoogleSignIn = () => {
-    if (!googleRequest) {
+    if (!hasGoogleClientIds) {
       // Client IDs not configured — use mock flow
       setIsSocialLoading('google');
       loginWithGoogle('mock-access-token')
