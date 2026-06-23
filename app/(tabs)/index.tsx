@@ -162,11 +162,11 @@ export default function ExploreScreen() {
       />
 
       {/* ── Map explore banner ──────────────────────────── */}
-      <TouchableOpacity style={styles.mapBanner} onPress={() => router.push('/map' as any)} activeOpacity={0.88}>
+      <TouchableOpacity style={styles.mapBanner} onPress={() => router.push('/explore-location' as any)} activeOpacity={0.88}>
         <View style={styles.mapBannerLeft}>
-          <Ionicons name="map-outline" size={26} color={colors.lime} />
+          <Ionicons name="location-outline" size={26} color={colors.lime} />
           <View>
-            <Text style={styles.mapBannerTitle}>Explore on Map</Text>
+            <Text style={styles.mapBannerTitle}>Explore location</Text>
             <Text style={styles.mapBannerSub}>{filteredListings.length} listings visible</Text>
           </View>
         </View>
