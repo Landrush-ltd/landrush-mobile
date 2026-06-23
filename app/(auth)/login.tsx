@@ -12,7 +12,9 @@ import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
 import { LandrushLogo } from '../../src/components/LandrushLogo';
 import { useAuthStore } from '../../src/store/auth';
-import { loginWithEmail, loginWithSocial } from '../../src/services/authService';
+import { loginWithEmail, loginWithGoogle, loginWithApple } from '../../src/services/authService';
+import { useGoogleAuth } from '../../src/services/googleAuth';
+import { signInWithApple, checkAppleAuthAvailable } from '../../src/services/appleAuth';
 
 export default function LoginScreen() {
   const router  = useRouter();
@@ -27,6 +29,9 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading]             = useState(false);
   const [isSocialLoading, setIsSocialLoading] = useState<'google' | 'apple' | null>(null);
   const [biometricType, setBiometricType]     = useState<'face' | 'fingerprint' | null>(null);
+  const [appleAvailable, setAppleAvailable]   = useState(false);
+
+  const { request: googleRequest, response: googleResponse, promptAsync: promptGoogle } = useGoogleAuth();
 
   useEffect(() => {
     (async () => {
@@ -37,16 +42,49 @@ export default function LoginScreen() {
       if (types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) setBiometricType('face');
       else if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT))   setBiometricType('fingerprint');
     })();
+    checkAppleAuthAvailable().then(setAppleAvailable);
   }, []);
 
-  const handleSocialSignIn = async (provider: 'google' | 'apple') => {
-    setIsSocialLoading(provider);
+  // Handle Google OAuth response
+  useEffect(() => {
+    if (googleResponse?.type !== 'success') return;
+    const accessToken = googleResponse.authentication?.accessToken;
+    if (!accessToken) return;
+    setIsSocialLoading('google');
+    loginWithGoogle(accessToken)
+      .then(({ user, token }) => { setUser(user, token); router.replace('/(tabs)'); })
+      .catch((e) => Alert.alert('Google sign in failed', e?.message ?? 'Please try again.'))
+      .finally(() => setIsSocialLoading(null));
+  }, [googleResponse]);
+
+  const handleGoogleSignIn = () => {
+    if (!googleRequest) {
+      // Client IDs not configured — use mock flow
+      setIsSocialLoading('google');
+      loginWithGoogle('mock-access-token')
+        .then(({ user, token }) => { setUser(user, token); router.replace('/(tabs)'); })
+        .catch((e) => Alert.alert('Sign in failed', e?.message ?? 'Please try again.'))
+        .finally(() => setIsSocialLoading(null));
+      return;
+    }
+    promptGoogle();
+  };
+
+  const handleAppleSignIn = async () => {
+    setIsSocialLoading('apple');
     try {
-      const { user, token } = await loginWithSocial(provider, 'oauth-id-token');
+      const appleUser = await signInWithApple();
+      const { user, token } = await loginWithApple(
+        appleUser.identityToken ?? '',
+        appleUser.email,
+        appleUser.fullName,
+      );
       setUser(user, token);
       router.replace('/(tabs)');
     } catch (e: any) {
-      Alert.alert('Sign in failed', e?.message ?? 'Please try again.');
+      if (e?.code !== 'ERR_REQUEST_CANCELED') {
+        Alert.alert('Apple sign in failed', e?.message ?? 'Please try again.');
+      }
     } finally {
       setIsSocialLoading(null);
     }
@@ -98,11 +136,11 @@ export default function LoginScreen() {
 
         {/* Social */}
         <View style={styles.socialRow}>
-          <TouchableOpacity style={[styles.socialBtn, isSocialLoading === 'google' && styles.socialBtnLoading]} onPress={() => handleSocialSignIn('google')} disabled={isSocialLoading !== null}>
+          <TouchableOpacity style={[styles.socialBtn, isSocialLoading === 'google' && styles.socialBtnLoading]} onPress={() => handleGoogleSignIn()} disabled={isSocialLoading !== null}>
             <Ionicons name="logo-google" size={18} color={colors.textPrimary} />
             <Text style={styles.socialText}>{isSocialLoading === 'google' ? 'Connecting…' : 'Google'}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.socialBtn, isSocialLoading === 'apple' && styles.socialBtnLoading]} onPress={() => handleSocialSignIn('apple')} disabled={isSocialLoading !== null}>
+          <TouchableOpacity style={[styles.socialBtn, isSocialLoading === 'apple' && styles.socialBtnLoading]} onPress={() => handleAppleSignIn()} disabled={isSocialLoading !== null}>
             <Ionicons name="logo-apple" size={18} color={colors.textPrimary} />
             <Text style={styles.socialText}>{isSocialLoading === 'apple' ? 'Connecting…' : 'Apple'}</Text>
           </TouchableOpacity>

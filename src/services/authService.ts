@@ -44,16 +44,76 @@ export async function verifyOtp(
   return res.data;
 }
 
+export async function loginWithGoogle(
+  accessToken: string,
+): Promise<AuthResponse> {
+  if (!apiEnabled) {
+    // Fetch real Google profile to show the correct name/email
+    try {
+      const profileRes = await fetch('https://www.googleapis.com/userinfo/v2/me', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (profileRes.ok) {
+        const profile = await profileRes.json();
+        return {
+          user: {
+            id: profile.id,
+            firstName: profile.given_name ?? profile.name?.split(' ')[0] ?? 'User',
+            lastName: profile.family_name ?? profile.name?.split(' ').slice(1).join(' ') ?? '',
+            email: profile.email,
+            phone: '',
+            avatar: profile.picture ?? '',
+            role: 'seeker',
+            isVerified: true,
+            createdAt: new Date().toISOString(),
+          },
+          token: 'mock-jwt-token',
+        };
+      }
+    } catch {}
+    return { user: mockUser('kennethumoekpe@gmail.com'), token: 'mock-jwt-token' };
+  }
+  const res = await api.post<AuthResponse>('/auth/oauth/google', { accessToken });
+  return res.data;
+}
+
+export async function loginWithApple(
+  identityToken: string,
+  email: string | null,
+  fullName: { givenName?: string | null; familyName?: string | null } | null,
+): Promise<AuthResponse> {
+  if (!apiEnabled) {
+    await delay(500);
+    return {
+      user: {
+        id: 'apple-user',
+        firstName: fullName?.givenName ?? 'Apple',
+        lastName: fullName?.familyName ?? 'User',
+        email: email ?? '',
+        phone: '',
+        avatar: '',
+        role: 'seeker',
+        isVerified: true,
+        createdAt: new Date().toISOString(),
+      },
+      token: 'mock-jwt-token',
+    };
+  }
+  const res = await api.post<AuthResponse>('/auth/oauth/apple', {
+    identityToken,
+    email,
+    fullName,
+  });
+  return res.data;
+}
+
+// Keep for backward compatibility
 export async function loginWithSocial(
   provider: 'google' | 'apple',
   idToken: string,
 ): Promise<AuthResponse> {
-  if (!apiEnabled) {
-    await delay(1000);
-    return { user: mockUser('kennethumoekpe@gmail.com'), token: 'mock-jwt-token' };
-  }
-  const res = await api.post<AuthResponse>(`/auth/oauth/${provider}`, { idToken });
-  return res.data;
+  if (provider === 'google') return loginWithGoogle(idToken);
+  return loginWithApple(idToken, null, null);
 }
 
 export async function refreshToken(token: string): Promise<{ token: string }> {

@@ -27,7 +27,7 @@ import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
 import { SearchBar } from '../../src/components/SearchBar';
 import { CategoryChip } from '../../src/components/CategoryChip';
-import { mockListings } from '../../src/services/mockData';
+import { useListings } from '../../src/hooks/useListings';
 import type { ListingCategory, Listing } from '../../src/types/listing';
 
 // Nigeria centroid
@@ -47,6 +47,7 @@ export default function MapScreen() {
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { data: allListings = [] } = useListings();
 
   const categories: { key: ListingCategory | null; label: string; color: string }[] = [
     { key: null,        label: 'All',          color: colors.primary  },
@@ -67,7 +68,7 @@ export default function MapScreen() {
     { color: colors.distress, label: 'Distress' },
   ];
 
-  const filteredListings = mockListings.filter((l) => {
+  const filteredListings = allListings.filter((l) => {
     if (activeCategory && l.category !== activeCategory) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();

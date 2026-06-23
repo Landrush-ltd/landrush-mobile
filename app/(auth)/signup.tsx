@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,9 @@ import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
 import { LandrushLogo } from '../../src/components/LandrushLogo';
 import { useAuthStore } from '../../src/store/auth';
-import { signupWithEmail, loginWithSocial } from '../../src/services/authService';
+import { signupWithEmail, loginWithGoogle, loginWithApple } from '../../src/services/authService';
+import { useGoogleAuth } from '../../src/services/googleAuth';
+import { signInWithApple, checkAppleAuthAvailable } from '../../src/services/appleAuth';
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -32,15 +34,46 @@ export default function SignupScreen() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSocialLoading, setIsSocialLoading] = useState<'google' | 'apple' | null>(null);
+  const { request: googleRequest, response: googleResponse, promptAsync: promptGoogle } = useGoogleAuth();
 
-  const handleSocialSignIn = async (provider: 'google' | 'apple') => {
-    setIsSocialLoading(provider);
+  useEffect(() => {
+    if (googleResponse?.type !== 'success') return;
+    const accessToken = googleResponse.authentication?.accessToken;
+    if (!accessToken) return;
+    setIsSocialLoading('google');
+    loginWithGoogle(accessToken)
+      .then(({ user, token }) => { setUser(user, token); router.replace('/(tabs)'); })
+      .catch((e) => Alert.alert('Google sign in failed', e?.message ?? 'Please try again.'))
+      .finally(() => setIsSocialLoading(null));
+  }, [googleResponse]);
+
+  const handleGoogleSignIn = () => {
+    if (!googleRequest) {
+      setIsSocialLoading('google');
+      loginWithGoogle('mock-access-token')
+        .then(({ user, token }) => { setUser(user, token); router.replace('/(tabs)'); })
+        .catch((e) => Alert.alert('Sign in failed', e?.message ?? 'Please try again.'))
+        .finally(() => setIsSocialLoading(null));
+      return;
+    }
+    promptGoogle();
+  };
+
+  const handleAppleSignIn = async () => {
+    setIsSocialLoading('apple');
     try {
-      const { user, token } = await loginWithSocial(provider, 'oauth-id-token');
+      const appleUser = await signInWithApple();
+      const { user, token } = await loginWithApple(
+        appleUser.identityToken ?? '',
+        appleUser.email,
+        appleUser.fullName,
+      );
       setUser(user, token);
       router.replace('/(tabs)');
     } catch (e: any) {
-      Alert.alert('Sign in failed', e?.message ?? 'Please try again.');
+      if (e?.code !== 'ERR_REQUEST_CANCELED') {
+        Alert.alert('Apple sign in failed', e?.message ?? 'Please try again.');
+      }
     } finally {
       setIsSocialLoading(null);
     }
@@ -108,7 +141,7 @@ export default function SignupScreen() {
         <View style={styles.socialRow}>
           <TouchableOpacity
             style={[styles.socialBtn, isSocialLoading === 'google' && styles.socialBtnLoading]}
-            onPress={() => handleSocialSignIn('google')}
+            onPress={() => handleGoogleSignIn()}
             disabled={isSocialLoading !== null}
           >
             <Ionicons name="logo-google" size={18} color={colors.textPrimary} />
@@ -118,7 +151,7 @@ export default function SignupScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.socialBtn, isSocialLoading === 'apple' && styles.socialBtnLoading]}
-            onPress={() => handleSocialSignIn('apple')}
+            onPress={() => handleAppleSignIn()}
             disabled={isSocialLoading !== null}
           >
             <Ionicons name="logo-apple" size={18} color={colors.textPrimary} />
