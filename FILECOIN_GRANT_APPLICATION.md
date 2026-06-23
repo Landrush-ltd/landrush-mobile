@@ -314,10 +314,11 @@ The $25,000 grant will be allocated to fund the complete Phase 2 Filecoin integr
 ## 11. Sustainability & Long-term Vision
 
 ### Revenue Model
-- **Seeker Fees:** 2% commission on successful transactions ($500K property = $10K)
-- **Agent Subscriptions:** $50/month for verified agent profile + priority listings
-- **API Access:** $1,000/month for government/corporate data access (anonymized)
-- **Expected Year 2 Revenue:** $5M+ (at scale)
+- **Agent Subscriptions:** Premium profile verification, priority listings, featured properties, analytics dashboard
+- **Featured Listings:** Agents pay to promote properties to more buyers/seekers
+- **API Access:** Government/corporate data access (anonymized), real estate analytics
+- **Verified Agent Badges:** Annual certification renewal fees
+- **Expected Year 2 Revenue:** Generated through subscriptions and premium features (not transaction commissions)
 
 ### Why This Grant Matters
 - Funds Phase 2 integration (Filecoin layer)
