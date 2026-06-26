@@ -68,11 +68,21 @@ export default function CreateListingScreen() {
   const [price, setPrice]       = useState('');
   const [priceType, setPriceType] = useState<'total' | 'per_unit'>('total');
   const [photos, setPhotos]     = useState<string[]>([]);
+  const [documents, setDocuments] = useState<{ type: string; uri: string }[]>([]);
+  const [docTypeOpen, setDocTypeOpen] = useState(false);
   const [isUploading, setUploading] = useState(false);
   const [uploadPct, setUploadPct]   = useState(0);
   const [draftSaved, setDraft]  = useState(false);
   const [stateModalOpen, setStateModalOpen] = useState(false);
   const [stateQuery, setStateQuery] = useState('');
+
+  const DOCUMENT_TYPES = [
+    { id: 'coo', label: 'Certificate of Occupancy (C of O)' },
+    { id: 'deed', label: 'Deed of Ownership' },
+    { id: 'survey', label: 'Survey Plan' },
+    { id: 'lease', label: 'Lease Agreement' },
+    { id: 'other', label: 'Other Document' },
+  ];
   const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Animate progress bar on step change
@@ -121,7 +131,7 @@ export default function CreateListingScreen() {
             ? `per ${sizeUnit.toLowerCase()}`
             : '',
           leaseDuration: leaseDur || undefined,
-          mediaUris: photos,
+          mediaUris: [...photos, ...documents.map(d => d.uri)],
         },
         {
           onSuccess: () =>
@@ -374,17 +384,68 @@ export default function CreateListingScreen() {
       )}
 
       {/* Documents */}
-      <Text style={s.label}>Ownership Documents</Text>
-      <TouchableOpacity style={s.docRow}>
-        <View style={s.docIcon}>
-          <Ionicons name="document-text-outline" size={20} color={colors.primary} />
+      <Text style={s.label}>Ownership Documents (Optional)</Text>
+
+      {/* Document Type Selector */}
+      {documents.length < 5 && (
+        <>
+          <TouchableOpacity
+            style={s.docRow}
+            onPress={() => setDocTypeOpen(!docTypeOpen)}
+          >
+            <View style={s.docIcon}>
+              <Ionicons name="document-text-outline" size={20} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.docTitle}>Add Ownership Document</Text>
+              <Text style={s.docSub}>Certificate, Deed, Survey, Lease…</Text>
+            </View>
+            <Ionicons name={docTypeOpen ? 'chevron-up' : 'chevron-down'} size={18} color={colors.textTertiary} />
+          </TouchableOpacity>
+
+          {docTypeOpen && (
+            <View style={s.docTypeMenu}>
+              {DOCUMENT_TYPES.map((docType) => (
+                <TouchableOpacity
+                  key={docType.id}
+                  style={s.docTypeOption}
+                  onPress={async () => {
+                    setDocTypeOpen(false);
+                    const result = await ImagePicker.launchImageLibraryAsync({
+                      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                      quality: 0.8,
+                    });
+                    if (!result.cancelled && result.assets?.[0]) {
+                      setDocuments([...documents, { type: docType.label, uri: result.assets[0].uri }]);
+                    }
+                  }}
+                >
+                  <Text style={s.docTypeLabel}>{docType.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </>
+      )}
+
+      {/* Uploaded Documents List */}
+      {documents.length > 0 && (
+        <View style={s.docList}>
+          <Text style={s.docListTitle}>Uploaded Documents ({documents.length})</Text>
+          {documents.map((doc, idx) => (
+            <View key={idx} style={s.docItem}>
+              <Ionicons name="document-attach-outline" size={18} color={colors.primary} />
+              <View style={{ flex: 1, marginLeft: Spacing.sm }}>
+                <Text style={s.docItemType}>{doc.type}</Text>
+                <Text style={s.docItemPath} numberOfLines={1}>{doc.uri.split('/').pop()}</Text>
+              </View>
+              <TouchableOpacity onPress={() => setDocuments(documents.filter((_, i) => i !== idx))}>
+                <Ionicons name="close-circle" size={20} color={colors.red} />
+              </TouchableOpacity>
+            </View>
+          ))}
         </View>
-        <View style={{ flex: 1 }}>
-          <Text style={s.docTitle}>Upload C of O, Survey, Deed…</Text>
-          <Text style={s.docSub}>PDF, JPG or PNG · Max 20 MB</Text>
-        </View>
-        <Ionicons name="cloud-upload-outline" size={18} color={colors.textTertiary} />
-      </TouchableOpacity>
+      )}
     </View>
   );
 
@@ -1002,6 +1063,57 @@ function makeStyles(colors: ThemeColors) {
     },
     docTitle: { fontSize: FontSize.md, fontWeight: '600', color: colors.primary },
     docSub:   { fontSize: FontSize.xs, color: colors.textTertiary, marginTop: 2 },
+
+    docTypeMenu: {
+      backgroundColor: colors.card,
+      borderRadius: BorderRadius.lg,
+      marginTop: Spacing.sm,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    docTypeOption: {
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    docTypeLabel: {
+      fontSize: FontSize.sm,
+      color: colors.text,
+    },
+
+    docList: {
+      marginTop: Spacing.md,
+      backgroundColor: colors.card,
+      borderRadius: BorderRadius.lg,
+      padding: Spacing.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    docListTitle: {
+      fontSize: FontSize.sm,
+      fontWeight: '600',
+      color: colors.text,
+      marginBottom: Spacing.md,
+    },
+    docItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: Spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    docItemType: {
+      fontSize: FontSize.xs,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    docItemPath: {
+      fontSize: FontSize.xs,
+      color: colors.textTertiary,
+      marginTop: 2,
+    },
 
     // ── Price ─────────────────────────────────────────────────────
     priceToggle: {
