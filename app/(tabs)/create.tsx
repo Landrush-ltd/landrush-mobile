@@ -756,15 +756,7 @@ export default function CreateListingScreen() {
     );
   };
 
-  // Memoize step components to prevent unnecessary re-renders
-  const MemoizedStepType = useMemo(() => React.memo(StepType), []);
-  const MemoizedStepDetails = useMemo(() => React.memo(StepDetails), []);
-  const MemoizedStepLocation = useMemo(() => React.memo(StepLocation), []);
-  const MemoizedStepMedia = useMemo(() => React.memo(StepMedia), []);
-  const MemoizedStepPrice = useMemo(() => React.memo(StepPrice), []);
-  const MemoizedStepReview = useMemo(() => React.memo(StepReview), []);
-
-  const RENDERERS = [MemoizedStepType, MemoizedStepDetails, MemoizedStepLocation, MemoizedStepMedia, MemoizedStepPrice, MemoizedStepReview];
+  const RENDERERS = [StepType, StepDetails, StepLocation, StepMedia, StepPrice, StepReview];
   const StepComponent = RENDERERS[step];
 
   return (
@@ -822,19 +814,14 @@ export default function CreateListingScreen() {
 
       {/* Footer */}
       <View style={[s.footer, { paddingBottom: Math.max(insets.bottom, Spacing.lg) }]}>
-        {validationError && (
-          <Text style={s.validationError}>
-            <Ionicons name="alert-circle-outline" size={14} color={colors.red} /> {validationError}
-          </Text>
-        )}
         <TouchableOpacity
           style={[
             s.nextBtn,
-            (createListing.isPending || validationError) && s.nextBtnDisabled,
+            createListing.isPending && s.nextBtnDisabled,
           ]}
           onPress={goNext}
           activeOpacity={0.88}
-          disabled={createListing.isPending || !!validationError}
+          disabled={createListing.isPending}
         >
           <Text style={s.nextBtnText}>
             {createListing.isPending
@@ -846,7 +833,7 @@ export default function CreateListingScreen() {
           <Ionicons
             name={step === STEPS.length - 1 ? 'checkmark-circle-outline' : 'arrow-forward'}
             size={18}
-            color={createListing.isPending || validationError ? colors.textTertiary : colors.textPrimary}
+            color={createListing.isPending ? colors.textTertiary : colors.textPrimary}
           />
         </TouchableOpacity>
       </View>
