@@ -178,11 +178,11 @@ export default function CreateListingScreen() {
     }
   };
 
-  const validationError = useMemo(() => validateStep(step), [step, category, title, description, leaseDur, leasePurpose, state, location, photos.length, price, actualValue]);
 
   const goNext = () => {
-    if (validationError) {
-      Alert.alert('Missing Information', validationError);
+    const error = validateStep(step);
+    if (error) {
+      Alert.alert('Missing Information', error);
       return;
     }
     if (step < STEPS.length - 1) { setDir(1); animateSlide(1, () => setStep((s) => s + 1)); }
@@ -297,31 +297,23 @@ export default function CreateListingScreen() {
 
       <Text style={s.label}>Title *</Text>
       <TextInput
-        key="title-input"
         style={s.input}
         value={title}
         onChangeText={setTitle}
         placeholder="e.g. 3 Plots of Land, Uyo GRA"
         placeholderTextColor={colors.textTertiary}
-        editable={true}
-        selectTextOnFocus={false}
-        returnKeyType="next"
       />
 
       <Text style={s.label}>Description</Text>
       <TextInput
-        key="description-input"
         style={[s.input, s.textarea]}
         value={description}
         onChangeText={setDesc}
         placeholder="Describe the land, access road, utilities, nearby landmarks…"
         placeholderTextColor={colors.textTertiary}
-        editable={true}
-        selectTextOnFocus={false}
         multiline
         numberOfLines={5}
         textAlignVertical="top"
-        returnKeyType="default"
       />
 
       <Text style={s.label}>Land Size *</Text>
@@ -333,9 +325,6 @@ export default function CreateListingScreen() {
           placeholder="Enter size"
           placeholderTextColor={colors.textTertiary}
           keyboardType="numeric"
-          editable={true}
-          selectTextOnFocus={false}
-          returnKeyType="next"
         />
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.unitRow}>
@@ -359,9 +348,6 @@ export default function CreateListingScreen() {
             onChangeText={setLeaseDur}
             placeholder="e.g. 2 years, 5 years"
             placeholderTextColor={colors.textTertiary}
-            editable={true}
-            selectTextOnFocus={false}
-            returnKeyType="next"
           />
 
           <Text style={s.label}>Intended Use *</Text>
@@ -449,15 +435,11 @@ export default function CreateListingScreen() {
 
       <Text style={s.label}>Area / Address</Text>
       <TextInput
-        key="location-input"
         style={s.input}
         value={location}
         onChangeText={setLoc}
         placeholder="e.g. Behind High Court, Ikot Ekpene"
         placeholderTextColor={colors.textTertiary}
-        editable={true}
-        selectTextOnFocus={false}
-        returnKeyType="next"
       />
 
       <TouchableOpacity style={s.mapPickBtn}>
@@ -635,9 +617,6 @@ export default function CreateListingScreen() {
               placeholder="e.g. 10,000,000"
               placeholderTextColor={colors.textTertiary}
               keyboardType="numeric"
-              editable={true}
-              selectTextOnFocus={false}
-              returnKeyType="next"
             />
           </View>
           {actualValue.length > 0 && (
@@ -653,16 +632,12 @@ export default function CreateListingScreen() {
       <View style={s.priceInputWrap}>
         <Text style={s.pricePrefix}>₦</Text>
         <TextInput
-          key="price-input"
           style={s.priceInput}
           value={price}
           onChangeText={(t) => setPrice(t.replace(/[^0-9]/g, ''))}
           placeholder="0"
           placeholderTextColor={colors.textTertiary}
           keyboardType="numeric"
-          editable={true}
-          selectTextOnFocus={false}
-          returnKeyType="done"
         />
       </View>
       {price.length > 0 && (
@@ -802,9 +777,7 @@ export default function CreateListingScreen() {
       <ScrollView
         style={s.scroll}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="always"
-        keyboardDismissMode="none"
-        scrollEnabled={true}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 120 }}
       >
         <Animated.View style={{ transform: [{ translateX: slideAnim }] }}>
