@@ -48,9 +48,9 @@ export default function CreateListingScreen() {
   const uploadAnim = useRef(new Animated.Value(0)).current;
 
   const CATEGORY_OPTIONS: { key: ListingCategory; label: string; desc: string; icon: IoniconsName; color: string; bg: string }[] = [
-    { key: 'sale',     label: 'For Sale',      desc: 'Outright purchase of land',        icon: 'home-outline',  color: colors.sale,     bg: `${colors.sale}18` },
-    { key: 'lease',    label: 'For Lease',     desc: 'Temporary use for a fixed period', icon: 'leaf-outline',  color: colors.lease,    bg: `${colors.lease}18` },
-    { key: 'distress', label: 'Distress Sale', desc: 'Urgent sale at reduced price',     icon: 'flash-outline', color: colors.distress, bg: `${colors.distress}18` },
+    { key: 'sale',     label: 'For Sale',      desc: 'Outright purchase of land',        icon: 'cart-outline',  color: colors.sale,     bg: `${colors.sale}18` },
+    { key: 'lease',    label: 'For Lease',     desc: 'Temporary use for a fixed period', icon: 'create-outline',  color: colors.lease,    bg: `${colors.lease}18` },
+    { key: 'distress', label: 'Distress Sale', desc: 'Urgent sale at reduced price',     icon: 'alert-circle-outline', color: colors.distress, bg: `${colors.distress}18` },
   ];
 
   const createListing = useCreateListing();
