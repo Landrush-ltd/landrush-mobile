@@ -756,7 +756,15 @@ export default function CreateListingScreen() {
     );
   };
 
-  const RENDERERS = [StepType, StepDetails, StepLocation, StepMedia, StepPrice, StepReview];
+  // Memoize step components to prevent unnecessary re-renders
+  const MemoizedStepType = useMemo(() => React.memo(StepType), []);
+  const MemoizedStepDetails = useMemo(() => React.memo(StepDetails), []);
+  const MemoizedStepLocation = useMemo(() => React.memo(StepLocation), []);
+  const MemoizedStepMedia = useMemo(() => React.memo(StepMedia), []);
+  const MemoizedStepPrice = useMemo(() => React.memo(StepPrice), []);
+  const MemoizedStepReview = useMemo(() => React.memo(StepReview), []);
+
+  const RENDERERS = [MemoizedStepType, MemoizedStepDetails, MemoizedStepLocation, MemoizedStepMedia, MemoizedStepPrice, MemoizedStepReview];
   const StepComponent = RENDERERS[step];
 
   return (
