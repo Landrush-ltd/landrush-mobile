@@ -136,8 +136,54 @@ export default function CreateListingScreen() {
     cb();
   };
 
+  const validateStep = (): string | null => {
+    switch (step) {
+      case 0: // Type
+        if (!category) return 'Please select a listing type';
+        return null;
+
+      case 1: // Details
+        if (!title.trim()) return 'Please enter a listing title';
+        if (!description.trim()) return 'Please enter a description';
+        if (category === 'lease') {
+          if (!leaseDur.trim()) return 'Please enter lease duration (e.g., 2 years)';
+          if (!leasePurpose) return 'Please select intended use for lease';
+        }
+        return null;
+
+      case 2: // Location
+        if (!state) return 'Please select a state';
+        if (!location.trim()) return 'Please enter a location/address';
+        return null;
+
+      case 3: // Media
+        if (photos.length === 0) return 'Please upload at least 1 photo';
+        return null;
+
+      case 4: // Price
+        if (!price.trim()) return 'Please enter a listing price';
+        if (category === 'distress') {
+          if (!actualValue.trim()) return 'Please enter actual market value';
+          if (parseInt(price, 10) >= parseInt(actualValue, 10)) {
+            return 'Listing price must be lower than actual value for distress sale';
+          }
+        }
+        return null;
+
+      case 5: // Review
+        return null;
+
+      default:
+        return null;
+    }
+  };
+
   const goNext = () => {
-    if (step === 0 && !category) { Alert.alert('Select a type', 'Please choose a listing type.'); return; }
+    const error = validateStep();
+    if (error) {
+      Alert.alert('Missing Information', error);
+      return;
+    }
     if (step < STEPS.length - 1) { setDir(1); animateSlide(1, () => setStep((s) => s + 1)); }
     else {
       if (!category) return;
@@ -740,11 +786,19 @@ export default function CreateListingScreen() {
 
       {/* Footer */}
       <View style={[s.footer, { paddingBottom: Math.max(insets.bottom, Spacing.lg) }]}>
+        {validateStep() && (
+          <Text style={s.validationError}>
+            <Ionicons name="alert-circle-outline" size={14} color={colors.red} /> {validateStep()}
+          </Text>
+        )}
         <TouchableOpacity
-          style={[s.nextBtn, createListing.isPending && { opacity: 0.6 }]}
+          style={[
+            s.nextBtn,
+            (createListing.isPending || validateStep()) && s.nextBtnDisabled,
+          ]}
           onPress={goNext}
           activeOpacity={0.88}
-          disabled={createListing.isPending}
+          disabled={createListing.isPending || !!validateStep()}
         >
           <Text style={s.nextBtnText}>
             {createListing.isPending
@@ -756,7 +810,7 @@ export default function CreateListingScreen() {
           <Ionicons
             name={step === STEPS.length - 1 ? 'checkmark-circle-outline' : 'arrow-forward'}
             size={18}
-            color={colors.textPrimary}
+            color={createListing.isPending || validateStep() ? colors.textTertiary : colors.textPrimary}
           />
         </TouchableOpacity>
       </View>
@@ -1467,6 +1521,17 @@ function makeStyles(colors: ThemeColors) {
       fontSize: FontSize.lg,
       fontWeight: '700',
       color: colors.textPrimary,
+    },
+    nextBtnDisabled: {
+      backgroundColor: colors.border,
+      opacity: 0.6,
+    },
+    validationError: {
+      fontSize: FontSize.sm,
+      color: colors.red,
+      marginBottom: Spacing.md,
+      paddingHorizontal: Spacing.sm,
+      fontWeight: '500',
     },
   });
 }
