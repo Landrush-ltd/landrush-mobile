@@ -35,7 +35,14 @@ export default function ProfileScreen() {
   const handleLogout = () =>
     Alert.alert('Log out?', 'You will be returned to the login screen.', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Log Out', style: 'destructive', onPress: () => { logout(); router.replace('/(auth)/login'); } },
+      {
+        text: 'Log Out',
+        style: 'destructive',
+        onPress: async () => {
+          await logout();
+          router.replace('/(auth)/login');
+        },
+      },
     ]);
 
   const groups: MenuGroup[] = [
