@@ -67,6 +67,7 @@ export default function CreateListingScreen() {
   const [leaseDur, setLeaseDur] = useState('');
   const [leasePurpose, setLeasePurpose] = useState('');
   const [existingSetup, setExistingSetup] = useState<string[]>([]);
+  const [actualValue, setActualValue] = useState('');
   const [price, setPrice]       = useState('');
   const [priceType, setPriceType] = useState<'total' | 'per_unit'>('total');
   const [photos, setPhotos]     = useState<string[]>([]);
@@ -555,7 +556,32 @@ export default function CreateListingScreen() {
         ))}
       </View>
 
-      <Text style={s.label}>Price (₦) *</Text>
+      {/* Distress Sale: Actual Value */}
+      {category === 'distress' && (
+        <>
+          <Text style={s.label}>Actual Market Value (₦) *</Text>
+          <Text style={s.sublabel}>What this property is normally worth</Text>
+          <View style={s.priceInputWrap}>
+            <Text style={s.pricePrefix}>₦</Text>
+            <TextInput
+              style={s.priceInput}
+              value={actualValue}
+              onChangeText={(t) => setActualValue(t.replace(/[^0-9]/g, ''))}
+              placeholder="e.g. 10,000,000"
+              placeholderTextColor={colors.textTertiary}
+              keyboardType="numeric"
+            />
+          </View>
+          {actualValue.length > 0 && (
+            <Text style={s.priceFormatted}>
+              ₦{fmtPrice(actualValue)}
+            </Text>
+          )}
+        </>
+      )}
+
+      <Text style={s.label}>Listing Price (₦) *</Text>
+      {category === 'distress' && <Text style={s.sublabel}>Your asking price (will show discount)</Text>}
       <View style={s.priceInputWrap}>
         <Text style={s.pricePrefix}>₦</Text>
         <TextInput
@@ -568,9 +594,27 @@ export default function CreateListingScreen() {
         />
       </View>
       {price.length > 0 && (
-        <Text style={s.priceFormatted}>
-          ₦{fmtPrice(price)}{priceType === 'per_unit' ? ` per ${sizeUnit}` : ' total'}
-        </Text>
+        <>
+          <Text style={s.priceFormatted}>
+            ₦{fmtPrice(price)}{priceType === 'per_unit' ? ` per ${sizeUnit}` : ' total'}
+          </Text>
+          {category === 'distress' && actualValue.length > 0 && (
+            <>
+              {parseInt(price, 10) < parseInt(actualValue, 10) ? (
+                <View style={s.discountBadge}>
+                  <Ionicons name="flash-outline" size={14} color={colors.white} />
+                  <Text style={s.discountText}>
+                    {Math.round(((parseInt(actualValue, 10) - parseInt(price, 10)) / parseInt(actualValue, 10)) * 100)}% OFF
+                  </Text>
+                </View>
+              ) : (
+                <Text style={s.priceWarning}>
+                  Listing price should be lower than actual value for a distress sale
+                </Text>
+              )}
+            </>
+          )}
+        </>
       )}
 
       {/* Tips */}
@@ -1321,6 +1365,29 @@ function makeStyles(colors: ThemeColors) {
       fontSize: FontSize.sm,
       color: colors.textSecondary,
       lineHeight: 20,
+    },
+
+    discountBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing.sm,
+      backgroundColor: colors.distress,
+      borderRadius: BorderRadius.lg,
+      paddingVertical: Spacing.md,
+      marginTop: Spacing.md,
+    },
+    discountText: {
+      fontSize: FontSize.lg,
+      fontWeight: '700',
+      color: colors.white,
+    },
+    priceWarning: {
+      fontSize: FontSize.sm,
+      color: colors.orange,
+      fontStyle: 'italic',
+      marginTop: Spacing.md,
+      textAlign: 'center',
     },
 
     // ── Review ────────────────────────────────────────────────────
