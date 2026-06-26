@@ -136,8 +136,8 @@ export default function CreateListingScreen() {
     cb();
   };
 
-  const validateStep = (): string | null => {
-    switch (step) {
+  const validateStep = (stepNum: number): string | null => {
+    switch (stepNum) {
       case 0: // Type
         if (!category) return 'Please select a listing type';
         return null;
@@ -178,10 +178,11 @@ export default function CreateListingScreen() {
     }
   };
 
+  const validationError = useMemo(() => validateStep(step), [step, category, title, description, leaseDur, leasePurpose, state, location, photos.length, price, actualValue]);
+
   const goNext = () => {
-    const error = validateStep();
-    if (error) {
-      Alert.alert('Missing Information', error);
+    if (validationError) {
+      Alert.alert('Missing Information', validationError);
       return;
     }
     if (step < STEPS.length - 1) { setDir(1); animateSlide(1, () => setStep((s) => s + 1)); }
@@ -813,19 +814,19 @@ export default function CreateListingScreen() {
 
       {/* Footer */}
       <View style={[s.footer, { paddingBottom: Math.max(insets.bottom, Spacing.lg) }]}>
-        {validateStep() && (
+        {validationError && (
           <Text style={s.validationError}>
-            <Ionicons name="alert-circle-outline" size={14} color={colors.red} /> {validateStep()}
+            <Ionicons name="alert-circle-outline" size={14} color={colors.red} /> {validationError}
           </Text>
         )}
         <TouchableOpacity
           style={[
             s.nextBtn,
-            (createListing.isPending || validateStep()) && s.nextBtnDisabled,
+            (createListing.isPending || validationError) && s.nextBtnDisabled,
           ]}
           onPress={goNext}
           activeOpacity={0.88}
-          disabled={createListing.isPending || !!validateStep()}
+          disabled={createListing.isPending || !!validationError}
         >
           <Text style={s.nextBtnText}>
             {createListing.isPending
@@ -837,7 +838,7 @@ export default function CreateListingScreen() {
           <Ionicons
             name={step === STEPS.length - 1 ? 'checkmark-circle-outline' : 'arrow-forward'}
             size={18}
-            color={createListing.isPending || validateStep() ? colors.textTertiary : colors.textPrimary}
+            color={createListing.isPending || validationError ? colors.textTertiary : colors.textPrimary}
           />
         </TouchableOpacity>
       </View>
