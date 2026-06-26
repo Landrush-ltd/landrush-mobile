@@ -66,6 +66,7 @@ export default function CreateListingScreen() {
   const [sizeUnit, setSizeUnit] = useState('Plot');
   const [leaseDur, setLeaseDur] = useState('');
   const [leasePurpose, setLeasePurpose] = useState('');
+  const [existingSetup, setExistingSetup] = useState<string[]>([]);
   const [price, setPrice]       = useState('');
   const [priceType, setPriceType] = useState<'total' | 'per_unit'>('total');
   const [photos, setPhotos]     = useState<string[]>([]);
@@ -82,6 +83,17 @@ export default function CreateListingScreen() {
     { id: 'tourism', label: '🏨 Tourism / Hospitality' },
     { id: 'storage', label: '📦 Storage / Warehouse' },
     { id: 'other', label: '📋 Other Purpose' },
+  ];
+
+  const EXISTING_SETUPS = [
+    { id: 'poultry_house', label: '🐔 Poultry House / Coop' },
+    { id: 'fish_pond', label: '🐟 Fish Pond (Dug & Ready)' },
+    { id: 'farm_equipment', label: '🚜 Farm Equipment & Tools' },
+    { id: 'irrigation', label: '💧 Irrigation System' },
+    { id: 'fence', label: '🚧 Fencing & Gates' },
+    { id: 'storage_shed', label: '🏚️ Storage Shed / Barn' },
+    { id: 'power', label: '⚡ Electricity / Solar' },
+    { id: 'water', label: '💦 Water Well / Tank' },
   ];
   const [isUploading, setUploading] = useState(false);
   const [uploadPct, setUploadPct]   = useState(0);
@@ -323,6 +335,33 @@ export default function CreateListingScreen() {
               ))}
             </View>
           )}
+
+          <Text style={[s.label, { marginTop: Spacing.lg }]}>What Comes With This Lease?</Text>
+          <Text style={s.sublabel}>Select all that apply</Text>
+          <View style={s.setupGrid}>
+            {EXISTING_SETUPS.map((setup) => (
+              <TouchableOpacity
+                key={setup.id}
+                style={[s.setupItem, existingSetup.includes(setup.id) && s.setupItemActive]}
+                onPress={() => {
+                  setExistingSetup((prev) =>
+                    prev.includes(setup.id)
+                      ? prev.filter((id) => id !== setup.id)
+                      : [...prev, setup.id]
+                  );
+                }}
+              >
+                <Ionicons
+                  name={existingSetup.includes(setup.id) ? 'checkbox' : 'checkbox-outline'}
+                  size={20}
+                  color={existingSetup.includes(setup.id) ? colors.primary : colors.textTertiary}
+                />
+                <Text style={[s.setupLabel, existingSetup.includes(setup.id) && s.setupLabelActive]}>
+                  {setup.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </>
       )}
     </View>
@@ -1155,6 +1194,43 @@ function makeStyles(colors: ThemeColors) {
     inputText: {
       fontSize: FontSize.sm,
       color: colors.text,
+    },
+
+    sublabel: {
+      fontSize: FontSize.xs,
+      color: colors.textTertiary,
+      marginTop: -Spacing.sm,
+      marginBottom: Spacing.md,
+    },
+
+    setupGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: Spacing.sm,
+    },
+    setupItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: Spacing.md,
+      paddingVertical: Spacing.sm,
+      backgroundColor: colors.card,
+      borderRadius: BorderRadius.full,
+      borderWidth: 1,
+      borderColor: colors.border,
+      gap: Spacing.sm,
+    },
+    setupItemActive: {
+      backgroundColor: `${colors.primary}15`,
+      borderColor: colors.primary,
+    },
+    setupLabel: {
+      fontSize: FontSize.xs,
+      color: colors.text,
+      flex: 1,
+    },
+    setupLabelActive: {
+      color: colors.primary,
+      fontWeight: '600',
     },
 
     docList: {
