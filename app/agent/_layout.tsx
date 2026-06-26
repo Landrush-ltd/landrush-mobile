@@ -14,6 +14,7 @@ export default function AgentLayout() {
       <Stack.Screen name="dashboard" />
       <Stack.Screen name="listings-manager" />
       <Stack.Screen name="profile" />
+      <Stack.Screen name="edit-listing" />
     </Stack>
   );
 }
