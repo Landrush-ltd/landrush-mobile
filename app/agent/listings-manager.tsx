@@ -7,6 +7,7 @@ import { Spacing, FontSize, FontFamily, BorderRadius, Shadow } from '../../src/c
 import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
 import { useMyListings } from '../../src/hooks/useListings';
+import ShareModal from '../../src/components/ShareModal';
 import type { Listing } from '../../src/types/listing';
 
 type FilterStatus = 'all' | 'available' | 'taken' | 'closed';
@@ -20,6 +21,8 @@ export default function ListingsManager() {
   const { data: myListings = [] } = useMyListings();
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [shareModalVisible, setShareModalVisible] = useState(false);
+  const [selectedListingForShare, setSelectedListingForShare] = useState<Listing | null>(null);
 
   // Filter listings
   const filteredListings = myListings.filter((listing) => {
@@ -56,8 +59,8 @@ export default function ListingsManager() {
   };
 
   const handleShareListing = (listing: Listing) => {
-    // TODO: Implement social sharing
-    Alert.alert('Share', `Sharing: ${listing.title}`);
+    setSelectedListingForShare(listing);
+    setShareModalVisible(true);
   };
 
   const getStatusColor = (status: string) => {
@@ -230,6 +233,15 @@ export default function ListingsManager() {
         >
           <Ionicons name="add" size={28} color={colors.white} />
         </TouchableOpacity>
+      )}
+
+      {/* ── Share Modal ────────────────────────────────────── */}
+      {selectedListingForShare && (
+        <ShareModal
+          visible={shareModalVisible}
+          listing={selectedListingForShare}
+          onClose={() => setShareModalVisible(false)}
+        />
       )}
     </View>
   );
