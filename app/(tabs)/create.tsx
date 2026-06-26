@@ -301,6 +301,9 @@ export default function CreateListingScreen() {
         onChangeText={setTitle}
         placeholder="e.g. 3 Plots of Land, Uyo GRA"
         placeholderTextColor={colors.textTertiary}
+        editable={true}
+        selectTextOnFocus={false}
+        returnKeyType="next"
       />
 
       <Text style={s.label}>Description</Text>
@@ -310,9 +313,12 @@ export default function CreateListingScreen() {
         onChangeText={setDesc}
         placeholder="Describe the land, access road, utilities, nearby landmarks…"
         placeholderTextColor={colors.textTertiary}
+        editable={true}
+        selectTextOnFocus={false}
         multiline
         numberOfLines={5}
         textAlignVertical="top"
+        returnKeyType="default"
       />
 
       <Text style={s.label}>Land Size *</Text>
@@ -324,6 +330,9 @@ export default function CreateListingScreen() {
           placeholder="Enter size"
           placeholderTextColor={colors.textTertiary}
           keyboardType="numeric"
+          editable={true}
+          selectTextOnFocus={false}
+          returnKeyType="next"
         />
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.unitRow}>
@@ -347,6 +356,9 @@ export default function CreateListingScreen() {
             onChangeText={setLeaseDur}
             placeholder="e.g. 2 years, 5 years"
             placeholderTextColor={colors.textTertiary}
+            editable={true}
+            selectTextOnFocus={false}
+            returnKeyType="next"
           />
 
           <Text style={s.label}>Intended Use *</Text>
@@ -439,6 +451,9 @@ export default function CreateListingScreen() {
         onChangeText={setLoc}
         placeholder="e.g. Behind High Court, Ikot Ekpene"
         placeholderTextColor={colors.textTertiary}
+        editable={true}
+        selectTextOnFocus={false}
+        returnKeyType="next"
       />
 
       <TouchableOpacity style={s.mapPickBtn}>
@@ -616,6 +631,9 @@ export default function CreateListingScreen() {
               placeholder="e.g. 10,000,000"
               placeholderTextColor={colors.textTertiary}
               keyboardType="numeric"
+              editable={true}
+              selectTextOnFocus={false}
+              returnKeyType="next"
             />
           </View>
           {actualValue.length > 0 && (
@@ -637,6 +655,9 @@ export default function CreateListingScreen() {
           placeholder="0"
           placeholderTextColor={colors.textTertiary}
           keyboardType="numeric"
+          editable={true}
+          selectTextOnFocus={false}
+          returnKeyType="done"
         />
       </View>
       {price.length > 0 && (
