@@ -65,11 +65,24 @@ export default function CreateListingScreen() {
   const [size, setSize]         = useState('');
   const [sizeUnit, setSizeUnit] = useState('Plot');
   const [leaseDur, setLeaseDur] = useState('');
+  const [leasePurpose, setLeasePurpose] = useState('');
   const [price, setPrice]       = useState('');
   const [priceType, setPriceType] = useState<'total' | 'per_unit'>('total');
   const [photos, setPhotos]     = useState<string[]>([]);
   const [documents, setDocuments] = useState<{ type: string; uri: string }[]>([]);
   const [docTypeOpen, setDocTypeOpen] = useState(false);
+  const [leasePurposeOpen, setLeasePurposeOpen] = useState(false);
+
+  const LEASE_PURPOSES = [
+    { id: 'poultry', label: '🐔 Poultry & Livestock Farming' },
+    { id: 'fishpond', label: '🐟 Fish Pond / Aquaculture' },
+    { id: 'crops', label: '🌾 Crop Farming' },
+    { id: 'commercial', label: '🏪 Commercial / Residential' },
+    { id: 'industrial', label: '🏭 Industrial Use' },
+    { id: 'tourism', label: '🏨 Tourism / Hospitality' },
+    { id: 'storage', label: '📦 Storage / Warehouse' },
+    { id: 'other', label: '📋 Other Purpose' },
+  ];
   const [isUploading, setUploading] = useState(false);
   const [uploadPct, setUploadPct]   = useState(0);
   const [draftSaved, setDraft]  = useState(false);
@@ -268,7 +281,7 @@ export default function CreateListingScreen() {
 
       {category === 'lease' && (
         <>
-          <Text style={s.label}>Lease Duration</Text>
+          <Text style={s.label}>Lease Duration *</Text>
           <TextInput
             style={s.input}
             value={leaseDur}
@@ -276,6 +289,40 @@ export default function CreateListingScreen() {
             placeholder="e.g. 2 years, 5 years"
             placeholderTextColor={colors.textTertiary}
           />
+
+          <Text style={s.label}>Intended Use *</Text>
+          <TouchableOpacity
+            style={s.input}
+            onPress={() => setLeasePurposeOpen(!leasePurposeOpen)}
+          >
+            <Text style={[s.inputText, { color: leasePurpose ? colors.text : colors.textTertiary }]}>
+              {leasePurpose || 'Select intended use'}
+            </Text>
+            <Ionicons
+              name={leasePurposeOpen ? 'chevron-up' : 'chevron-down'}
+              size={18}
+              color={colors.textTertiary}
+            />
+          </TouchableOpacity>
+
+          {leasePurposeOpen && (
+            <View style={s.purposeMenu}>
+              {LEASE_PURPOSES.map((purpose) => (
+                <TouchableOpacity
+                  key={purpose.id}
+                  style={s.purposeOption}
+                  onPress={() => {
+                    setLeasePurpose(purpose.label);
+                    setLeasePurposeOpen(false);
+                  }}
+                >
+                  <Text style={[s.purposeLabel, leasePurpose === purpose.label && s.purposeLabelActive]}>
+                    {purpose.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </>
       )}
     </View>
@@ -1079,6 +1126,33 @@ function makeStyles(colors: ThemeColors) {
       borderBottomColor: colors.border,
     },
     docTypeLabel: {
+      fontSize: FontSize.sm,
+      color: colors.text,
+    },
+
+    purposeMenu: {
+      backgroundColor: colors.card,
+      borderRadius: BorderRadius.lg,
+      marginTop: Spacing.sm,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    purposeOption: {
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    purposeLabel: {
+      fontSize: FontSize.sm,
+      color: colors.text,
+    },
+    purposeLabelActive: {
+      color: colors.primary,
+      fontWeight: '600',
+    },
+    inputText: {
       fontSize: FontSize.sm,
       color: colors.text,
     },
