@@ -296,6 +296,7 @@ export default function CreateListingScreen() {
 
       <Text style={s.label}>Title *</Text>
       <TextInput
+        key="title-input"
         style={s.input}
         value={title}
         onChangeText={setTitle}
@@ -308,6 +309,7 @@ export default function CreateListingScreen() {
 
       <Text style={s.label}>Description</Text>
       <TextInput
+        key="description-input"
         style={[s.input, s.textarea]}
         value={description}
         onChangeText={setDesc}
@@ -446,6 +448,7 @@ export default function CreateListingScreen() {
 
       <Text style={s.label}>Area / Address</Text>
       <TextInput
+        key="location-input"
         style={s.input}
         value={location}
         onChangeText={setLoc}
@@ -649,6 +652,7 @@ export default function CreateListingScreen() {
       <View style={s.priceInputWrap}>
         <Text style={s.pricePrefix}>₦</Text>
         <TextInput
+          key="price-input"
           style={s.priceInput}
           value={price}
           onChangeText={(t) => setPrice(t.replace(/[^0-9]/g, ''))}
@@ -797,7 +801,9 @@ export default function CreateListingScreen() {
       <ScrollView
         style={s.scroll}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="always"
+        keyboardDismissMode="none"
+        scrollEnabled={true}
         contentContainerStyle={{ paddingBottom: 120 }}
       >
         <Animated.View style={{ transform: [{ translateX: slideAnim }] }}>
