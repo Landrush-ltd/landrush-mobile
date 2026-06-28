@@ -50,52 +50,52 @@ export const LightColors = {
 } as const;
 
 export const DarkColors = {
-  // Brand (unchanged — lime & primary work on dark bg)
-  primary:       '#3D8B64',
-  primaryLight:  '#55A87E',
-  primaryDark:   '#1B4332',
-  lime:          '#A8C44A',
-  limeLight:     '#BDD162',
+  // Brand (improved brightness for dark mode)
+  primary:       '#52C77A',
+  primaryLight:  '#6DD68D',
+  primaryDark:   '#2D7A4D',
+  lime:          '#B8D65E',
+  limeLight:     '#CAE47A',
 
-  // Category
-  lease:    '#E88A2E',
-  sale:     '#3D8B64',
-  distress: '#D93025',
+  // Category (brightened for visibility)
+  lease:    '#FFA041',
+  sale:     '#52C77A',
+  distress: '#FF6B6B',
 
-  // Surface hierarchy
+  // Surface hierarchy (better contrast)
   white:       '#FFFFFF',
-  background:  '#111714',
-  surface:     '#181D1A',
-  card:        '#1E2421',
-  border:      '#2C3330',
-  borderLight: '#232A27',
+  background:  '#0F1110',
+  surface:     '#1A1F1D',
+  card:        '#242B28',
+  border:      '#404A46',
+  borderLight: '#313A36',
   divider:     '#1E2421',
 
-  // Text
-  textPrimary:   '#EDEFEC',
-  textSecondary: '#8C9A93',
-  textTertiary:  '#556159',
-  textInverse:   '#111714',
-  textLink:      '#55A87E',
+  // Text (higher contrast)
+  textPrimary:   '#F5F5F5',
+  textSecondary: '#A8B5B0',
+  textTertiary:  '#6D7A75',
+  textInverse:   '#0F1110',
+  textLink:      '#6DD68D',
 
-  // Chips
-  chipActive:   '#2C3A2A',
-  chipInactive: '#1E2421',
+  // Chips (more visible)
+  chipActive:   '#1F4D35',
+  chipInactive: '#242B28',
 
-  // Status
-  success: '#3D8B64',
-  warning: '#E47C18',
-  error:   '#E05C3A',
-  info:    '#5BA4E0',
+  // Status (brightened)
+  success: '#52C77A',
+  warning: '#FFA041',
+  error:   '#FF6B6B',
+  info:    '#6BB8FF',
 
-  // Overlays
-  overlay:      'rgba(0,0,0,0.6)',
-  overlayLight: 'rgba(0,0,0,0.35)',
+  // Overlays (stronger)
+  overlay:      'rgba(0,0,0,0.7)',
+  overlayLight: 'rgba(0,0,0,0.4)',
 
   // Auth legacy
-  authBg:       '#111714',
-  onboardingBg: '#111714',
-  splashBg:     '#0D1210',
+  authBg:       '#0F1110',
+  onboardingBg: '#0F1110',
+  splashBg:     '#0A0D0C',
 } as const;
 
 export type ColorScheme = 'light' | 'dark';
