@@ -7,6 +7,7 @@ import { Spacing, FontSize, FontFamily, BorderRadius, Shadow, LetterSpacing } fr
 import type { ThemeColors } from '../../src/constants/theme';
 import { useColors, useTheme } from '../../src/context/ThemeContext';
 import { useAuthStore } from '../../src/store/auth';
+import { ProfileAvatarPicker } from '../../src/components/ProfileAvatarPicker';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -91,17 +92,26 @@ export default function ProfileScreen() {
         <Text style={styles.headerTitle}>Profile</Text>
       </View>
 
-      {/* ── Avatar card ─────────────────────────────────────── */}
+      {/* ── Avatar picker + user info ──────────────────────── */}
       <View style={styles.avatarCard}>
-        <View style={styles.avatarWrap}>
-          {user?.avatar
-            ? <Image source={{ uri: user.avatar }} style={styles.avatar} />
-            : <View style={styles.avatarInitials}><Text style={styles.avatarInitialsText}>{initials}</Text></View>
-          }
-          <TouchableOpacity style={styles.editAvatarBtn}>
-            <Ionicons name="camera-outline" size={14} color={colors.white} />
-          </TouchableOpacity>
-        </View>
+        <ProfileAvatarPicker
+          current={{
+            id: 'current',
+            uri: user?.avatar,
+            color: colors.primary,
+          }}
+          options={[
+            { id: 'default', color: colors.primary },
+            { id: 'alt1', color: colors.lime },
+            { id: 'alt2', color: colors.lease },
+            { id: 'alt3', color: colors.distress },
+          ]}
+          onSelect={(opt) => {
+            // TODO: Save selected avatar to backend
+            // For now, just shows the selection UI
+          }}
+          size={100}
+        />
         <View style={styles.avatarInfo}>
           <Text style={styles.displayName}>{displayName}</Text>
           <Text style={styles.roleText}>{role}</Text>
