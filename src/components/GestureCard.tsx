@@ -8,11 +8,14 @@ import Animated, {
   FadeIn,
 } from 'react-native-reanimated';
 import { Shadow, BorderRadius, Spacing } from '../constants/theme';
+import type { Listing } from '../types/listing';
 
 interface GestureCardProps {
   children: React.ReactNode;
   onLongPress?: () => void;
   onPress?: () => void;
+  onLongPressPreview?: (listing: Listing) => void;
+  listing?: Listing;
   style?: any;
   disabled?: boolean;
 }
@@ -21,6 +24,8 @@ export function GestureCard({
   children,
   onLongPress,
   onPress,
+  onLongPressPreview,
+  listing,
   style,
   disabled = false,
 }: GestureCardProps) {
@@ -53,7 +58,9 @@ export function GestureCard({
 
   const handleLongPress = () => {
     setIsLongPressing(true);
-    if (onLongPress) {
+    if (listing && onLongPressPreview) {
+      onLongPressPreview(listing);
+    } else if (onLongPress) {
       onLongPress();
     }
   };

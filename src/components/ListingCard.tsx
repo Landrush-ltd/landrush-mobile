@@ -7,6 +7,7 @@ import { useColors } from '../context/ThemeContext';
 import type { Listing } from '../types/listing';
 import { AnimatedHeart } from './AnimatedHeart';
 import { GestureCard } from './GestureCard';
+import { LongPressPreview } from './LongPressPreview';
 import { triggerHaptic } from '../utils/haptics';
 
 interface ListingCardProps {
@@ -29,6 +30,7 @@ function formatPrice(p: number) {
 
 export function ListingCard({ listing, onPress, variant = 'horizontal' }: ListingCardProps) {
   const [saved, setSaved] = useState(false);
+  const [previewVisible, setPreviewVisible] = useState(false);
   const colors   = useColors();
   const styles   = useMemo(() => makeStyles(colors), [colors]);
   const imageUri = listing.media[0]?.uri;
@@ -66,10 +68,13 @@ export function ListingCard({ listing, onPress, variant = 'horizontal' }: Listin
   // ── Compact horizontal card ──
   if (variant === 'horizontal') {
     return (
-      <GestureCard
-        onPress={() => onPress(listing)}
-        style={styles.hCard}
-      >
+      <>
+        <GestureCard
+          onPress={() => onPress(listing)}
+          onLongPressPreview={() => setPreviewVisible(true)}
+          listing={listing}
+          style={styles.hCard}
+        >
         <Photo height={150} iconSize={28} />
         <View style={styles.info}>
           <View style={styles.titleRow}>
@@ -87,16 +92,26 @@ export function ListingCard({ listing, onPress, variant = 'horizontal' }: Listin
             {listing.priceUnit ? <Text style={styles.priceUnit}> /{listing.priceUnit}</Text> : null}
           </View>
         </View>
-      </GestureCard>
+        </GestureCard>
+        <LongPressPreview
+          listing={listing}
+          visible={previewVisible}
+          onDismiss={() => setPreviewVisible(false)}
+          onPress={onPress}
+        />
+      </>
     );
   }
 
   // ── Full-width vertical card ──
   return (
-    <GestureCard
-      onPress={() => onPress(listing)}
-      style={styles.vCard}
-    >
+    <>
+      <GestureCard
+        onPress={() => onPress(listing)}
+        onLongPressPreview={() => setPreviewVisible(true)}
+        listing={listing}
+        style={styles.vCard}
+      >
       <View style={[styles.photoWrap, { height: 230 }]}>
         {imageUri
           ? <Image source={{ uri: imageUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
@@ -144,7 +159,14 @@ export function ListingCard({ listing, onPress, variant = 'horizontal' }: Listin
           )}
         </View>
       </View>
-    </GestureCard>
+      </GestureCard>
+      <LongPressPreview
+        listing={listing}
+        visible={previewVisible}
+        onDismiss={() => setPreviewVisible(false)}
+        onPress={onPress}
+      />
+    </>
   );
 }
 
