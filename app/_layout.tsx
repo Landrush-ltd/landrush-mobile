@@ -68,10 +68,7 @@ function NotificationSetup() {
 }
 
 function TutorialHandler() {
-  const { currentStepData, currentStep, totalSteps, isVisible, nextStep, skipTutorial } = useTutorial();
-
-  // Calculate total steps
-  const totalTutorialSteps = 9;
+  const { currentStepData, currentStep, isVisible, nextStep, skipTutorial } = useTutorial();
 
   return (
     <TutorialOverlay
@@ -80,7 +77,7 @@ function TutorialHandler() {
       onNext={nextStep}
       onSkip={skipTutorial}
       currentStep={currentStep}
-      totalSteps={totalTutorialSteps}
+      totalSteps={9}
     />
   );
 }
