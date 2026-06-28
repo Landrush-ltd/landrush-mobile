@@ -44,15 +44,15 @@ export function TutorialOverlay({
   const colors = useColors();
   const scale = useSharedValue(0);
 
+  const scaleStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
   useEffect(() => {
     scale.value = visible ? withSpring(1) : 0;
   }, [visible]);
 
   if (!step || !visible) return null;
-
-  const scaleStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
 
   const getTargetPosition = () => {
     // Get target element position dynamically
