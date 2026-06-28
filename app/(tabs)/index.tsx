@@ -263,7 +263,7 @@ export default function ExploreScreen() {
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.hList}
-        scrollEnabled={false}
+        scrollEnabled={true}
       />
 
       {/* ── Map explore banner ──────────────────────────── */}
