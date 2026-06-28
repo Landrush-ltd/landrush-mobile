@@ -26,6 +26,7 @@ import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
 import { ListingCard } from '../../src/components/ListingCard';
 import { AchievementBadge } from '../../src/components/AchievementBadge';
+import { CardSkeleton, TextSkeleton } from '../../src/components/SkeletonLoader';
 import { useListingsStore } from '../../src/store/listings';
 import { useAuthStore } from '../../src/store/auth';
 import { useListings } from '../../src/hooks/useListings';
@@ -269,22 +270,32 @@ export default function ExploreScreen() {
         </TouchableOpacity>
       </Animated.View>
 
-      <FlatList
-        data={horizontal}
-        renderItem={({ item, index }) => (
-          <AnimatedCardWrapper
-            onPress={() => handlePress(item)}
-            delay={index * 40}
-          >
-            <ListingCard listing={item} onPress={handlePress} variant="horizontal" />
-          </AnimatedCardWrapper>
-        )}
-        keyExtractor={(item) => item.id}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.hList}
-        scrollEnabled={true}
-      />
+      {listingsLoading ? (
+        <View style={styles.hList}>
+          {[0, 1, 2].map((i) => (
+            <View key={i} style={{ marginRight: Spacing.lg }}>
+              <CardSkeleton />
+            </View>
+          ))}
+        </View>
+      ) : (
+        <FlatList
+          data={horizontal}
+          renderItem={({ item, index }) => (
+            <AnimatedCardWrapper
+              onPress={() => handlePress(item)}
+              delay={index * 40}
+            >
+              <ListingCard listing={item} onPress={handlePress} variant="horizontal" />
+            </AnimatedCardWrapper>
+          )}
+          keyExtractor={(item) => item.id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.hList}
+          scrollEnabled={true}
+        />
+      )}
 
       {/* ── Map explore banner ──────────────────────────── */}
       <Animated.View entering={FadeInUp.delay(160).springify()}>
@@ -306,7 +317,18 @@ export default function ExploreScreen() {
       <View style={styles.divider} />
 
       {/* ── Section: recommended ────────────────────────── */}
-      {vertical.length > 0 && (
+      {listingsLoading ? (
+        <>
+          <Animated.View entering={FadeInUp.delay(200).springify()} style={styles.sectionHead}>
+            <Text style={styles.sectionTitle}>Recommended near you</Text>
+          </Animated.View>
+          <View style={styles.vList}>
+            {[0, 1, 2].map((i) => (
+              <CardSkeleton key={i} />
+            ))}
+          </View>
+        </>
+      ) : vertical.length > 0 ? (
         <>
           <Animated.View entering={FadeInUp.delay(200).springify()} style={styles.sectionHead}>
             <Text style={styles.sectionTitle}>Recommended near you</Text>
@@ -326,7 +348,7 @@ export default function ExploreScreen() {
             ))}
           </View>
         </>
-      )}
+      ) : null}
 
       <View style={{ height: 100 }} />
       </ScrollView>
