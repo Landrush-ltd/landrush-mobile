@@ -15,6 +15,8 @@ import {
   Sora_800ExtraBold,
 } from '@expo-google-fonts/sora';
 import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
+import { TutorialProvider, useTutorial } from '../src/context/TutorialContext';
+import { TutorialOverlay } from '../src/components/TutorialOverlay';
 import { OfflineBanner } from '../src/components/OfflineBanner';
 import { applySoraFont } from '../src/utils/fonts';
 import {
@@ -65,6 +67,24 @@ function NotificationSetup() {
   return null;
 }
 
+function TutorialHandler() {
+  const { currentStepData, currentStep, totalSteps, isVisible, nextStep, skipTutorial } = useTutorial();
+
+  // Calculate total steps
+  const totalTutorialSteps = 9;
+
+  return (
+    <TutorialOverlay
+      step={currentStepData}
+      visible={isVisible}
+      onNext={nextStep}
+      onSkip={skipTutorial}
+      currentStep={currentStep}
+      totalSteps={totalTutorialSteps}
+    />
+  );
+}
+
 function ThemedStack() {
   const { colors, isDark } = useTheme();
   return (
@@ -81,6 +101,7 @@ function ThemedStack() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="listing/[id]" options={{ animation: 'slide_from_right' }} />
       </Stack>
+      <TutorialHandler />
     </>
   );
 }
@@ -106,9 +127,11 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <OfflineBanner />
-          <NotificationSetup />
-          <ThemedStack />
+          <TutorialProvider>
+            <OfflineBanner />
+            <NotificationSetup />
+            <ThemedStack />
+          </TutorialProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
