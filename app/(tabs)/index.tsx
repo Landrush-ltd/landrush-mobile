@@ -27,6 +27,7 @@ import { useColors } from '../../src/context/ThemeContext';
 import { ListingCard } from '../../src/components/ListingCard';
 import { AchievementBadge } from '../../src/components/AchievementBadge';
 import { CardSkeleton, TextSkeleton } from '../../src/components/SkeletonLoader';
+import { FirstTimeOverlay } from '../../src/components/FirstTimeOverlay';
 import { useListingsStore } from '../../src/store/listings';
 import { useAuthStore } from '../../src/store/auth';
 import { useListings } from '../../src/hooks/useListings';
@@ -145,6 +146,7 @@ export default function ExploreScreen() {
   const { data: apiListings, isLoading: listingsLoading, refetch } = useListings();
   const [refreshing, setRefreshing] = useState(false);
   const [showAchievement, setShowAchievement] = useState(false);
+  const [showFirstTime, setShowFirstTime] = useState(true);
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
@@ -176,6 +178,19 @@ export default function ExploreScreen() {
 
   return (
     <>
+      {showFirstTime && (
+        <FirstTimeOverlay
+          event={{
+            id: 'first-home-visit',
+            title: 'Explore Listings',
+            message: 'Tap any card to view details, long-press to preview, or swipe left/right to browse',
+            icon: 'search',
+            color: colors.primary,
+          }}
+          visible={showFirstTime}
+          onDismiss={() => setShowFirstTime(false)}
+        />
+      )}
       {showAchievement && (
         <AchievementBadge
           label="Milestone! 🏆"
