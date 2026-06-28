@@ -24,6 +24,7 @@ import { useColors } from '../../src/context/ThemeContext';
 import type { ListingCategory } from '../../src/types/listing';
 import { useCreateListing } from '../../src/hooks/useListings';
 import { SuccessScreen } from '../../src/components/SuccessScreen';
+import { ErrorScreen } from '../../src/components/ErrorScreen';
 import { ProgressBar } from '../../src/components/ProgressBar';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
@@ -77,6 +78,8 @@ export default function CreateListingScreen() {
   const [docTypeOpen, setDocTypeOpen] = useState(false);
   const [leasePurposeOpen, setLeasePurposeOpen] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const LEASE_PURPOSES = [
     { id: 'poultry', label: '🐔 Poultry & Livestock Farming' },
@@ -211,8 +214,10 @@ export default function CreateListingScreen() {
         },
         {
           onSuccess: () => setShowSuccess(true),
-          onError: (e: any) =>
-            Alert.alert('Submission failed', e?.message ?? 'Please try again.'),
+          onError: (e: any) => {
+            setErrorMessage(e?.message ?? 'Something went wrong. Please check your connection and try again.');
+            setShowError(true);
+          },
         },
       );
     }
@@ -742,6 +747,19 @@ export default function CreateListingScreen() {
         icon="checkmark-circle"
         onAction={() => router.replace('/(tabs)')}
         autoClose={false}
+      />
+    );
+  }
+
+  if (showError) {
+    return (
+      <ErrorScreen
+        title="Submission Failed"
+        subtitle={errorMessage}
+        icon="alert-circle"
+        actionLabel="Try Again"
+        onAction={() => setShowError(false)}
+        color="#FF3B30"
       />
     );
   }
