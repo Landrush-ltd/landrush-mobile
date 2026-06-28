@@ -15,8 +15,7 @@ import {
   Sora_800ExtraBold,
 } from '@expo-google-fonts/sora';
 import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
-import { TutorialProvider, useTutorial } from '../src/context/TutorialContext';
-import { TutorialOverlay } from '../src/components/TutorialOverlay';
+import { TutorialProvider } from '../src/context/TutorialContext';
 import { OfflineBanner } from '../src/components/OfflineBanner';
 import { applySoraFont } from '../src/utils/fonts';
 import {
@@ -67,21 +66,6 @@ function NotificationSetup() {
   return null;
 }
 
-function TutorialHandler() {
-  const { currentStepData, currentStep, isVisible, nextStep, skipTutorial } = useTutorial();
-
-  return (
-    <TutorialOverlay
-      step={currentStepData}
-      visible={isVisible}
-      onNext={nextStep}
-      onSkip={skipTutorial}
-      currentStep={currentStep}
-      totalSteps={9}
-    />
-  );
-}
-
 function ThemedStack() {
   const { colors, isDark } = useTheme();
   return (
@@ -98,7 +82,6 @@ function ThemedStack() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="listing/[id]" options={{ animation: 'slide_from_right' }} />
       </Stack>
-      <TutorialHandler />
     </>
   );
 }
