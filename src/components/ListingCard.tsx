@@ -5,6 +5,9 @@ import { Spacing, FontSize, BorderRadius, Shadow, LetterSpacing, FontFamily } fr
 import type { ThemeColors } from '../constants/theme';
 import { useColors } from '../context/ThemeContext';
 import type { Listing } from '../types/listing';
+import { AnimatedHeart } from './AnimatedHeart';
+import { GestureCard } from './GestureCard';
+import { triggerHaptic } from '../utils/haptics';
 
 interface ListingCardProps {
   listing: Listing;
@@ -35,6 +38,11 @@ export function ListingCard({ listing, onPress, variant = 'horizontal' }: Listin
     lease: colors.lease, sale: colors.sale, distress: colors.distress,
   };
 
+  const handleSave = () => {
+    triggerHaptic('medium');
+    setSaved((s) => !s);
+  };
+
   const Photo = ({ height, iconSize }: { height: number; iconSize: number }) => (
     <View style={[styles.photoWrap, { height }]}>
       {imageUri
@@ -43,20 +51,25 @@ export function ListingCard({ listing, onPress, variant = 'horizontal' }: Listin
             <Ionicons name="image-outline" size={iconSize} color={colors.textTertiary} />
           </View>
       }
-      <TouchableOpacity
-        style={styles.saveBtn}
-        onPress={(e) => { e.stopPropagation?.(); setSaved((s) => !s); }}
-        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-      >
-        <Ionicons name={saved ? 'heart' : 'heart-outline'} size={18} color={saved ? '#FF385C' : '#FFFFFF'} />
-      </TouchableOpacity>
+      <View style={styles.saveBtn}>
+        <AnimatedHeart
+          isSaved={saved}
+          onPress={handleSave}
+          size={20}
+          color="#FFFFFF"
+          savedColor="#FF385C"
+        />
+      </View>
     </View>
   );
 
   // ── Compact horizontal card ──
   if (variant === 'horizontal') {
     return (
-      <TouchableOpacity style={styles.hCard} onPress={() => onPress(listing)} activeOpacity={0.9}>
+      <GestureCard
+        onPress={() => onPress(listing)}
+        style={styles.hCard}
+      >
         <Photo height={150} iconSize={28} />
         <View style={styles.info}>
           <View style={styles.titleRow}>
@@ -74,13 +87,16 @@ export function ListingCard({ listing, onPress, variant = 'horizontal' }: Listin
             {listing.priceUnit ? <Text style={styles.priceUnit}> /{listing.priceUnit}</Text> : null}
           </View>
         </View>
-      </TouchableOpacity>
+      </GestureCard>
     );
   }
 
   // ── Full-width vertical card ──
   return (
-    <TouchableOpacity style={styles.vCard} onPress={() => onPress(listing)} activeOpacity={0.9}>
+    <GestureCard
+      onPress={() => onPress(listing)}
+      style={styles.vCard}
+    >
       <View style={[styles.photoWrap, { height: 230 }]}>
         {imageUri
           ? <Image source={{ uri: imageUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
@@ -91,13 +107,15 @@ export function ListingCard({ listing, onPress, variant = 'horizontal' }: Listin
         <View style={[styles.catPill, { backgroundColor: catColor[listing.category] }]}>
           <Text style={styles.catPillText}>{CATEGORY_LABEL[listing.category]}</Text>
         </View>
-        <TouchableOpacity
-          style={styles.saveBtnCircle}
-          onPress={(e) => { e.stopPropagation?.(); setSaved((s) => !s); }}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Ionicons name={saved ? 'heart' : 'heart-outline'} size={18} color={saved ? '#FF385C' : '#FFFFFF'} />
-        </TouchableOpacity>
+        <View style={styles.saveBtnCircle}>
+          <AnimatedHeart
+            isSaved={saved}
+            onPress={handleSave}
+            size={18}
+            color="#FFFFFF"
+            savedColor="#FF385C"
+          />
+        </View>
         <View style={styles.locPill}>
           <Ionicons name="location" size={12} color={colors.lime} />
           <Text style={styles.locPillText} numberOfLines={1}>{listing.location}</Text>
@@ -126,7 +144,7 @@ export function ListingCard({ listing, onPress, variant = 'horizontal' }: Listin
           )}
         </View>
       </View>
-    </TouchableOpacity>
+    </GestureCard>
   );
 }
 
