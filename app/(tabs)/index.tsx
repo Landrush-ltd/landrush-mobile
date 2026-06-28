@@ -9,6 +9,15 @@ import {
   RefreshControl,
   Image,
 } from 'react-native';
+import Animated, {
+  FadeInUp,
+  FadeIn,
+  ZoomIn,
+  withTiming,
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -35,6 +44,85 @@ const CATEGORIES: Category[] = [
   { key: 'lease',    label: 'Lease',     icon: 'key-outline'        },
   { key: 'distress', label: 'Distress',  icon: 'flame-outline'      },
 ];
+
+// Animated card wrapper with staggered entrance + tap feedback (scale 0.97)
+function AnimatedCardWrapper({
+  children,
+  onPress,
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  onPress?: () => void;
+  delay?: number;
+}) {
+  const scale = useSharedValue(1);
+
+  const handlePressIn = () => {
+    scale.value = withTiming(0.97, { duration: 80, easing: Easing.out(Easing.ease) });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withTiming(1, { duration: 80, easing: Easing.out(Easing.ease) });
+  };
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Animated.View
+      entering={FadeInUp.delay(delay).springify().damping(12).mass(1).overshootClamping(true)}
+      style={animatedStyle}
+    >
+      <TouchableOpacity
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onPress={onPress}
+        activeOpacity={1}
+      >
+        {children}
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
+
+// Animated button for interactive elements (scale 1 → 0.95)
+function AnimatedTapButton({
+  children,
+  onPress,
+  style,
+}: {
+  children: React.ReactNode;
+  onPress?: () => void;
+  style?: any;
+}) {
+  const scale = useSharedValue(1);
+
+  const handlePressIn = () => {
+    scale.value = withTiming(0.95, { duration: 120, easing: Easing.out(Easing.ease) });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withTiming(1, { duration: 120, easing: Easing.out(Easing.ease) });
+  };
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Animated.View style={[animatedStyle, style]}>
+      <TouchableOpacity
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onPress={onPress}
+        activeOpacity={1}
+      >
+        {children}
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
 
 function Initials({ name, size = 32, colors }: { name: string; size?: number; colors: ThemeColors }) {
   const parts = name.trim().split(' ');
@@ -82,66 +170,75 @@ export default function ExploreScreen() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.lime} />}
     >
       {/* ── Top bar ─────────────────────────────────────── */}
-      <View style={[styles.topBar, { paddingTop: insets.top + Spacing.sm }]}>
+      <Animated.View entering={FadeInUp.delay(0).springify()} style={[styles.topBar, { paddingTop: insets.top + Spacing.sm }]}>
         <View style={{ flex: 1 }}>
           <Text style={styles.greeting}>{greeting} 👋</Text>
           <Text style={styles.appName} numberOfLines={1}>{firstName}</Text>
         </View>
         <View style={styles.topBarRight}>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => router.push('/notifications')}>
-            <Ionicons name="notifications-outline" size={22} color={colors.textPrimary} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/(tabs)/profile')}>
-            {user?.avatar
-              ? <Image source={{ uri: user.avatar }} style={styles.avatar} />
-              : <Initials name={displayName} size={34} colors={colors} />
-            }
-          </TouchableOpacity>
+          <AnimatedTapButton onPress={() => router.push('/notifications')}>
+            <View style={styles.iconBtn}>
+              <Ionicons name="notifications-outline" size={22} color={colors.textPrimary} />
+            </View>
+          </AnimatedTapButton>
+          <AnimatedTapButton onPress={() => router.push('/(tabs)/profile')}>
+            <View>
+              {user?.avatar
+                ? <Image source={{ uri: user.avatar }} style={styles.avatar} />
+                : <Initials name={displayName} size={34} colors={colors} />
+              }
+            </View>
+          </AnimatedTapButton>
         </View>
-      </View>
+      </Animated.View>
 
       {/* ── Search bar ──────────────────────────────────── */}
-      <View style={styles.searchWrap}>
-        <TouchableOpacity style={styles.searchBar} onPress={() => router.push('/search')} activeOpacity={0.85}>
-          <View style={styles.searchIconCircle}>
-            <Ionicons name="search" size={16} color={colors.white} />
+      <Animated.View entering={FadeInUp.delay(40).springify()} style={styles.searchWrap}>
+        <AnimatedTapButton onPress={() => router.push('/search')}>
+          <View style={styles.searchBar}>
+            <View style={styles.searchIconCircle}>
+              <Ionicons name="search" size={16} color={colors.white} />
+            </View>
+            <View style={styles.searchText}>
+              <Text style={styles.searchPlaceholder}>{searchQuery || 'Search land — location, size, type'}</Text>
+            </View>
+            <AnimatedTapButton>
+              <View style={styles.filterBtn}>
+                <Ionicons name="options-outline" size={18} color={colors.textPrimary} />
+              </View>
+            </AnimatedTapButton>
           </View>
-          <View style={styles.searchText}>
-            <Text style={styles.searchPlaceholder}>{searchQuery || 'Search land — location, size, type'}</Text>
-          </View>
-          <TouchableOpacity style={styles.filterBtn}>
-            <Ionicons name="options-outline" size={18} color={colors.textPrimary} />
-          </TouchableOpacity>
-        </TouchableOpacity>
-      </View>
+        </AnimatedTapButton>
+      </Animated.View>
 
       {/* ── Category icons ──────────────────────────────── */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.catRow}
-      >
-        {CATEGORIES.map((cat) => {
-          const active = activeCategory === cat.key;
-          return (
-            <TouchableOpacity
-              key={cat.label}
-              style={styles.catItem}
-              onPress={() => setActiveCategory(cat.key)}
-              activeOpacity={0.7}
-            >
-              <View style={[styles.catIconBox, active && styles.catIconBoxActive]}>
-                <Ionicons name={cat.icon} size={22} color={active ? colors.white : colors.textSecondary} />
-              </View>
-              <Text style={[styles.catLabel, active && styles.catLabelActive]}>{cat.label}</Text>
-              {active && <View style={styles.catUnderline} />}
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+      <Animated.View entering={FadeInUp.delay(80).springify()}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.catRow}
+        >
+          {CATEGORIES.map((cat) => {
+            const active = activeCategory === cat.key;
+            return (
+              <AnimatedTapButton
+                key={cat.label}
+                onPress={() => setActiveCategory(cat.key)}
+                style={styles.catItem}
+              >
+                <View style={[styles.catIconBox, active && styles.catIconBoxActive]}>
+                  <Ionicons name={cat.icon} size={22} color={active ? colors.white : colors.textSecondary} />
+                </View>
+                <Text style={[styles.catLabel, active && styles.catLabelActive]}>{cat.label}</Text>
+                {active && <Animated.View entering={ZoomIn.springify()} style={styles.catUnderline} />}
+              </AnimatedTapButton>
+            );
+          })}
+        </ScrollView>
+      </Animated.View>
 
       {/* ── Section: latest ─────────────────────────────── */}
-      <View style={styles.sectionHead}>
+      <Animated.View entering={FadeInUp.delay(120).springify()} style={styles.sectionHead}>
         <Text style={styles.sectionTitle}>
           {activeCategory
             ? CATEGORIES.find((c) => c.key === activeCategory)?.label + ' listings'
@@ -150,28 +247,40 @@ export default function ExploreScreen() {
         <TouchableOpacity onPress={() => router.push('/search')}>
           <Text style={styles.seeAll}>Show all</Text>
         </TouchableOpacity>
-      </View>
+      </Animated.View>
 
       <FlatList
         data={horizontal}
-        renderItem={({ item }) => <ListingCard listing={item} onPress={handlePress} variant="horizontal" />}
+        renderItem={({ item, index }) => (
+          <AnimatedCardWrapper
+            onPress={() => handlePress(item)}
+            delay={index * 40}
+          >
+            <ListingCard listing={item} onPress={handlePress} variant="horizontal" />
+          </AnimatedCardWrapper>
+        )}
         keyExtractor={(item) => item.id}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.hList}
+        scrollEnabled={false}
       />
 
       {/* ── Map explore banner ──────────────────────────── */}
-      <TouchableOpacity style={styles.mapBanner} onPress={() => router.push('/explore-location' as any)} activeOpacity={0.88}>
-        <View style={styles.mapBannerLeft}>
-          <Ionicons name="location-outline" size={26} color={colors.lime} />
-          <View>
-            <Text style={styles.mapBannerTitle}>Explore location</Text>
-            <Text style={styles.mapBannerSub}>{filteredListings.length} listings visible</Text>
+      <Animated.View entering={FadeInUp.delay(160).springify()}>
+        <AnimatedTapButton onPress={() => router.push('/explore-location' as any)}>
+          <View style={styles.mapBanner}>
+            <View style={styles.mapBannerLeft}>
+              <Ionicons name="location-outline" size={26} color={colors.lime} />
+              <View>
+                <Text style={styles.mapBannerTitle}>Explore location</Text>
+                <Text style={styles.mapBannerSub}>{filteredListings.length} listings visible</Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
           </View>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-      </TouchableOpacity>
+        </AnimatedTapButton>
+      </Animated.View>
 
       {/* ── Divider ─────────────────────────────────────── */}
       <View style={styles.divider} />
@@ -179,15 +288,21 @@ export default function ExploreScreen() {
       {/* ── Section: recommended ────────────────────────── */}
       {vertical.length > 0 && (
         <>
-          <View style={styles.sectionHead}>
+          <Animated.View entering={FadeInUp.delay(200).springify()} style={styles.sectionHead}>
             <Text style={styles.sectionTitle}>Recommended near you</Text>
             <TouchableOpacity onPress={() => router.push('/search')}>
               <Text style={styles.seeAll}>Show all</Text>
             </TouchableOpacity>
-          </View>
+          </Animated.View>
           <View style={styles.vList}>
-            {vertical.map((item) => (
-              <ListingCard key={item.id} listing={item} onPress={handlePress} variant="vertical" />
+            {vertical.map((item, index) => (
+              <AnimatedCardWrapper
+                key={item.id}
+                onPress={() => handlePress(item)}
+                delay={(horizontal.length + index) * 40}
+              >
+                <ListingCard listing={item} onPress={handlePress} variant="vertical" />
+              </AnimatedCardWrapper>
             ))}
           </View>
         </>
@@ -217,7 +332,7 @@ function makeStyles(colors: ThemeColors) {
     iconBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
     avatar: { width: 34, height: 34, borderRadius: 17, borderWidth: 2, borderColor: colors.lime },
 
-    // Search bar — Airbnb pill style
+    // Search bar
     searchWrap: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.lg },
     searchBar: {
       flexDirection: 'row',
@@ -247,56 +362,45 @@ function makeStyles(colors: ThemeColors) {
 
     // Category row
     catRow: { paddingHorizontal: Spacing.lg, gap: Spacing.xl, paddingBottom: Spacing.sm },
-    catItem: { alignItems: 'center', gap: Spacing.xs, width: 60 },
+    catItem: { alignItems: 'center', gap: Spacing.xs },
     catIconBox: {
-      width: 52, height: 52, borderRadius: 16,
-      backgroundColor: colors.surface,
+      width: 44, height: 44, borderRadius: BorderRadius.lg,
+      backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
       alignItems: 'center', justifyContent: 'center',
-      borderWidth: 1.5, borderColor: colors.borderLight,
     },
-    catIconBoxActive: {
-      backgroundColor: colors.textPrimary,
-      borderColor: colors.textPrimary,
-    },
-    catLabel: { fontSize: 10, color: colors.textSecondary, fontWeight: '500', textAlign: 'center' },
-    catLabelActive: { color: colors.textPrimary, fontWeight: '700' },
-    catUnderline: { width: 20, height: 2, borderRadius: 1, backgroundColor: colors.textPrimary, marginTop: -2 },
+    catIconBoxActive: { backgroundColor: colors.lime, borderColor: colors.lime },
+    catLabel: { fontSize: FontSize.xs, fontWeight: '500', color: colors.textSecondary },
+    catLabelActive: { fontWeight: '700', color: colors.lime },
+    catUnderline: { width: 20, height: 2, backgroundColor: colors.lime, borderRadius: 1, marginTop: 4 },
 
-    // Sections
-    sectionHead: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingHorizontal: Spacing.lg,
-      paddingTop: Spacing.xl,
-      paddingBottom: Spacing.md,
-    },
-    sectionTitle: { fontSize: FontSize.xl, fontFamily: FontFamily.extraBold, fontWeight: '800', color: colors.textPrimary, letterSpacing: LetterSpacing.snug },
-    seeAll: { fontSize: FontSize.sm, fontWeight: '600', color: colors.textPrimary, textDecorationLine: 'underline' },
+    // Section title
+    sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.lg, marginTop: Spacing.lg, marginBottom: Spacing.md },
+    sectionTitle: { fontSize: FontSize.lg, fontWeight: '700', color: colors.textPrimary },
+    seeAll: { fontSize: FontSize.sm, fontWeight: '600', color: colors.primary },
 
-    hList: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.sm },
+    // Lists
+    hList: { paddingHorizontal: Spacing.lg, gap: Spacing.md, paddingBottom: Spacing.sm },
+    vList: { paddingHorizontal: Spacing.lg, gap: Spacing.md, paddingBottom: Spacing.md },
 
     // Map banner
     mapBanner: {
       marginHorizontal: Spacing.lg,
-      marginTop: Spacing.lg,
-      marginBottom: Spacing.sm,
-      padding: Spacing.lg,
-      borderRadius: BorderRadius.xl,
-      borderWidth: 1,
-      borderColor: colors.border,
+      marginVertical: Spacing.md,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       backgroundColor: colors.white,
+      borderRadius: BorderRadius.lg,
+      padding: Spacing.lg,
+      borderWidth: 1,
+      borderColor: colors.lime + '30',
       ...Shadow.sm,
     },
-    mapBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
+    mapBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, flex: 1 },
     mapBannerTitle: { fontSize: FontSize.md, fontWeight: '700', color: colors.textPrimary },
     mapBannerSub: { fontSize: FontSize.xs, color: colors.textSecondary, marginTop: 2 },
 
-    divider: { height: 8, backgroundColor: colors.surface, marginTop: Spacing.lg },
-
-    vList: { paddingHorizontal: Spacing.lg },
+    // Divider
+    divider: { height: 1, backgroundColor: colors.border, marginVertical: Spacing.xl, marginHorizontal: Spacing.lg },
   });
 }
