@@ -24,6 +24,7 @@ import { useColors } from '../../src/context/ThemeContext';
 import type { ListingCategory } from '../../src/types/listing';
 import { useCreateListing } from '../../src/hooks/useListings';
 import { SuccessScreen } from '../../src/components/SuccessScreen';
+import { ProgressBar } from '../../src/components/ProgressBar';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -750,6 +751,15 @@ export default function CreateListingScreen() {
       style={s.root}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      {/* Progress bar */}
+      <View style={{ paddingHorizontal: Spacing.lg, paddingVertical: Spacing.md }}>
+        <ProgressBar
+          progress={(step + 1) / STEPS.length}
+          color={colors.primary}
+          height={6}
+        />
+      </View>
+
       {/* Dark header */}
       <View style={[s.header, { paddingTop: insets.top + Spacing.sm }]}>
         <View style={s.headerDecoA} />
