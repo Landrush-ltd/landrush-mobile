@@ -23,6 +23,7 @@ import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
 import type { ListingCategory } from '../../src/types/listing';
 import { useCreateListing } from '../../src/hooks/useListings';
+import { SuccessScreen } from '../../src/components/SuccessScreen';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -74,6 +75,7 @@ export default function CreateListingScreen() {
   const [documents, setDocuments] = useState<{ type: string; uri: string }[]>([]);
   const [docTypeOpen, setDocTypeOpen] = useState(false);
   const [leasePurposeOpen, setLeasePurposeOpen] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const LEASE_PURPOSES = [
     { id: 'poultry', label: '🐔 Poultry & Livestock Farming' },
@@ -207,10 +209,7 @@ export default function CreateListingScreen() {
           mediaUris: [...photos, ...documents.map(d => d.uri)],
         },
         {
-          onSuccess: () =>
-            Alert.alert('Listing Submitted!', 'Your listing is under review and will go live shortly.', [
-              { text: 'Go to Home', onPress: () => router.replace('/(tabs)') },
-            ]),
+          onSuccess: () => setShowSuccess(true),
           onError: (e: any) =>
             Alert.alert('Submission failed', e?.message ?? 'Please try again.'),
         },
@@ -733,6 +732,18 @@ export default function CreateListingScreen() {
 
   const RENDERERS = [StepType, StepDetails, StepLocation, StepMedia, StepPrice, StepReview];
   const StepComponent = RENDERERS[step];
+
+  if (showSuccess) {
+    return (
+      <SuccessScreen
+        title="Listing Posted! 🎉"
+        subtitle="Your property is under review and will go live shortly."
+        icon="checkmark-circle"
+        onAction={() => router.replace('/(tabs)')}
+        autoClose={false}
+      />
+    );
+  }
 
   return (
     <KeyboardAvoidingView
