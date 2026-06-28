@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   },
   agentName: {
     fontSize: FontSize.md,
-    fontFamily: FontFamily.semibold,
+    fontFamily: FontFamily.semiBold,
     fontWeight: '600',
   },
   verifiedBadge: {
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   },
   verifiedText: {
     fontSize: FontSize.xs,
-    fontFamily: FontFamily.semibold,
+    fontFamily: FontFamily.semiBold,
     fontWeight: '600',
   },
   ctaButton: {
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   },
   ctaText: {
     fontSize: FontSize.md,
-    fontFamily: FontFamily.semibold,
+    fontFamily: FontFamily.semiBold,
     fontWeight: '600',
     color: '#FFFFFF',
   },

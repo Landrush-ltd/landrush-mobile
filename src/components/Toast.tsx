@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   message: {
     flex: 1,
     fontSize: FontSize.sm,
-    fontFamily: FontFamily.semibold,
+    fontFamily: FontFamily.semiBold,
     fontWeight: '600',
   },
 });

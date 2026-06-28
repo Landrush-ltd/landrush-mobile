@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   },
   message: {
     fontSize: FontSize.md,
-    fontFamily: FontFamily.semibold,
+    fontFamily: FontFamily.semiBold,
     marginTop: Spacing.lg,
   },
   dotsContainer: {

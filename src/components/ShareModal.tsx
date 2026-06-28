@@ -222,7 +222,7 @@ const makeStyles = (colors: ThemeColors) =>
     },
     copyButtonText: {
       fontSize: FontSize.sm,
-      fontFamily: FontFamily.semibold,
+      fontFamily: FontFamily.semiBold,
       color: colors.white,
     },
   });

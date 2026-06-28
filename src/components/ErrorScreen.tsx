@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: FontSize.md,
-    fontFamily: FontFamily.semibold,
+    fontFamily: FontFamily.semiBold,
     fontWeight: '600',
     color: '#FFFFFF',
   },
