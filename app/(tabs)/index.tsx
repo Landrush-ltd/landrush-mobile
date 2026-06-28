@@ -25,6 +25,7 @@ import { Spacing, FontSize, BorderRadius, Shadow, LetterSpacing, FontFamily } fr
 import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
 import { ListingCard } from '../../src/components/ListingCard';
+import { AchievementBadge } from '../../src/components/AchievementBadge';
 import { useListingsStore } from '../../src/store/listings';
 import { useAuthStore } from '../../src/store/auth';
 import { useListings } from '../../src/hooks/useListings';
@@ -142,8 +143,17 @@ export default function ExploreScreen() {
     useListingsStore();
   const { data: apiListings, isLoading: listingsLoading, refetch } = useListings();
   const [refreshing, setRefreshing] = useState(false);
+  const [showAchievement, setShowAchievement] = useState(false);
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+
+  // Check for achievement milestone (every 10 saved listings)
+  useEffect(() => {
+    const savedCount = filteredListings.filter(l => l.saved).length;
+    if (savedCount > 0 && savedCount % 10 === 0) {
+      setShowAchievement(true);
+    }
+  }, [filteredListings]);
 
   useEffect(() => {
     if (apiListings) setListings(apiListings);
@@ -164,11 +174,21 @@ export default function ExploreScreen() {
   const vertical     = filteredListings.slice(6);
 
   return (
-    <ScrollView
-      style={styles.root}
-      showsVerticalScrollIndicator={false}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.lime} />}
-    >
+    <>
+      {showAchievement && (
+        <AchievementBadge
+          label="Milestone! 🏆"
+          description={`Saved 10 listings`}
+          icon="star"
+          color={colors.primary}
+          onComplete={() => setShowAchievement(false)}
+        />
+      )}
+      <ScrollView
+        style={styles.root}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.lime} />}
+      >
       {/* ── Top bar ─────────────────────────────────────── */}
       <Animated.View entering={FadeInUp.delay(0).springify()} style={[styles.topBar, { paddingTop: insets.top + Spacing.sm }]}>
         <View style={{ flex: 1 }}>
@@ -309,7 +329,8 @@ export default function ExploreScreen() {
       )}
 
       <View style={{ height: 100 }} />
-    </ScrollView>
+      </ScrollView>
+    </>
   );
 }
 
