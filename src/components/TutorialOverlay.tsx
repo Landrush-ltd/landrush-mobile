@@ -98,7 +98,7 @@ export function TutorialOverlay({
           styles.card,
           {
             backgroundColor: colors.card,
-            top: position.top + 200,
+            top: Spacing.xl,
           },
         ]}
         pointerEvents="box-none"
