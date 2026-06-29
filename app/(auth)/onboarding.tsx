@@ -15,9 +15,9 @@ const { width } = Dimensions.get('window');
 
 const SLIDES = [
   {
-    title: 'Find land opportunities without the usual stress',
+    title: 'Explore Nigeria\'s Largest Land Marketplace',
     description:
-      'Explore land for lease, sale or distress sale through a marketplace designed for easier discovery and clearer access.',
+      'Browse thousands of verified land listings - fish ponds, poultry farms, agricultural land, and more. Find your next opportunity across Nigeria in minutes.',
   },
   {
     title: 'Know more before making a move',
@@ -31,38 +31,71 @@ const SLIDES = [
   },
 ];
 
-// ── Slide 1: landscape photo + map overlay ─────────────────────
+// ── Slide 1: Aerial collage of different land types ─────────────
 function Slide1({ colors }: { colors: ThemeColors }) {
   const il = useMemo(() => makeIlStyles(colors), [colors]);
+  const AERIAL_PHOTOS = [
+    // Fish ponds (blue water, organized)
+    'https://images.unsplash.com/photo-1682937565101-7cf8f6f74e36?w=400&auto=format&fit=crop',
+    // Agricultural farmland (green fields)
+    'https://images.unsplash.com/photo-1625246333333-aa2ce1eadff9?w=400&auto=format&fit=crop',
+    // Poultry farm structures
+    'https://images.unsplash.com/photo-1571509549861-56f48d7b6f68?w=400&auto=format&fit=crop',
+    // Land plots/residential (aerial)
+    'https://images.unsplash.com/photo-1685266326195-76ad098af5d8?w=400&auto=format&fit=crop',
+    // Cassava/crop farming
+    'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=400&auto=format&fit=crop',
+    // Mixed agricultural landscape
+    'https://images.unsplash.com/photo-1685266326473-5b99c3d08a7e?w=400&auto=format&fit=crop',
+  ];
+
+  const PHOTO_LABELS = ['Fish Ponds', 'Farmland', 'Poultry', 'Land Plots', 'Crops', 'Mixed Farm'];
+
   return (
     <View style={il.root}>
-      {/* White map-hint area */}
-      <View style={il.mapArea}>
-        {/* Dotted path dots */}
-        {([[40, 62], [52, 50], [64, 38]] as [number, number][]).map(([l, t], i) => (
-          <View key={i} style={[il.pathDot, { left: `${l}%` as any, top: `${t}%` as any }]} />
-        ))}
-        {/* Green destination pin */}
-        <View style={[il.pinWrap, { top: '18%', left: '38%' }]}>
-          <View style={il.pinBubble}>
-            <Text style={il.pinText}>2.4 km</Text>
+      {/* Aerial photo grid 2x3 */}
+      <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 2 }}>
+        {AERIAL_PHOTOS.map((uri, i) => (
+          <View
+            key={i}
+            style={{
+              width: '50%',
+              aspectRatio: 1,
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            <Image
+              source={{ uri }}
+              style={{ flex: 1 }}
+              resizeMode="cover"
+            />
+            {/* Label overlay */}
+            <View
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                paddingHorizontal: Spacing.sm,
+                paddingVertical: Spacing.xs,
+              }}
+            >
+              <Text
+                style={{
+                  color: '#FFF',
+                  fontSize: FontSize.xs,
+                  fontWeight: '600',
+                  textAlign: 'center',
+                }}
+              >
+                {PHOTO_LABELS[i]}
+              </Text>
+            </View>
           </View>
-          <Ionicons name="location" size={28} color={colors.lime} />
-        </View>
-        {/* Red origin pins */}
-        <View style={[il.pinWrap, { bottom: '15%', left: '15%' }]}>
-          <Ionicons name="location-sharp" size={22} color="#E31C5F" />
-        </View>
-        <View style={[il.pinWrap, { bottom: '20%', right: '18%' }]}>
-          <Ionicons name="location-sharp" size={18} color="#555" />
-        </View>
+        ))}
       </View>
-      {/* Landscape photo */}
-      <Image
-        source={{ uri: 'https://images.unsplash.com/photo-1704230093402-c903d87735b4?w=800&auto=format&fit=crop' }}
-        style={il.photo}
-        resizeMode="cover"
-      />
     </View>
   );
 }
