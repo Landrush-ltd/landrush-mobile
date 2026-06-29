@@ -8,6 +8,7 @@ import type { Listing } from '../types/listing';
 import { AnimatedHeart } from './AnimatedHeart';
 import { GestureCard } from './GestureCard';
 import { LongPressPreview } from './LongPressPreview';
+import { InlineVerificationBadge } from './VerificationBadge';
 import { triggerHaptic } from '../utils/haptics';
 
 interface ListingCardProps {
@@ -79,12 +80,17 @@ export function ListingCard({ listing, onPress, variant = 'horizontal' }: Listin
         <View style={styles.info}>
           <View style={styles.titleRow}>
             <Text style={styles.hTitle} numberOfLines={1}>{listing.location}</Text>
-            {listing.agent.isVerified && (
-              <View style={styles.ratingRow}>
-                <Ionicons name="star" size={12} color={colors.textPrimary} />
-                <Text style={styles.rating}>{listing.agent.rating.toFixed(1)}</Text>
-              </View>
-            )}
+            <View style={{ flexDirection: 'row', gap: Spacing.sm, alignItems: 'center' }}>
+              {listing.agent.isVerified && (
+                <View style={styles.ratingRow}>
+                  <Ionicons name="star" size={12} color={colors.textPrimary} />
+                  <Text style={styles.rating}>{listing.agent.rating.toFixed(1)}</Text>
+                </View>
+              )}
+              {listing.agent.companyVerified && (
+                <InlineVerificationBadge status="approved" showText={false} />
+              )}
+            </View>
           </View>
           <Text style={styles.subtitle} numberOfLines={1}>{listing.title}</Text>
           <View style={styles.priceRow}>
@@ -140,12 +146,17 @@ export function ListingCard({ listing, onPress, variant = 'horizontal' }: Listin
       <View style={styles.info}>
         <View style={styles.titleRow}>
           <Text style={styles.vTitle} numberOfLines={1}>{listing.title}</Text>
-          {listing.agent.isVerified && (
-            <View style={styles.ratingRow}>
-              <Ionicons name="star" size={13} color={colors.textPrimary} />
-              <Text style={styles.rating}>{listing.agent.rating.toFixed(1)}</Text>
-            </View>
-          )}
+          <View style={{ flexDirection: 'row', gap: Spacing.sm, alignItems: 'center' }}>
+            {listing.agent.isVerified && (
+              <View style={styles.ratingRow}>
+                <Ionicons name="star" size={13} color={colors.textPrimary} />
+                <Text style={styles.rating}>{listing.agent.rating.toFixed(1)}</Text>
+              </View>
+            )}
+            {listing.agent.companyVerified && (
+              <InlineVerificationBadge status="approved" showText={false} />
+            )}
+          </View>
         </View>
         <Text style={styles.subtitle} numberOfLines={1}>{listing.size} {listing.sizeUnit} · Registered survey</Text>
         <View style={styles.priceRow}>
