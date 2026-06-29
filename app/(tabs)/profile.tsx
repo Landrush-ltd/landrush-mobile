@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Alert } from 'react-native';
+import { useMemo, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Alert, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,6 +8,8 @@ import type { ThemeColors } from '../../src/constants/theme';
 import { useColors, useTheme } from '../../src/context/ThemeContext';
 import { useAuthStore } from '../../src/store/auth';
 import { ProfileAvatarPicker } from '../../src/components/ProfileAvatarPicker';
+import { CompanyRegistration } from '../../src/components/CompanyRegistration';
+import { VerificationBadge } from '../../src/components/VerificationBadge';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -28,6 +30,8 @@ export default function ProfileScreen() {
   const { isDark, toggleTheme } = useTheme();
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [companyVerificationStatus, setCompanyVerificationStatus] = useState<'pending' | 'approved' | 'rejected' | null>(null);
 
   const displayName = user ? `${user.firstName} ${user.lastName}` : 'Landrush User';
   const initials    = ((user?.firstName?.[0] ?? '') + (user?.lastName?.[0] ?? '')).toUpperCase();
@@ -124,6 +128,32 @@ export default function ProfileScreen() {
         </View>
       </View>
 
+      {/* ── Company Registration ─────────────────────────────── */}
+      {user?.role === 'agent' && (
+        <TouchableOpacity
+          style={[styles.companyCard, { backgroundColor: colors.primary + '10', borderColor: colors.primary }]}
+          onPress={() => setShowRegisterModal(true)}
+        >
+          <View style={styles.companyCardContent}>
+            <View>
+              <Text style={[styles.companyCardTitle, { color: colors.textPrimary }]}>
+                {companyVerificationStatus ? '✨ Company Verified' : 'Register Your Company'}
+              </Text>
+              <Text style={[styles.companyCardSubtitle, { color: colors.textSecondary }]}>
+                {companyVerificationStatus
+                  ? 'Your company is verified on Landrush'
+                  : 'Get a verification badge to build trust'}
+              </Text>
+            </View>
+            {companyVerificationStatus ? (
+              <VerificationBadge status={companyVerificationStatus} size="small" showLabel={false} />
+            ) : (
+              <Ionicons name="chevron-forward" size={24} color={colors.primary} />
+            )}
+          </View>
+        </TouchableOpacity>
+      )}
+
       {/* ── Stats row ───────────────────────────────────────── */}
       <View style={styles.statsRow}>
         {[{ v: '3', l: 'Listings' }, { v: '5', l: 'Inspections' }, { v: '2', l: 'Saved' }].map((s, i, arr) => (
@@ -164,6 +194,22 @@ export default function ProfileScreen() {
         <Text style={styles.version}>Landrush v1.0.0</Text>
         <View style={{ height: 80 }} />
       </View>
+
+      {/* ── Company Registration Modal ────────────────────────── */}
+      <Modal
+        visible={showRegisterModal}
+        animationType="slide"
+        onRequestClose={() => setShowRegisterModal(false)}
+      >
+        <CompanyRegistration
+          onCancel={() => setShowRegisterModal(false)}
+          onComplete={(data) => {
+            setCompanyVerificationStatus('pending');
+            setShowRegisterModal(false);
+            Alert.alert('Success', 'Your company registration has been submitted for verification!');
+          }}
+        />
+      </Modal>
     </ScrollView>
   );
 }
@@ -184,6 +230,10 @@ function makeStyles(colors: ThemeColors) {
     roleText: { fontSize: FontSize.sm, color: colors.textSecondary },
     verifiedRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
     verifiedText: { fontSize: FontSize.sm, color: colors.lime, fontWeight: '600' },
+    companyCard: { marginHorizontal: Spacing.lg, marginBottom: Spacing.lg, padding: Spacing.lg, borderRadius: BorderRadius.lg, borderWidth: 1.5 },
+    companyCardContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
+    companyCardTitle: { fontSize: FontSize.md, fontFamily: FontFamily.semiBold, fontWeight: '600' },
+    companyCardSubtitle: { fontSize: FontSize.sm, marginTop: Spacing.xs },
     statsRow: { flexDirection: 'row', backgroundColor: colors.white, marginBottom: 8 },
     statItem: { flex: 1, alignItems: 'center', paddingVertical: Spacing.lg, gap: 3 },
     statItemBorder: { borderRightWidth: 1, borderRightColor: colors.borderLight },
