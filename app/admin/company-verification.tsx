@@ -409,7 +409,6 @@ const makeStyles = (colors: any) =>
       textTransform: 'capitalize',
     },
     detailsGrid: {
-      display: 'grid',
       gap: Spacing.lg,
     },
     actions: {

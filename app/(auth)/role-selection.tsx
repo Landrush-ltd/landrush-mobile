@@ -288,9 +288,9 @@ export default function RoleSelectionScreen() {
 
 function Feature({ icon, text, colors }: { icon: string; text: string; colors: any }) {
   return (
-    <View style={styles.feature}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.sm }}>
       <Ionicons name={icon as any} size={16} color={colors.primary} />
-      <Text style={[styles.featureText, { color: colors.textSecondary }]}>
+      <Text style={{ fontSize: FontSize.sm, lineHeight: 20, color: colors.textSecondary }}>
         {text}
       </Text>
     </View>
