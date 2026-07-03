@@ -19,16 +19,16 @@ export default function RoleSelectionScreen() {
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const { user } = useAuthStore();
 
-  const [selectedRole, setSelectedRole] = useState<'agent' | 'company' | 'buyer' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<'agent' | 'company' | 'individual' | 'buyer' | null>(null);
   const [showCompanyRegistration, setShowCompanyRegistration] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const handleRoleSelect = (role: 'agent' | 'company' | 'buyer') => {
+  const handleRoleSelect = (role: 'agent' | 'company' | 'individual' | 'buyer') => {
     triggerHaptic('medium');
     setSelectedRole(role);
 
-    if (role === 'agent' || role === 'company') {
-      // Show company registration for agents and companies
+    if (role === 'agent' || role === 'company' || role === 'individual') {
+      // Show company/individual registration for agents, companies, and individual listers
       setShowCompanyRegistration(true);
     } else {
       // Skip for buyers
@@ -95,15 +95,15 @@ export default function RoleSelectionScreen() {
                 { backgroundColor: colors.primary + '20' },
               ]}
             >
-              <Ionicons name="business" size={40} color={colors.primary} />
+              <Ionicons name="person-circle" size={40} color={colors.primary} />
             </View>
 
             <Text style={[styles.roleTitle, { color: colors.textPrimary }]}>
-              I'm an Agent or Company
+              I'm a Real Estate Agent
             </Text>
 
             <Text style={[styles.roleDescription, { color: colors.textSecondary }]}>
-              List properties, manage your portfolio, and build trust with the verification badge
+              Professional agent listing properties and building your client base
             </Text>
 
             <View style={styles.features}>
@@ -196,6 +196,69 @@ export default function RoleSelectionScreen() {
               >
                 <Ionicons name="checkmark" size={18} color="#FFF" />
                 <Text style={styles.selectedBadgeText}>Selected</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </Animated.View>
+
+        {/* Individual Lister Card */}
+        <Animated.View entering={FadeInUp.delay(200).springify()}>
+          <TouchableOpacity
+            style={[
+              styles.roleCard,
+              {
+                backgroundColor: colors.card,
+                borderColor: selectedRole === 'individual' ? colors.primary : colors.border,
+                borderWidth: selectedRole === 'individual' ? 2 : 1,
+              },
+            ]}
+            onPress={() => handleRoleSelect('individual')}
+            activeOpacity={0.8}
+          >
+            <View
+              style={[
+                styles.roleIcon,
+                { backgroundColor: colors.lime + '20' },
+              ]}
+            >
+              <Ionicons name="home" size={40} color={colors.lime} />
+            </View>
+
+            <Text style={[styles.roleTitle, { color: colors.textPrimary }]}>
+              I'm an Individual Lister
+            </Text>
+
+            <Text style={[styles.roleDescription, { color: colors.textSecondary }]}>
+              List your own land, farm, or property - get verified and build credibility
+            </Text>
+
+            <View style={styles.features}>
+              <Feature
+                icon="shield-checkmark"
+                text="Get verified with gold badge"
+                colors={colors}
+              />
+              <Feature
+                icon="home"
+                text="List your own properties"
+                colors={colors}
+              />
+              <Feature
+                icon="trending-up"
+                text="Build personal credibility"
+                colors={colors}
+              />
+            </View>
+
+            {selectedRole === 'individual' && (
+              <View
+                style={[
+                  styles.selectedBadge,
+                  { backgroundColor: colors.lime },
+                ]}
+              >
+                <Ionicons name="checkmark" size={18} color="#000" />
+                <Text style={[styles.selectedBadgeText, { color: '#000' }]}>Selected</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -299,13 +362,13 @@ export default function RoleSelectionScreen() {
               styles.continueBtn,
               {
                 backgroundColor:
-                  selectedRole === 'agent' || selectedRole === 'company'
+                  selectedRole === 'agent' || selectedRole === 'company' || selectedRole === 'individual'
                     ? colors.primary
                     : colors.lime,
               },
             ]}
             onPress={() => {
-              if (selectedRole === 'agent' || selectedRole === 'company') {
+              if (selectedRole === 'agent' || selectedRole === 'company' || selectedRole === 'individual') {
                 setShowCompanyRegistration(true);
               } else {
                 handleContinue();
@@ -317,23 +380,25 @@ export default function RoleSelectionScreen() {
                 styles.continueBtnText,
                 {
                   color:
-                    selectedRole === 'agent' || selectedRole === 'company'
+                    selectedRole === 'agent' || selectedRole === 'company' || selectedRole === 'individual'
                       ? '#FFF'
                       : '#000',
                 },
               ]}
             >
               {selectedRole === 'agent'
-                ? 'Register Your Company'
+                ? 'Register as Agent'
                 : selectedRole === 'company'
-                ? 'Register Your Real Estate Company'
+                ? 'Register Your Company'
+                : selectedRole === 'individual'
+                ? 'Register to List'
                 : 'Continue to Landrush'}
             </Text>
             <Ionicons
               name="arrow-forward"
               size={18}
               color={
-                selectedRole === 'agent' || selectedRole === 'company'
+                selectedRole === 'agent' || selectedRole === 'company' || selectedRole === 'individual'
                   ? '#FFF'
                   : '#000'
               }
