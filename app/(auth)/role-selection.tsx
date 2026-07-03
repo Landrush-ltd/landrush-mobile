@@ -19,16 +19,16 @@ export default function RoleSelectionScreen() {
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const { user } = useAuthStore();
 
-  const [selectedRole, setSelectedRole] = useState<'agent' | 'buyer' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<'agent' | 'company' | 'buyer' | null>(null);
   const [showCompanyRegistration, setShowCompanyRegistration] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const handleRoleSelect = (role: 'agent' | 'buyer') => {
+  const handleRoleSelect = (role: 'agent' | 'company' | 'buyer') => {
     triggerHaptic('medium');
     setSelectedRole(role);
 
-    if (role === 'agent') {
-      // Show company registration for agents
+    if (role === 'agent' || role === 'company') {
+      // Show company registration for agents and companies
       setShowCompanyRegistration(true);
     } else {
       // Skip for buyers
@@ -125,6 +125,69 @@ export default function RoleSelectionScreen() {
             </View>
 
             {selectedRole === 'agent' && (
+              <View
+                style={[
+                  styles.selectedBadge,
+                  { backgroundColor: colors.primary },
+                ]}
+              >
+                <Ionicons name="checkmark" size={18} color="#FFF" />
+                <Text style={styles.selectedBadgeText}>Selected</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </Animated.View>
+
+        {/* Company Card */}
+        <Animated.View entering={FadeInUp.delay(150).springify()}>
+          <TouchableOpacity
+            style={[
+              styles.roleCard,
+              {
+                backgroundColor: colors.card,
+                borderColor: selectedRole === 'company' ? colors.primary : colors.border,
+                borderWidth: selectedRole === 'company' ? 2 : 1,
+              },
+            ]}
+            onPress={() => handleRoleSelect('company')}
+            activeOpacity={0.8}
+          >
+            <View
+              style={[
+                styles.roleIcon,
+                { backgroundColor: colors.primary + '20' },
+              ]}
+            >
+              <Ionicons name="building" size={40} color={colors.primary} />
+            </View>
+
+            <Text style={[styles.roleTitle, { color: colors.textPrimary }]}>
+              I Represent a Real Estate Company
+            </Text>
+
+            <Text style={[styles.roleDescription, { color: colors.textSecondary }]}>
+              Register your company, list multiple properties, and earn the gold verification badge
+            </Text>
+
+            <View style={styles.features}>
+              <Feature
+                icon="shield-checkmark"
+                text="Get company-wide verification badge"
+                colors={colors}
+              />
+              <Feature
+                icon="briefcase"
+                text="Manage agents and listings"
+                colors={colors}
+              />
+              <Feature
+                icon="trending-up"
+                text="Build professional credibility"
+                colors={colors}
+              />
+            </View>
+
+            {selectedRole === 'company' && (
               <View
                 style={[
                   styles.selectedBadge,
@@ -236,11 +299,13 @@ export default function RoleSelectionScreen() {
               styles.continueBtn,
               {
                 backgroundColor:
-                  selectedRole === 'agent' ? colors.primary : colors.lime,
+                  selectedRole === 'agent' || selectedRole === 'company'
+                    ? colors.primary
+                    : colors.lime,
               },
             ]}
             onPress={() => {
-              if (selectedRole === 'agent') {
+              if (selectedRole === 'agent' || selectedRole === 'company') {
                 setShowCompanyRegistration(true);
               } else {
                 handleContinue();
@@ -251,18 +316,27 @@ export default function RoleSelectionScreen() {
               style={[
                 styles.continueBtnText,
                 {
-                  color: selectedRole === 'agent' ? '#FFF' : '#000',
+                  color:
+                    selectedRole === 'agent' || selectedRole === 'company'
+                      ? '#FFF'
+                      : '#000',
                 },
               ]}
             >
               {selectedRole === 'agent'
                 ? 'Register Your Company'
+                : selectedRole === 'company'
+                ? 'Register Your Real Estate Company'
                 : 'Continue to Landrush'}
             </Text>
             <Ionicons
               name="arrow-forward"
               size={18}
-              color={selectedRole === 'agent' ? '#FFF' : '#000'}
+              color={
+                selectedRole === 'agent' || selectedRole === 'company'
+                  ? '#FFF'
+                  : '#000'
+              }
             />
           </TouchableOpacity>
         </Animated.View>
