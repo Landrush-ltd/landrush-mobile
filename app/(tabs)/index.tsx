@@ -432,17 +432,28 @@ function makeStyles(colors: ThemeColors) {
     },
 
     // Category row
-    catRow: { paddingHorizontal: Spacing.lg, gap: Spacing.xl, paddingBottom: Spacing.sm },
-    catItem: { alignItems: 'center', gap: Spacing.xs },
+    catRow: { paddingHorizontal: Spacing.lg, gap: Spacing.lg, paddingBottom: Spacing.sm },
+    catItem: {
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing.sm,
+      minWidth: 80,
+    },
     catIconBox: {
-      width: 44, height: 44, borderRadius: BorderRadius.lg,
+      width: 48, height: 48, borderRadius: BorderRadius.lg,
       backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
       alignItems: 'center', justifyContent: 'center',
     },
     catIconBoxActive: { backgroundColor: colors.lime, borderColor: colors.lime },
-    catLabel: { fontSize: FontSize.xs, fontWeight: '500', color: colors.textSecondary },
+    catLabel: {
+      fontSize: FontSize.sm,
+      fontWeight: '600',
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
     catLabelActive: { fontWeight: '700', color: colors.lime },
-    catUnderline: { width: 20, height: 2, backgroundColor: colors.lime, borderRadius: 1, marginTop: 4 },
+    catUnderline: { width: 24, height: 2.5, backgroundColor: colors.lime, borderRadius: 1.25, marginTop: 4 },
 
     // Section title
     sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.lg, marginTop: Spacing.lg, marginBottom: Spacing.md },

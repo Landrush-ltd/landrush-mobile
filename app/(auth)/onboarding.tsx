@@ -6,7 +6,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow, LetterSpacing } from '../../src/constants/theme';
 import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
 import { useAuthStore } from '../../src/store/auth';
@@ -54,7 +54,7 @@ function Slide1({ colors }: { colors: ThemeColors }) {
   return (
     <View style={il.root}>
       {/* Aerial photo grid 2x3 */}
-      <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 2 }}>
+      <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
         {AERIAL_PHOTOS.map((uri, i) => (
           <View
             key={i}
@@ -63,6 +63,7 @@ function Slide1({ colors }: { colors: ThemeColors }) {
               aspectRatio: 1,
               position: 'relative',
               overflow: 'hidden',
+              borderRadius: BorderRadius.sm,
             }}
           >
             <Image
@@ -77,17 +78,18 @@ function Slide1({ colors }: { colors: ThemeColors }) {
                 bottom: 0,
                 left: 0,
                 right: 0,
-                backgroundColor: 'rgba(0,0,0,0.5)',
+                backgroundColor: 'rgba(0,0,0,0.6)',
                 paddingHorizontal: Spacing.sm,
-                paddingVertical: Spacing.xs,
+                paddingVertical: 8,
               }}
             >
               <Text
                 style={{
                   color: '#FFF',
-                  fontSize: FontSize.xs,
-                  fontWeight: '600',
+                  fontSize: FontSize.sm,
+                  fontWeight: '700',
                   textAlign: 'center',
+                  letterSpacing: 0.3,
                 }}
               >
                 {PHOTO_LABELS[i]}
@@ -262,31 +264,32 @@ function makeStyles(colors: ThemeColors) {
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.sm,
+      paddingBottom: Spacing.md,
     },
-    dotsRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    dotsRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     dot: { height: 6, borderRadius: 3 },
-    dotActive: { width: 22, backgroundColor: colors.lime },
+    dotActive: { width: 24, backgroundColor: colors.lime },
     dotGray:   { width: 6,  backgroundColor: colors.border },
-    skip: { fontSize: FontSize.sm, color: colors.textTertiary, fontWeight: '500' },
+    skip: { fontSize: FontSize.md, color: colors.textTertiary, fontWeight: '600', letterSpacing: 0.3 },
     content: {
       paddingHorizontal: Spacing.xl,
       paddingTop: Spacing.md,
       paddingBottom: Spacing.xl,
     },
     title: {
-      fontSize: 27,
+      fontSize: 32,
       fontWeight: '800',
       color: colors.textPrimary,
-      lineHeight: 35,
+      lineHeight: 40,
       marginBottom: Spacing.md,
-      letterSpacing: -0.3,
+      letterSpacing: -0.5,
     },
     desc: {
-      fontSize: FontSize.md,
+      fontSize: FontSize.xl,
       color: colors.textSecondary,
-      lineHeight: 23,
+      lineHeight: 26,
       marginBottom: Spacing.xl,
+      letterSpacing: 0.2,
     },
     cta: {
       flexDirection: 'row',
@@ -295,17 +298,18 @@ function makeStyles(colors: ThemeColors) {
       alignSelf: 'flex-start',
       backgroundColor: colors.lime,
       paddingHorizontal: Spacing.xl,
-      paddingVertical: 13,
-      borderRadius: BorderRadius.full,
+      paddingVertical: 12,
+      borderRadius: BorderRadius.md,
     },
-    ctaText: { fontSize: FontSize.md, fontWeight: '700', color: colors.textPrimary },
+    ctaText: { fontSize: FontSize.md, fontWeight: '700', color: colors.textPrimary, letterSpacing: 0.3 },
     illustration: {
       flex: 1,
       marginHorizontal: Spacing.xl,
       marginBottom: Spacing.xl,
-      borderRadius: 24,
+      borderRadius: BorderRadius.md,
       overflow: 'hidden',
       backgroundColor: colors.surface,
+      ...Shadow.md,
     },
   });
 }
@@ -342,13 +346,13 @@ function makeIlStyles(colors: ThemeColors) {
       position: 'absolute',
       top: 12,
       bottom: 12,
-      borderRadius: 20,
+      borderRadius: BorderRadius.lg,
       overflow: 'hidden',
       shadowColor: '#000',
-      shadowOpacity: 0.18,
-      shadowRadius: 10,
-      shadowOffset: { width: 0, height: 4 },
-      elevation: 6,
+      shadowOpacity: 0.15,
+      shadowRadius: 24,
+      shadowOffset: { width: 0, height: 8 },
+      elevation: 8,
     },
     chipsCol: {
       position: 'absolute',
@@ -360,41 +364,41 @@ function makeIlStyles(colors: ThemeColors) {
     chip: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 5,
+      gap: 6,
       backgroundColor: colors.white,
       borderRadius: BorderRadius.full,
-      paddingHorizontal: 10,
-      paddingVertical: 6,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
       shadowColor: '#000',
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      shadowOffset: { width: 0, height: 3 },
-      elevation: 4,
+      shadowOpacity: 0.12,
+      shadowRadius: 16,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 5,
     },
-    chipText: { fontSize: 11, fontWeight: '700', color: colors.textPrimary },
+    chipText: { fontSize: FontSize.sm, fontWeight: '700', color: colors.textPrimary, letterSpacing: 0.2 },
 
     // Slide 3 calendar
     calWrap: { flex: 1, padding: Spacing.lg, justifyContent: 'center' },
     calCard: {
       backgroundColor: colors.white,
-      borderRadius: 20,
+      borderRadius: BorderRadius.lg,
       padding: Spacing.lg,
       ...Shadow.md,
       borderWidth: 1,
-      borderColor: colors.borderLight,
+      borderColor: colors.border,
     },
     calHeaderRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: 10,
+      marginBottom: Spacing.md,
     },
-    calDay:     { fontSize: FontSize.sm, fontWeight: '700', color: colors.textTertiary, letterSpacing: 0.6 },
-    calDate:    { fontSize: FontSize.xs, color: colors.textTertiary, fontWeight: '500' },
-    calEvent:   { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.sm, marginBottom: Spacing.lg },
-    calBar:     { width: 4, borderRadius: 2, backgroundColor: colors.lime, alignSelf: 'stretch', minHeight: 36 },
-    calTitle:   { fontSize: FontSize.sm, fontWeight: '700', color: colors.textPrimary, marginBottom: 3 },
-    calTime:    { fontSize: FontSize.xs, color: colors.textSecondary },
-    calDivider: { height: 1, backgroundColor: colors.borderLight, marginBottom: Spacing.lg },
+    calDay:     { fontSize: FontSize.sm, fontWeight: '700', color: colors.textTertiary, letterSpacing: 0.8, textTransform: 'uppercase' },
+    calDate:    { fontSize: FontSize.xs, color: colors.textTertiary, fontWeight: '600' },
+    calEvent:   { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.md, marginBottom: Spacing.lg },
+    calBar:     { width: 5, borderRadius: 2, backgroundColor: colors.lime, alignSelf: 'stretch', minHeight: 40 },
+    calTitle:   { fontSize: FontSize.sm, fontWeight: '700', color: colors.textPrimary, marginBottom: 4, letterSpacing: 0.2 },
+    calTime:    { fontSize: FontSize.xs, color: colors.textSecondary, letterSpacing: 0.1 },
+    calDivider: { height: 1, backgroundColor: colors.border, marginBottom: Spacing.lg, marginVertical: Spacing.md },
   });
 }

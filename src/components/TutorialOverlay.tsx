@@ -55,11 +55,21 @@ export function TutorialOverlay({
   if (!step || !visible) return null;
 
   const getTargetPosition = () => {
-    // Get target element position dynamically
-    // For now, return center - in production, measure target element
     const screenHeight = Dimensions.get('window').height;
+    const targetPositions: Record<string, { top: number }> = {
+      search: { top: screenHeight * 0.15 },
+      card: { top: screenHeight * 0.3 },
+      heart: { top: screenHeight * 0.4 },
+      longpress: { top: screenHeight * 0.35 },
+      swipe: { top: screenHeight * 0.45 },
+      categories: { top: screenHeight * 0.25 },
+      profile: { top: screenHeight * 0.2 },
+      create: { top: screenHeight * 0.5 },
+    };
+
+    const targetPos = targetPositions[step?.target] || targetPositions.card;
     return {
-      top: screenHeight * 0.35,
+      top: targetPos.top,
       left: 20,
       right: 20,
     };
@@ -99,6 +109,7 @@ export function TutorialOverlay({
           {
             backgroundColor: colors.card,
             top: Spacing.xl,
+            borderTopColor: colors.primary,
           },
         ]}
         pointerEvents="box-none"
@@ -190,8 +201,9 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.lg,
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.xl,
+    borderRadius: BorderRadius.lg,
     ...Shadow.lg,
+    borderTopWidth: 3,
   },
   iconWrap: {
     alignItems: 'center',
@@ -203,6 +215,8 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
   },
   title: {
     fontSize: FontSize.lg,
@@ -210,12 +224,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: Spacing.sm,
+    lineHeight: 22,
+    letterSpacing: -0.2,
   },
   description: {
-    fontSize: FontSize.sm,
+    fontSize: FontSize.md,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 21,
     marginBottom: Spacing.md,
+    letterSpacing: 0.2,
   },
   hint: {
     flexDirection: 'row',
@@ -223,23 +240,26 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.md,
     marginBottom: Spacing.md,
-    backgroundColor: 'rgba(159, 187, 68, 0.1)',
+    backgroundColor: 'rgba(159, 187, 68, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(159, 187, 68, 0.3)',
   },
   hintText: {
-    fontSize: FontSize.xs,
+    fontSize: FontSize.sm,
     flex: 1,
+    letterSpacing: 0.2,
   },
   progressBar: {
-    height: 4,
-    borderRadius: 2,
+    height: 6,
+    borderRadius: 3,
     marginBottom: Spacing.lg,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    borderRadius: 2,
+    borderRadius: 3,
   },
   buttonRow: {
     flexDirection: 'row',
@@ -248,7 +268,7 @@ const styles = StyleSheet.create({
   skipBtn: {
     flex: 1,
     paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.full,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -257,11 +277,12 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     fontFamily: FontFamily.semiBold,
     fontWeight: '600',
+    letterSpacing: 0.3,
   },
   nextBtn: {
     flex: 1,
     paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.full,
+    borderRadius: BorderRadius.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -272,5 +293,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.semiBold,
     fontWeight: '600',
     color: '#FFFFFF',
+    letterSpacing: 0.3,
   },
 });

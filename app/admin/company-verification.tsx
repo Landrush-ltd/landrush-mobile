@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Spacing, FontSize, FontFamily, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Spacing, FontSize, FontFamily, BorderRadius, Shadow, LetterSpacing } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
 import { triggerHaptic } from '../../src/utils/haptics';
 
@@ -319,12 +319,13 @@ const makeStyles = (colors: any) =>
       justifyContent: 'space-between',
       alignItems: 'center',
       paddingHorizontal: Spacing.lg,
-      paddingVertical: Spacing.md,
+      paddingVertical: Spacing.lg,
     },
     headerTitle: {
-      fontSize: FontSize.lg,
+      fontSize: FontSize.xl,
       fontFamily: FontFamily.bold,
       fontWeight: '700',
+      letterSpacing: LetterSpacing.snug,
     },
     tabsContainer: {
       flexDirection: 'row',
@@ -346,6 +347,7 @@ const makeStyles = (colors: any) =>
       fontSize: FontSize.md,
       fontFamily: FontFamily.semiBold,
       fontWeight: '600',
+      letterSpacing: 0.2,
     },
     badge: {
       paddingHorizontal: Spacing.sm,
@@ -367,6 +369,7 @@ const makeStyles = (colors: any) =>
       borderRadius: BorderRadius.lg,
       padding: Spacing.lg,
       gap: Spacing.lg,
+      ...Shadow.md,
     },
     cardHeader: {
       flexDirection: 'row',
@@ -390,9 +393,10 @@ const makeStyles = (colors: any) =>
       flex: 1,
     },
     companyName: {
-      fontSize: FontSize.md,
-      fontFamily: FontFamily.semiBold,
-      fontWeight: '600',
+      fontSize: FontSize.lg,
+      fontFamily: FontFamily.bold,
+      fontWeight: '700',
+      letterSpacing: LetterSpacing.snug,
     },
     agentName: {
       fontSize: FontSize.xs,
@@ -419,7 +423,7 @@ const makeStyles = (colors: any) =>
       flex: 1,
       flexDirection: 'row',
       paddingVertical: Spacing.md,
-      borderRadius: BorderRadius.lg,
+      borderRadius: BorderRadius.md,
       borderWidth: 1.5,
       alignItems: 'center',
       justifyContent: 'center',
@@ -429,12 +433,13 @@ const makeStyles = (colors: any) =>
       fontSize: FontSize.sm,
       fontFamily: FontFamily.semiBold,
       fontWeight: '600',
+      letterSpacing: 0.3,
     },
     approveBtn: {
       flex: 1,
       flexDirection: 'row',
       paddingVertical: Spacing.md,
-      borderRadius: BorderRadius.lg,
+      borderRadius: BorderRadius.md,
       alignItems: 'center',
       justifyContent: 'center',
       gap: Spacing.sm,
@@ -444,6 +449,7 @@ const makeStyles = (colors: any) =>
       fontFamily: FontFamily.semiBold,
       fontWeight: '600',
       color: '#FFF',
+      letterSpacing: 0.3,
     },
     emptyContainer: {
       flex: 1,

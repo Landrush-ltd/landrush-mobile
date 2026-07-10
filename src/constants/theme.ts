@@ -1,12 +1,14 @@
 // ── Color palettes ────────────────────────────────────────────────
 
 export const LightColors = {
-  // Brand
+  // Brand (primary shades for interactive states)
   primary:       '#2D6A4F',
   primaryLight:  '#40916C',
   primaryDark:   '#1B4332',
+  primaryTint:   '#E8F3ED',
   lime:          '#9FBB44',
   limeLight:     '#B5CC5C',
+  limeTint:      '#F0F7DC',
 
   // Category
   lease:    '#E88A2E',
@@ -15,11 +17,11 @@ export const LightColors = {
 
   // Surface hierarchy
   white:       '#FFFFFF',
-  background:  '#FFFFFF',
-  surface:     '#F7F7F7',
+  background:  '#FAFAFA',
+  surface:     '#F5F5F5',
   card:        '#FFFFFF',
-  border:      '#DDDDDD',
-  borderLight: '#EBEBEB',
+  border:      '#E0E0E0',
+  borderLight: '#EEEEEE',
   divider:     '#F0F0F0',
 
   // Text
@@ -54,8 +56,10 @@ export const DarkColors = {
   primary:       '#52C77A',
   primaryLight:  '#6DD68D',
   primaryDark:   '#2D7A4D',
+  primaryTint:   '#1F4D35',
   lime:          '#B8D65E',
   limeLight:     '#CAE47A',
+  limeTint:      '#2D4A1F',
 
   // Category (brightened for visibility)
   lease:    '#FFA041',
@@ -64,12 +68,12 @@ export const DarkColors = {
 
   // Surface hierarchy (better contrast)
   white:       '#FFFFFF',
-  background:  '#0F1110',
-  surface:     '#1A1F1D',
-  card:        '#242B28',
-  border:      '#404A46',
-  borderLight: '#313A36',
-  divider:     '#1E2421',
+  background:  '#1A1A1A',
+  surface:     '#242424',
+  card:        '#262626',
+  border:      'rgba(255,255,255,0.08)',
+  borderLight: 'rgba(255,255,255,0.05)',
+  divider:     '#2A2A2A',
 
   // Text (higher contrast)
   textPrimary:   '#F5F5F5',
@@ -125,9 +129,10 @@ export const FontSize = {
   sm:      12,
   md:      14,
   lg:      16,
-  xl:      18,
-  xxl:     22,
+  xl:      17,
+  xxl:     20,
   xxxl:    28,
+  huge:    32,
   display: 34,
 } as const;
 
@@ -159,7 +164,7 @@ export const BorderRadius = {
 
 // ── Shadows ───────────────────────────────────────────────────────
 // Soft, diffuse shadows — low opacity + large radius reads as premium depth
-// rather than a hard drop shadow.
+// rather than a hard drop shadow. Layered for elevated surfaces.
 export const Shadow = {
   sm: {
     shadowColor: '#000',
@@ -170,16 +175,23 @@ export const Shadow = {
   },
   md: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
     elevation: 5,
   },
   lg: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.12,
-    shadowRadius: 28,
-    elevation: 10,
+    shadowOpacity: 0.15,
+    shadowRadius: 24,
+    elevation: 8,
+  },
+  xl: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.18,
+    shadowRadius: 32,
+    elevation: 12,
   },
 } as const;

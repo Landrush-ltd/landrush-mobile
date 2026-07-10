@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
-import Animated, { FadeInUp } from 'react-native-reanimated';
+import Animated, { FadeInUp, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, FontSize, FontFamily, BorderRadius, LetterSpacing, Shadow } from '../../src/constants/theme';
@@ -23,15 +23,22 @@ export default function RoleSelectionScreen() {
   const [showCompanyRegistration, setShowCompanyRegistration] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
+  // Helper to check if role is a lister (needs registration)
+  const isListerRole = (role: typeof selectedRole) => role === 'agent' || role === 'company' || role === 'individual';
+
+  // Button press animation
+  const buttonScale = useSharedValue(1);
+  const buttonAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: buttonScale.value }],
+  }));
+
   const handleRoleSelect = (role: 'agent' | 'company' | 'individual' | 'buyer') => {
-    triggerHaptic('medium');
+    void triggerHaptic('medium');
     setSelectedRole(role);
 
-    if (role === 'agent' || role === 'company' || role === 'individual') {
-      // Show company/individual registration for agents, companies, and individual listers
+    if (isListerRole(role)) {
       setShowCompanyRegistration(true);
     } else {
-      // Skip for buyers
       setTimeout(() => {
         router.replace('/(tabs)');
       }, 300);
@@ -76,18 +83,17 @@ export default function RoleSelectionScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Agent Card */}
-        <Animated.View entering={FadeInUp.delay(100).springify()}>
+        <Animated.View entering={FadeInUp.delay(0).springify().withInitialValues({ transform: [{ scale: 0.95 }], opacity: 0 })}>
           <TouchableOpacity
             style={[
               styles.roleCard,
               {
-                backgroundColor: colors.card,
+                backgroundColor: selectedRole === 'agent' ? colors.primaryTint : colors.card,
                 borderColor: selectedRole === 'agent' ? colors.primary : colors.border,
-                borderWidth: selectedRole === 'agent' ? 2 : 1,
               },
             ]}
             onPress={() => handleRoleSelect('agent')}
-            activeOpacity={0.8}
+            activeOpacity={1}
           >
             <View
               style={[
@@ -106,7 +112,7 @@ export default function RoleSelectionScreen() {
               Professional agent listing properties and building your client base
             </Text>
 
-            <View style={styles.features}>
+            <View style={[styles.features, { borderTopColor: colors.border, borderBottomColor: colors.border }]}>
               <Feature
                 icon="shield-checkmark"
                 text="Get verified with gold badge"
@@ -139,18 +145,17 @@ export default function RoleSelectionScreen() {
         </Animated.View>
 
         {/* Company Card */}
-        <Animated.View entering={FadeInUp.delay(150).springify()}>
+        <Animated.View entering={FadeInUp.delay(80).springify().withInitialValues({ transform: [{ scale: 0.95 }], opacity: 0 })}>
           <TouchableOpacity
             style={[
               styles.roleCard,
               {
-                backgroundColor: colors.card,
+                backgroundColor: selectedRole === 'company' ? colors.primaryTint : colors.card,
                 borderColor: selectedRole === 'company' ? colors.primary : colors.border,
-                borderWidth: selectedRole === 'company' ? 2 : 1,
               },
             ]}
             onPress={() => handleRoleSelect('company')}
-            activeOpacity={0.8}
+            activeOpacity={1}
           >
             <View
               style={[
@@ -169,7 +174,7 @@ export default function RoleSelectionScreen() {
               Register your company, list multiple properties, and earn the gold verification badge
             </Text>
 
-            <View style={styles.features}>
+            <View style={[styles.features, { borderTopColor: colors.border, borderBottomColor: colors.border }]}>
               <Feature
                 icon="shield-checkmark"
                 text="Get company-wide verification badge"
@@ -202,18 +207,17 @@ export default function RoleSelectionScreen() {
         </Animated.View>
 
         {/* Individual Lister Card */}
-        <Animated.View entering={FadeInUp.delay(200).springify()}>
+        <Animated.View entering={FadeInUp.delay(160).springify().withInitialValues({ transform: [{ scale: 0.95 }], opacity: 0 })}>
           <TouchableOpacity
             style={[
               styles.roleCard,
               {
-                backgroundColor: colors.card,
-                borderColor: selectedRole === 'individual' ? colors.primary : colors.border,
-                borderWidth: selectedRole === 'individual' ? 2 : 1,
+                backgroundColor: selectedRole === 'individual' ? colors.limeTint : colors.card,
+                borderColor: selectedRole === 'individual' ? colors.lime : colors.border,
               },
             ]}
             onPress={() => handleRoleSelect('individual')}
-            activeOpacity={0.8}
+            activeOpacity={1}
           >
             <View
               style={[
@@ -232,7 +236,7 @@ export default function RoleSelectionScreen() {
               List your own land, farm, or property - get verified and build credibility
             </Text>
 
-            <View style={styles.features}>
+            <View style={[styles.features, { borderTopColor: colors.border, borderBottomColor: colors.border }]}>
               <Feature
                 icon="shield-checkmark"
                 text="Get verified with gold badge"
@@ -257,26 +261,25 @@ export default function RoleSelectionScreen() {
                   { backgroundColor: colors.lime },
                 ]}
               >
-                <Ionicons name="checkmark" size={18} color="#000" />
-                <Text style={[styles.selectedBadgeText, { color: '#000' }]}>Selected</Text>
+                <Ionicons name="checkmark" size={18} color={colors.textPrimary} />
+                <Text style={[styles.selectedBadgeText, { color: colors.textPrimary }]}>Selected</Text>
               </View>
             )}
           </TouchableOpacity>
         </Animated.View>
 
         {/* Buyer Card */}
-        <Animated.View entering={FadeInUp.delay(200).springify()}>
+        <Animated.View entering={FadeInUp.delay(240).springify().withInitialValues({ transform: [{ scale: 0.95 }], opacity: 0 })}>
           <TouchableOpacity
             style={[
               styles.roleCard,
               {
-                backgroundColor: colors.card,
-                borderColor: selectedRole === 'buyer' ? colors.primary : colors.border,
-                borderWidth: selectedRole === 'buyer' ? 2 : 1,
+                backgroundColor: selectedRole === 'buyer' ? colors.limeTint : colors.card,
+                borderColor: selectedRole === 'buyer' ? colors.lime : colors.border,
               },
             ]}
             onPress={() => handleRoleSelect('buyer')}
-            activeOpacity={0.8}
+            activeOpacity={1}
           >
             <View
               style={[
@@ -295,7 +298,7 @@ export default function RoleSelectionScreen() {
               Browse listings, save favorites, and connect with agents
             </Text>
 
-            <View style={styles.features}>
+            <View style={[styles.features, { borderTopColor: colors.border, borderBottomColor: colors.border }]}>
               <Feature
                 icon="map"
                 text="Explore land by location"
@@ -320,8 +323,8 @@ export default function RoleSelectionScreen() {
                   { backgroundColor: colors.lime },
                 ]}
               >
-                <Ionicons name="checkmark" size={18} color="#000" />
-                <Text style={[styles.selectedBadgeText, { color: '#000' }]}>
+                <Ionicons name="checkmark" size={18} color={colors.textPrimary} />
+                <Text style={[styles.selectedBadgeText, { color: colors.textPrimary }]}>
                   Selected
                 </Text>
               </View>
@@ -330,13 +333,13 @@ export default function RoleSelectionScreen() {
         </Animated.View>
 
         {/* Info Box */}
-        <Animated.View entering={FadeInUp.delay(300).springify()}>
+        <Animated.View entering={FadeInUp.delay(320).springify().withInitialValues({ transform: [{ scale: 0.95 }], opacity: 0 })}>
           <View
             style={[
               styles.infoBox,
               {
-                backgroundColor: colors.primary + '10',
-                borderColor: colors.primary,
+                backgroundColor: colors.primaryTint,
+                borderColor: colors.primary + '30',
               },
             ]}
           >
@@ -357,32 +360,33 @@ export default function RoleSelectionScreen() {
             { borderTopColor: colors.border },
           ]}
         >
-          <TouchableOpacity
-            style={[
-              styles.continueBtn,
-              {
-                backgroundColor:
-                  selectedRole === 'agent' || selectedRole === 'company' || selectedRole === 'individual'
-                    ? colors.primary
-                    : colors.lime,
-              },
-            ]}
-            onPress={() => {
-              if (selectedRole === 'agent' || selectedRole === 'company' || selectedRole === 'individual') {
-                setShowCompanyRegistration(true);
-              } else {
-                handleContinue();
-              }
-            }}
-          >
+          <Animated.View style={buttonAnimatedStyle}>
+            <TouchableOpacity
+              style={[
+                styles.continueBtn,
+                {
+                  backgroundColor: isListerRole(selectedRole) ? colors.primary : colors.lime,
+                },
+              ]}
+              onPress={() => {
+                void triggerHaptic('medium');
+                buttonScale.value = withSpring(0.98, { damping: 12, mass: 1 });
+                if (isListerRole(selectedRole)) {
+                  setTimeout(() => setShowCompanyRegistration(true), 120);
+                } else {
+                  setTimeout(() => handleContinue(), 120);
+                }
+              }}
+              onPressOut={() => {
+                buttonScale.value = withSpring(1, { damping: 12, mass: 1 });
+              }}
+              activeOpacity={1}
+            >
             <Text
               style={[
                 styles.continueBtnText,
                 {
-                  color:
-                    selectedRole === 'agent' || selectedRole === 'company' || selectedRole === 'individual'
-                      ? '#FFF'
-                      : '#000',
+                  color: isListerRole(selectedRole) ? colors.white : colors.textPrimary,
                 },
               ]}
             >
@@ -397,13 +401,10 @@ export default function RoleSelectionScreen() {
             <Ionicons
               name="arrow-forward"
               size={18}
-              color={
-                selectedRole === 'agent' || selectedRole === 'company' || selectedRole === 'individual'
-                  ? '#FFF'
-                  : '#000'
-              }
+              color={isListerRole(selectedRole) ? colors.white : colors.textPrimary}
             />
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </Animated.View>
         </Animated.View>
       )}
 
@@ -427,9 +428,9 @@ export default function RoleSelectionScreen() {
 
 function Feature({ icon, text, colors }: { icon: string; text: string; colors: any }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.sm }}>
-      <Ionicons name={icon as any} size={16} color={colors.primary} />
-      <Text style={{ fontSize: FontSize.sm, lineHeight: 20, color: colors.textSecondary }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.md }}>
+      <Ionicons name={icon as any} size={14} color={colors.primary} />
+      <Text style={{ fontSize: FontSize.sm, lineHeight: 20, color: colors.textSecondary, flex: 1 }}>
         {text}
       </Text>
     </View>
@@ -442,29 +443,33 @@ const makeStyles = (colors: ThemeColors) =>
       flex: 1,
     },
     header: {
-      paddingHorizontal: Spacing.lg,
-      paddingVertical: Spacing.lg,
+      paddingHorizontal: 20,
+      paddingTop: Spacing.xl + 8,
+      paddingBottom: Spacing.md,
     },
     headerTitle: {
-      fontSize: FontSize.xxxl,
+      fontSize: FontSize.huge,
       fontFamily: FontFamily.bold,
       fontWeight: '700',
-      marginBottom: Spacing.sm,
+      marginBottom: Spacing.md,
       letterSpacing: LetterSpacing.tight,
+      lineHeight: 38,
     },
     headerSubtitle: {
-      fontSize: FontSize.md,
-      lineHeight: 22,
+      fontSize: FontSize.lg,
+      lineHeight: 24,
+      letterSpacing: 0.3,
     },
     content: {
-      paddingHorizontal: Spacing.lg,
-      paddingVertical: Spacing.lg,
-      gap: Spacing.lg,
+      paddingHorizontal: 20,
+      paddingVertical: 24,
+      gap: 20,
     },
     roleCard: {
-      borderRadius: BorderRadius.xl,
+      borderRadius: BorderRadius.lg,
       padding: Spacing.lg,
       gap: Spacing.md,
+      borderWidth: 1,
       ...Shadow.md,
     },
     roleIcon: {
@@ -475,18 +480,23 @@ const makeStyles = (colors: ThemeColors) =>
       alignItems: 'center',
     },
     roleTitle: {
-      fontSize: FontSize.lg,
+      fontSize: FontSize.xl,
       fontFamily: FontFamily.bold,
       fontWeight: '700',
       letterSpacing: LetterSpacing.snug,
+      lineHeight: 24,
     },
     roleDescription: {
-      fontSize: FontSize.sm,
-      lineHeight: 20,
+      fontSize: FontSize.md,
+      lineHeight: 21,
+      marginVertical: Spacing.sm,
     },
     features: {
-      gap: Spacing.sm,
+      gap: 10,
       marginVertical: Spacing.md,
+      paddingVertical: Spacing.md,
+      borderTopWidth: 1,
+      borderBottomWidth: 1,
     },
     feature: {
       flexDirection: 'row',
@@ -518,7 +528,7 @@ const makeStyles = (colors: ThemeColors) =>
       flexDirection: 'row',
       gap: Spacing.md,
       borderWidth: 1,
-      borderRadius: BorderRadius.lg,
+      borderRadius: BorderRadius.md,
       padding: Spacing.lg,
       alignItems: 'flex-start',
       marginBottom: Spacing.xxl,
@@ -529,14 +539,14 @@ const makeStyles = (colors: ThemeColors) =>
       lineHeight: 20,
     },
     buttonContainer: {
-      paddingHorizontal: Spacing.lg,
+      paddingHorizontal: 20,
       paddingVertical: Spacing.lg,
       borderTopWidth: 1,
       gap: Spacing.md,
     },
     continueBtn: {
-      paddingVertical: Spacing.lg,
-      borderRadius: BorderRadius.full,
+      paddingVertical: 12,
+      borderRadius: BorderRadius.md,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
@@ -546,5 +556,6 @@ const makeStyles = (colors: ThemeColors) =>
       fontSize: FontSize.md,
       fontFamily: FontFamily.semiBold,
       fontWeight: '600',
+      letterSpacing: 0.5,
     },
   });
