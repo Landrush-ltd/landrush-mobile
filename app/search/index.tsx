@@ -12,8 +12,10 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Colors, Spacing, FontSize, BorderRadius, Shadow, LightColors, DarkColors } from '../../src/constants/theme';
+import { useColors } from '../../src/context/ThemeContext';
 import { ListingCard } from '../../src/components/ListingCard';
+import { BuyCategoryIcon, LeaseCategoryIcon, DistressCategoryIcon } from '../../src/components/CategoryIcons';
 import { mockListings } from '../../src/services/mockData';
 import type { Listing, ListingCategory } from '../../src/types/listing';
 
@@ -32,9 +34,16 @@ const POPULAR_SEARCHES = [
   'Uyo GRA', 'Lekki', 'Abuja FCT', 'Ikot Ekpene', 'Port Harcourt', 'Ibadan',
 ];
 
+const CATEGORY_COLORS: Record<string, string> = {
+  sale: '#2D8B6F',
+  lease: '#1565C0',
+  distress: '#E84C3D',
+};
+
 export default function SearchScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const themeColors = useColors();
 
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<ListingCategory | null>(null);
@@ -60,6 +69,12 @@ export default function SearchScreen() {
     sizeFilter !== 'Any',
     sortBy !== 'Newest',
   ].filter(Boolean).length;
+
+  const getCategoryIcon = (key: ListingCategory | null, badgeColor: string) => {
+    if (key === 'sale') return <BuyCategoryIcon size={52} iconColor="#FFFFFF" badgeColor={badgeColor} />;
+    if (key === 'lease') return <LeaseCategoryIcon size={52} iconColor="#FFFFFF" badgeColor={badgeColor} />;
+    return <DistressCategoryIcon size={52} iconColor="#FFFFFF" badgeColor={badgeColor} />;
+  };
 
   return (
     <View style={styles.root}>
@@ -149,23 +164,26 @@ export default function SearchScreen() {
 
           <View style={styles.suggestSection}>
             <Text style={styles.suggestTitle}>Browse by Type</Text>
-            {CATEGORIES.filter((c) => c.key !== null).map((c) => (
-              <TouchableOpacity
-                key={String(c.key)}
-                style={styles.browseRow}
-                onPress={() => { setCategory(c.key); setHasSearched(true); }}
-              >
-                <View style={styles.browseIcon}>
-                  <Ionicons
-                    name={c.key === 'sale' ? 'home-outline' : c.key === 'lease' ? 'leaf-outline' : 'flash-outline'}
-                    size={18}
-                    color={Colors.primary}
-                  />
-                </View>
-                <Text style={styles.browseLabel}>{c.label}</Text>
-                <Ionicons name="chevron-forward" size={16} color={Colors.textTertiary} />
-              </TouchableOpacity>
-            ))}
+            <View style={styles.browseGrid}>
+              {CATEGORIES.filter((c) => c.key !== null).map((c) => {
+                const color = CATEGORY_COLORS[c.key as string] || themeColors.primary;
+                const badgeColor = themeColors.primary;
+
+                return (
+                  <TouchableOpacity
+                    key={String(c.key)}
+                    style={[styles.browseCard, { backgroundColor: color }]}
+                    onPress={() => { setCategory(c.key); setHasSearched(true); }}
+                    activeOpacity={0.9}
+                  >
+                    <View style={styles.browseCardIcon}>
+                      {getCategoryIcon(c.key, badgeColor)}
+                    </View>
+                    <Text style={styles.browseCardLabel}>{c.label}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
         </ScrollView>
       ) : (
@@ -325,6 +343,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.xl,
     fontWeight: '800',
     color: Colors.textPrimary,
+    letterSpacing: -0.3,
   },
   searchRow: {
     flexDirection: 'row',
@@ -409,9 +428,10 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   suggestTitle: {
-    fontSize: FontSize.md,
+    fontSize: FontSize.lg,
     fontWeight: '700',
     color: Colors.textPrimary,
+    letterSpacing: -0.2,
   },
   suggestWrap: {
     flexDirection: 'row',
@@ -435,28 +455,32 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontWeight: '500',
   },
-  browseRow: {
+  browseGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.xl,
-    padding: Spacing.lg,
-    ...Shadow.sm,
+    gap: 16,
+    justifyContent: 'space-between',
   },
-  browseIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.md,
-    backgroundColor: `${Colors.lime}18`,
+  browseCard: {
+    flex: 1,
+    aspectRatio: 1,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: Spacing.lg,
+    ...Shadow.lg,
   },
-  browseLabel: {
-    flex: 1,
-    fontSize: FontSize.md,
-    fontWeight: '600',
-    color: Colors.textPrimary,
+  browseCardIcon: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.md,
+  },
+  browseCardLabel: {
+    fontSize: FontSize.lg,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    letterSpacing: -0.2,
+    marginTop: Spacing.sm,
   },
   resultsHeader: {
     flexDirection: 'row',

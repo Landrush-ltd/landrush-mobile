@@ -62,7 +62,7 @@ export default function VerifyOtpScreen() {
     try {
       const { user, token } = await verifyOtp(phone, code);
       setUser(user, token);
-      router.replace('/(tabs)');
+      router.replace('/(auth)/role-selection');
     } catch (e: any) {
       Alert.alert('Verification failed', e?.message ?? 'Invalid code. Please try again.');
       setOtp(Array(OTP_LENGTH).fill(''));

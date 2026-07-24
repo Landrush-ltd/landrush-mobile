@@ -6,7 +6,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Spacing, FontSize, BorderRadius, Shadow } from '../../src/constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow, LetterSpacing } from '../../src/constants/theme';
 import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
 import { useAuthStore } from '../../src/store/auth';
@@ -15,9 +15,9 @@ const { width } = Dimensions.get('window');
 
 const SLIDES = [
   {
-    title: 'Find land opportunities without the usual stress',
+    title: 'Explore Nigeria\'s Largest Land Marketplace',
     description:
-      'Explore land for lease, sale or distress sale through a marketplace designed for easier discovery and clearer access.',
+      'Browse thousands of verified land listings - fish ponds, poultry farms, agricultural land, and more. Find your next opportunity across Nigeria in minutes.',
   },
   {
     title: 'Know more before making a move',
@@ -31,38 +31,73 @@ const SLIDES = [
   },
 ];
 
-// ── Slide 1: landscape photo + map overlay ─────────────────────
+// ── Slide 1: Aerial collage of different land types ─────────────
 function Slide1({ colors }: { colors: ThemeColors }) {
   const il = useMemo(() => makeIlStyles(colors), [colors]);
+  const AERIAL_PHOTOS = [
+    // Fish ponds (blue water, organized)
+    'https://images.unsplash.com/photo-1682937565101-7cf8f6f74e36?w=400&auto=format&fit=crop',
+    // Agricultural farmland (green fields)
+    'https://images.unsplash.com/photo-1625246333333-aa2ce1eadff9?w=400&auto=format&fit=crop',
+    // Poultry farm structures
+    'https://images.unsplash.com/photo-1571509549861-56f48d7b6f68?w=400&auto=format&fit=crop',
+    // Land plots/residential (aerial)
+    'https://images.unsplash.com/photo-1685266326195-76ad098af5d8?w=400&auto=format&fit=crop',
+    // Cassava/crop farming
+    'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=400&auto=format&fit=crop',
+    // Mixed agricultural landscape
+    'https://images.unsplash.com/photo-1685266326473-5b99c3d08a7e?w=400&auto=format&fit=crop',
+  ];
+
+  const PHOTO_LABELS = ['Fish Ponds', 'Farmland', 'Poultry', 'Land Plots', 'Crops', 'Mixed Farm'];
+
   return (
     <View style={il.root}>
-      {/* White map-hint area */}
-      <View style={il.mapArea}>
-        {/* Dotted path dots */}
-        {([[40, 62], [52, 50], [64, 38]] as [number, number][]).map(([l, t], i) => (
-          <View key={i} style={[il.pathDot, { left: `${l}%` as any, top: `${t}%` as any }]} />
-        ))}
-        {/* Green destination pin */}
-        <View style={[il.pinWrap, { top: '18%', left: '38%' }]}>
-          <View style={il.pinBubble}>
-            <Text style={il.pinText}>2.4 km</Text>
+      {/* Aerial photo grid 2x3 */}
+      <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
+        {AERIAL_PHOTOS.map((uri, i) => (
+          <View
+            key={i}
+            style={{
+              width: '50%',
+              aspectRatio: 1,
+              position: 'relative',
+              overflow: 'hidden',
+              borderRadius: BorderRadius.sm,
+            }}
+          >
+            <Image
+              source={{ uri }}
+              style={{ flex: 1 }}
+              resizeMode="cover"
+            />
+            {/* Label overlay */}
+            <View
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                backgroundColor: 'rgba(0,0,0,0.6)',
+                paddingHorizontal: Spacing.sm,
+                paddingVertical: 8,
+              }}
+            >
+              <Text
+                style={{
+                  color: '#FFF',
+                  fontSize: FontSize.sm,
+                  fontWeight: '700',
+                  textAlign: 'center',
+                  letterSpacing: 0.3,
+                }}
+              >
+                {PHOTO_LABELS[i]}
+              </Text>
+            </View>
           </View>
-          <Ionicons name="location" size={28} color={colors.lime} />
-        </View>
-        {/* Red origin pins */}
-        <View style={[il.pinWrap, { bottom: '15%', left: '15%' }]}>
-          <Ionicons name="location-sharp" size={22} color="#E31C5F" />
-        </View>
-        <View style={[il.pinWrap, { bottom: '20%', right: '18%' }]}>
-          <Ionicons name="location-sharp" size={18} color="#555" />
-        </View>
+        ))}
       </View>
-      {/* Landscape photo */}
-      <Image
-        source={{ uri: 'https://images.unsplash.com/photo-1704230093402-c903d87735b4?w=800&auto=format&fit=crop' }}
-        style={il.photo}
-        resizeMode="cover"
-      />
     </View>
   );
 }
@@ -229,31 +264,32 @@ function makeStyles(colors: ThemeColors) {
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.sm,
+      paddingBottom: Spacing.md,
     },
-    dotsRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    dotsRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     dot: { height: 6, borderRadius: 3 },
-    dotActive: { width: 22, backgroundColor: colors.lime },
+    dotActive: { width: 24, backgroundColor: colors.lime },
     dotGray:   { width: 6,  backgroundColor: colors.border },
-    skip: { fontSize: FontSize.sm, color: colors.textTertiary, fontWeight: '500' },
+    skip: { fontSize: FontSize.md, color: colors.textTertiary, fontWeight: '600', letterSpacing: 0.3 },
     content: {
       paddingHorizontal: Spacing.xl,
       paddingTop: Spacing.md,
       paddingBottom: Spacing.xl,
     },
     title: {
-      fontSize: 27,
+      fontSize: 32,
       fontWeight: '800',
       color: colors.textPrimary,
-      lineHeight: 35,
+      lineHeight: 40,
       marginBottom: Spacing.md,
-      letterSpacing: -0.3,
+      letterSpacing: -0.5,
     },
     desc: {
-      fontSize: FontSize.md,
+      fontSize: FontSize.xl,
       color: colors.textSecondary,
-      lineHeight: 23,
+      lineHeight: 26,
       marginBottom: Spacing.xl,
+      letterSpacing: 0.2,
     },
     cta: {
       flexDirection: 'row',
@@ -262,17 +298,18 @@ function makeStyles(colors: ThemeColors) {
       alignSelf: 'flex-start',
       backgroundColor: colors.lime,
       paddingHorizontal: Spacing.xl,
-      paddingVertical: 13,
-      borderRadius: BorderRadius.full,
+      paddingVertical: 12,
+      borderRadius: BorderRadius.md,
     },
-    ctaText: { fontSize: FontSize.md, fontWeight: '700', color: colors.textPrimary },
+    ctaText: { fontSize: FontSize.md, fontWeight: '700', color: colors.textPrimary, letterSpacing: 0.3 },
     illustration: {
       flex: 1,
       marginHorizontal: Spacing.xl,
       marginBottom: Spacing.xl,
-      borderRadius: 24,
+      borderRadius: BorderRadius.md,
       overflow: 'hidden',
       backgroundColor: colors.surface,
+      ...Shadow.md,
     },
   });
 }
@@ -309,13 +346,13 @@ function makeIlStyles(colors: ThemeColors) {
       position: 'absolute',
       top: 12,
       bottom: 12,
-      borderRadius: 20,
+      borderRadius: BorderRadius.lg,
       overflow: 'hidden',
       shadowColor: '#000',
-      shadowOpacity: 0.18,
-      shadowRadius: 10,
-      shadowOffset: { width: 0, height: 4 },
-      elevation: 6,
+      shadowOpacity: 0.15,
+      shadowRadius: 24,
+      shadowOffset: { width: 0, height: 8 },
+      elevation: 8,
     },
     chipsCol: {
       position: 'absolute',
@@ -327,41 +364,41 @@ function makeIlStyles(colors: ThemeColors) {
     chip: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 5,
+      gap: 6,
       backgroundColor: colors.white,
       borderRadius: BorderRadius.full,
-      paddingHorizontal: 10,
-      paddingVertical: 6,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
       shadowColor: '#000',
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      shadowOffset: { width: 0, height: 3 },
-      elevation: 4,
+      shadowOpacity: 0.12,
+      shadowRadius: 16,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 5,
     },
-    chipText: { fontSize: 11, fontWeight: '700', color: colors.textPrimary },
+    chipText: { fontSize: FontSize.sm, fontWeight: '700', color: colors.textPrimary, letterSpacing: 0.2 },
 
     // Slide 3 calendar
     calWrap: { flex: 1, padding: Spacing.lg, justifyContent: 'center' },
     calCard: {
       backgroundColor: colors.white,
-      borderRadius: 20,
+      borderRadius: BorderRadius.lg,
       padding: Spacing.lg,
       ...Shadow.md,
       borderWidth: 1,
-      borderColor: colors.borderLight,
+      borderColor: colors.border,
     },
     calHeaderRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: 10,
+      marginBottom: Spacing.md,
     },
-    calDay:     { fontSize: FontSize.sm, fontWeight: '700', color: colors.textTertiary, letterSpacing: 0.6 },
-    calDate:    { fontSize: FontSize.xs, color: colors.textTertiary, fontWeight: '500' },
-    calEvent:   { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.sm, marginBottom: Spacing.lg },
-    calBar:     { width: 4, borderRadius: 2, backgroundColor: colors.lime, alignSelf: 'stretch', minHeight: 36 },
-    calTitle:   { fontSize: FontSize.sm, fontWeight: '700', color: colors.textPrimary, marginBottom: 3 },
-    calTime:    { fontSize: FontSize.xs, color: colors.textSecondary },
-    calDivider: { height: 1, backgroundColor: colors.borderLight, marginBottom: Spacing.lg },
+    calDay:     { fontSize: FontSize.sm, fontWeight: '700', color: colors.textTertiary, letterSpacing: 0.8, textTransform: 'uppercase' },
+    calDate:    { fontSize: FontSize.xs, color: colors.textTertiary, fontWeight: '600' },
+    calEvent:   { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.md, marginBottom: Spacing.lg },
+    calBar:     { width: 5, borderRadius: 2, backgroundColor: colors.lime, alignSelf: 'stretch', minHeight: 40 },
+    calTitle:   { fontSize: FontSize.sm, fontWeight: '700', color: colors.textPrimary, marginBottom: 4, letterSpacing: 0.2 },
+    calTime:    { fontSize: FontSize.xs, color: colors.textSecondary, letterSpacing: 0.1 },
+    calDivider: { height: 1, backgroundColor: colors.border, marginBottom: Spacing.lg, marginVertical: Spacing.md },
   });
 }

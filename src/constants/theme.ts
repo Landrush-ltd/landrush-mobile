@@ -1,12 +1,14 @@
 // ── Color palettes ────────────────────────────────────────────────
 
 export const LightColors = {
-  // Brand
+  // Brand (primary shades for interactive states)
   primary:       '#2D6A4F',
   primaryLight:  '#40916C',
   primaryDark:   '#1B4332',
+  primaryTint:   '#E8F3ED',
   lime:          '#9FBB44',
   limeLight:     '#B5CC5C',
+  limeTint:      '#F0F7DC',
 
   // Category
   lease:    '#E88A2E',
@@ -15,11 +17,11 @@ export const LightColors = {
 
   // Surface hierarchy
   white:       '#FFFFFF',
-  background:  '#FFFFFF',
-  surface:     '#F7F7F7',
+  background:  '#FAFAFA',
+  surface:     '#F5F5F5',
   card:        '#FFFFFF',
-  border:      '#DDDDDD',
-  borderLight: '#EBEBEB',
+  border:      '#E0E0E0',
+  borderLight: '#EEEEEE',
   divider:     '#F0F0F0',
 
   // Text
@@ -50,52 +52,54 @@ export const LightColors = {
 } as const;
 
 export const DarkColors = {
-  // Brand (unchanged — lime & primary work on dark bg)
-  primary:       '#3D8B64',
-  primaryLight:  '#55A87E',
-  primaryDark:   '#1B4332',
-  lime:          '#A8C44A',
-  limeLight:     '#BDD162',
+  // Brand (improved brightness for dark mode)
+  primary:       '#52C77A',
+  primaryLight:  '#6DD68D',
+  primaryDark:   '#2D7A4D',
+  primaryTint:   '#1F4D35',
+  lime:          '#B8D65E',
+  limeLight:     '#CAE47A',
+  limeTint:      '#2D4A1F',
 
-  // Category
-  lease:    '#E88A2E',
-  sale:     '#3D8B64',
-  distress: '#D93025',
+  // Category (brightened for visibility)
+  lease:    '#FFA041',
+  sale:     '#52C77A',
+  distress: '#FF6B6B',
 
-  // Surface hierarchy
+  // Surface hierarchy (better contrast)
   white:       '#FFFFFF',
-  background:  '#111714',
-  surface:     '#181D1A',
-  card:        '#1E2421',
-  border:      '#2C3330',
-  borderLight: '#232A27',
-  divider:     '#1E2421',
+  background:  '#1A1A1A',
+  surface:     '#242424',
+  card:        '#262626',
+  border:      'rgba(255,255,255,0.08)',
+  borderLight: 'rgba(255,255,255,0.05)',
+  divider:     '#2A2A2A',
 
-  // Text
-  textPrimary:   '#EDEFEC',
-  textSecondary: '#8C9A93',
-  textTertiary:  '#556159',
-  textInverse:   '#111714',
-  textLink:      '#55A87E',
+  // Text (higher contrast)
+  textPrimary:   '#F5F5F5',
+  textSecondary: '#A8B5B0',
+  textTertiary:  '#6D7A75',
+  textInverse:   '#0F1110',
+  textLink:      '#6DD68D',
 
-  // Chips
-  chipActive:   '#2C3A2A',
-  chipInactive: '#1E2421',
+  // Chips (more visible)
+  chipActive:   '#1F4D35',
+  chipInactive: '#242B28',
 
-  // Status
-  success: '#3D8B64',
-  warning: '#E47C18',
-  error:   '#E05C3A',
-  info:    '#5BA4E0',
+  // Status (brightened)
+  success: '#52C77A',
+  warning: '#FFA041',
+  error:   '#FF6B6B',
+  info:    '#6BB8FF',
 
-  // Overlays
-  overlay:      'rgba(0,0,0,0.6)',
-  overlayLight: 'rgba(0,0,0,0.35)',
+  // Overlays (stronger)
+  overlay:      'rgba(0,0,0,0.7)',
+  overlayLight: 'rgba(0,0,0,0.4)',
 
   // Auth legacy
-  authBg:       '#111714',
-  onboardingBg: '#111714',
-  splashBg:     '#0D1210',
+  authBg:       '#0F1110',
+  onboardingBg: '#0F1110',
+  splashBg:     '#0A0D0C',
 } as const;
 
 export type ColorScheme = 'light' | 'dark';
@@ -125,9 +129,10 @@ export const FontSize = {
   sm:      12,
   md:      14,
   lg:      16,
-  xl:      18,
-  xxl:     22,
+  xl:      17,
+  xxl:     20,
   xxxl:    28,
+  huge:    32,
   display: 34,
 } as const;
 
@@ -159,7 +164,7 @@ export const BorderRadius = {
 
 // ── Shadows ───────────────────────────────────────────────────────
 // Soft, diffuse shadows — low opacity + large radius reads as premium depth
-// rather than a hard drop shadow.
+// rather than a hard drop shadow. Layered for elevated surfaces.
 export const Shadow = {
   sm: {
     shadowColor: '#000',
@@ -170,16 +175,23 @@ export const Shadow = {
   },
   md: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
     elevation: 5,
   },
   lg: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.12,
-    shadowRadius: 28,
-    elevation: 10,
+    shadowOpacity: 0.15,
+    shadowRadius: 24,
+    elevation: 8,
+  },
+  xl: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.18,
+    shadowRadius: 32,
+    elevation: 12,
   },
 } as const;

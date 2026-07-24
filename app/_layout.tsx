@@ -15,6 +15,7 @@ import {
   Sora_800ExtraBold,
 } from '@expo-google-fonts/sora';
 import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
+import { TutorialProvider } from '../src/context/TutorialContext';
 import { OfflineBanner } from '../src/components/OfflineBanner';
 import { applySoraFont } from '../src/utils/fonts';
 import {
@@ -106,9 +107,11 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <OfflineBanner />
-          <NotificationSetup />
-          <ThemedStack />
+          <TutorialProvider>
+            <OfflineBanner />
+            <NotificationSetup />
+            <ThemedStack />
+          </TutorialProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
