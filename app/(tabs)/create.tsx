@@ -204,7 +204,8 @@ export default function CreateListingScreen() {
             ? `per ${sizeUnit.toLowerCase()}`
             : '',
           leaseDuration: leaseDur || undefined,
-          mediaUris: [...photos, ...documents.map(d => d.uri)],
+          mediaUris: photos,
+          documents,
         },
         {
           onSuccess: () =>

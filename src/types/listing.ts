@@ -44,6 +44,8 @@ export interface Listing {
   leaseDuration?: string;
   createdAt: string;
   updatedAt: string;
+  reviewStatus?: 'pending' | 'approved' | 'rejected';
+  rejectionReason?: string;
 }
 
 export interface ListingFilter {

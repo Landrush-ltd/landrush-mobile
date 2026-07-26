@@ -1,22 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../services/api';
-import { mockAdminReviews } from '../services/mockAdminData';
+import { decideLocalReview, getLocalReviews } from '../services/localReviewWorkflow';
 import { useAuthStore } from '../store/auth';
 import type { AdminListingReview, AdminReviewDecision } from '../types/admin';
 
 const apiEnabled = !!process.env.EXPO_PUBLIC_API_URL;
 const queryKey = ['admin', 'listing-reviews'] as const;
 
-export function useAdminReviews() {
+export function useAdminReviews(enabled = true) {
   const { token } = useAuthStore();
   return useQuery({
     queryKey,
+    enabled,
     queryFn: async () => {
-      if (!apiEnabled) return mockAdminReviews;
+      if (!apiEnabled) return getLocalReviews();
       const response = await api.get<AdminListingReview[]>('/admin/listing-reviews', token ?? undefined);
       return response.data;
     },
-    placeholderData: apiEnabled ? undefined : mockAdminReviews,
   });
 }
 
@@ -27,8 +27,8 @@ export function useAdminReviewDecision() {
   return useMutation({
     mutationFn: async (payload: AdminReviewDecision) => {
       if (!apiEnabled) {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        return payload;
+        await new Promise((resolve) => setTimeout(resolve, 350));
+        return decideLocalReview(payload);
       }
       const response = await api.patch<AdminListingReview>(
         `/admin/listing-reviews/${payload.reviewId}`,
@@ -38,6 +38,7 @@ export function useAdminReviewDecision() {
       return response.data;
     },
     onSuccess: (result, payload) => {
+      queryClient.invalidateQueries({ queryKey: ['listings', 'mine'] });
       queryClient.setQueryData<AdminListingReview[]>(queryKey, (reviews = []) =>
         reviews.map((review) =>
           review.id === payload.reviewId

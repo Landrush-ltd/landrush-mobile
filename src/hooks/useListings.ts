@@ -3,6 +3,7 @@ import { api } from '../services/api';
 import { mockListings } from '../services/mockData';
 import type { Listing, ListingCategory } from '../types/listing';
 import { useAuthStore } from '../store/auth';
+import { getLocalOwnerListings, getLocalPublicListings, submitLocalListing } from '../services/localReviewWorkflow';
 
 export interface CreateListingPayload {
   category: ListingCategory;
@@ -16,6 +17,7 @@ export interface CreateListingPayload {
   priceUnit: string;
   leaseDuration?: string;
   mediaUris?: string[];
+  documents?: { type: string; uri: string }[];
 }
 
 const apiEnabled = !!process.env.EXPO_PUBLIC_API_URL;
@@ -25,7 +27,7 @@ export function useListings() {
   return useQuery({
     queryKey: ['listings'],
     queryFn: async () => {
-      if (!apiEnabled) return mockListings;
+      if (!apiEnabled) return getLocalPublicListings();
       const res = await api.get<Listing[]>('/listings', token ?? undefined);
       return res.data;
     },
@@ -40,7 +42,7 @@ export function useListing(id: string) {
     queryKey: ['listings', id],
     queryFn: async () => {
       if (!apiEnabled) {
-        const found = mockListings.find((l) => l.id === id);
+        const found = (await getLocalPublicListings()).find((l) => l.id === id);
         if (!found) throw new Error('Listing not found');
         return found;
       }
@@ -69,7 +71,7 @@ export function useMyListings() {
   return useQuery({
     queryKey: ['listings', 'mine'],
     queryFn: async () => {
-      if (!apiEnabled) return mockListings.slice(0, 4);
+      if (!apiEnabled) return getLocalOwnerListings();
       const res = await api.get<Listing[]>('/listings/mine', token ?? undefined);
       return res.data;
     },
@@ -102,13 +104,13 @@ export function useUnsaveListing() {
 }
 
 export function useCreateListing() {
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (payload: CreateListingPayload) => {
       if (!apiEnabled) {
-        await new Promise((r) => setTimeout(r, 1200));
-        return { id: `new-${Date.now()}`, ...payload, status: 'available' };
+        await new Promise((r) => setTimeout(r, 600));
+        return submitLocalListing(payload, user);
       }
       const res = await api.post<Listing>('/listings', payload as unknown as Record<string, unknown>, token ?? undefined);
       return res.data;
@@ -116,6 +118,7 @@ export function useCreateListing() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['listings'] });
       qc.invalidateQueries({ queryKey: ['listings', 'mine'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'listing-reviews'] });
     },
   });
 }

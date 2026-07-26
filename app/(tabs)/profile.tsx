@@ -37,8 +37,7 @@ export default function ProfileScreen() {
       : user?.role === 'landowner'
         ? 'Landowner'
         : 'Land Seeker';
-  const isDemoMode = !process.env.EXPO_PUBLIC_API_URL;
-  const hasAdminAccess = user?.role === 'admin' || isDemoMode;
+  const hasAdminAccess = user?.role === 'admin';
 
   const handleLogout = () =>
     Alert.alert('Log out?', 'You will be returned to the login screen.', [
@@ -59,7 +58,7 @@ export default function ProfileScreen() {
           title: 'Administration',
           items: [{
             icon: 'shield-outline' as IoniconsName,
-            label: isDemoMode && user?.role !== 'admin' ? 'Admin Console (Demo)' : 'Admin Console',
+            label: 'Admin Console',
             onPress: () => router.push('/admin' as any),
           }],
         }]

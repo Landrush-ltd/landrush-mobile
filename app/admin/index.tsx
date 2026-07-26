@@ -55,8 +55,8 @@ export default function AdminReviewScreen() {
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const isWide = width >= 760;
   const isDemoMode = !process.env.EXPO_PUBLIC_API_URL;
-  const hasAdminAccess = user?.role === 'admin' || isDemoMode;
-  const { data: reviews = [], isLoading, isError, refetch } = useAdminReviews();
+  const hasAdminAccess = user?.role === 'admin';
+  const { data: reviews = [], isLoading, isError, refetch } = useAdminReviews(hasAdminAccess);
   const decision = useAdminReviewDecision();
 
   const [filter, setFilter] = useState<Filter>('pending');
@@ -115,6 +115,10 @@ export default function AdminReviewScreen() {
 
   const approveSelected = () => {
     if (!selected) return;
+    if (selected.documents.length === 0) {
+      Alert.alert('Documents required', 'A listing cannot be approved without an ownership document.');
+      return;
+    }
     if (verifiedDocumentIds.length !== selected.documents.length) {
       Alert.alert('Verify all documents', 'Review and mark every uploaded document as verified before approval.');
       return;
@@ -130,6 +134,7 @@ export default function AdminReviewScreen() {
           setSelected(null);
           Alert.alert('Listing approved', 'The listing is now approved for publication.');
         },
+        onError: (error) => Alert.alert('Approval failed', error.message),
       },
     );
   };
@@ -148,6 +153,7 @@ export default function AdminReviewScreen() {
           setSelected(null);
           Alert.alert('Listing rejected', 'The lister will receive the reason and can submit corrections.');
         },
+        onError: (error) => Alert.alert('Rejection failed', error.message),
       },
     );
   };
@@ -163,6 +169,11 @@ export default function AdminReviewScreen() {
           <Text style={styles.accessText}>
             Sign in with an administrator account to review documents and approve listings.
           </Text>
+          {isDemoMode && (
+            <Text style={styles.accessText}>
+              Demo access: use admin@landrush.africa and any password.
+            </Text>
+          )}
           <TouchableOpacity style={styles.primaryButton} onPress={() => router.replace('/(auth)/login')}>
             <Text style={styles.primaryButtonText}>Go to admin sign in</Text>
           </TouchableOpacity>
@@ -427,11 +438,17 @@ export default function AdminReviewScreen() {
                       <TouchableOpacity
                         style={[
                           styles.approveButton,
-                          (verifiedDocumentIds.length !== selected.documents.length || decision.isPending) &&
+                          (selected.documents.length === 0 ||
+                            verifiedDocumentIds.length !== selected.documents.length ||
+                            decision.isPending) &&
                             styles.buttonDisabled,
                         ]}
                         onPress={approveSelected}
-                        disabled={verifiedDocumentIds.length !== selected.documents.length || decision.isPending}
+                        disabled={
+                          selected.documents.length === 0 ||
+                          verifiedDocumentIds.length !== selected.documents.length ||
+                          decision.isPending
+                        }
                       >
                         <Ionicons name="checkmark-circle" size={19} color={colors.textPrimary} />
                         <Text style={styles.approveButtonText}>

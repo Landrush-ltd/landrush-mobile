@@ -19,6 +19,7 @@ import { useMyListings } from '../src/hooks/useListings';
 import { useQueryClient } from '@tanstack/react-query';
 import { api } from '../src/services/api';
 import { useAuthStore } from '../src/store/auth';
+import { deleteLocalOwnerListing } from '../src/services/localReviewWorkflow';
 
 
 type ListingStatus = 'live' | 'pending' | 'rejected' | 'draft';
@@ -31,6 +32,7 @@ interface MyListing {
   price: number;
   size: string;
   status: ListingStatus;
+  rejectionReason?: string;
 }
 
 export default function MyListingsScreen() {
@@ -46,7 +48,14 @@ export default function MyListingsScreen() {
     location: l.location,
     price: l.price,
     size: `${l.size} ${l.sizeUnit}`,
-    status: (['live', 'pending', 'live', 'draft'] as ListingStatus[])[i % 4],
+    status: l.reviewStatus === 'approved'
+      ? 'live'
+      : l.reviewStatus === 'rejected'
+        ? 'rejected'
+        : l.reviewStatus === 'pending'
+          ? 'pending'
+          : (['live', 'pending', 'live', 'draft'] as ListingStatus[])[i % 4],
+    rejectionReason: l.rejectionReason,
   }));
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const { token } = useAuthStore();
@@ -68,6 +77,9 @@ export default function MyListingsScreen() {
     );
     if (process.env.EXPO_PUBLIC_API_URL) {
       await api.delete(`/listings/${id}`, token ?? undefined).catch(() => {});
+    } else {
+      await deleteLocalOwnerListing(id);
+      qc.invalidateQueries({ queryKey: ['admin', 'listing-reviews'] });
     }
   };
 
@@ -141,6 +153,14 @@ export default function MyListingsScreen() {
                   <Text style={styles.cardPrice}>
                     ₦{item.price.toLocaleString()}
                   </Text>
+                  {item.status === 'rejected' && item.rejectionReason && (
+                    <View style={styles.reviewMessage}>
+                      <Ionicons name="information-circle-outline" size={14} color={colors.error} />
+                      <Text style={styles.reviewMessageText} numberOfLines={2}>
+                        {item.rejectionReason}
+                      </Text>
+                    </View>
+                  )}
                   <View style={styles.actionRow}>
                     <TouchableOpacity
                       style={styles.editBtn}
@@ -321,6 +341,21 @@ function makeStyles(colors: ThemeColors) {
       flexDirection: 'row',
       gap: Spacing.sm,
       marginTop: Spacing.sm,
+    },
+    reviewMessage: {
+      flexDirection: 'row',
+      gap: 5,
+      alignItems: 'flex-start',
+      backgroundColor: `${colors.error}0D`,
+      borderRadius: BorderRadius.sm,
+      padding: Spacing.sm,
+      marginTop: Spacing.xs,
+    },
+    reviewMessageText: {
+      flex: 1,
+      fontSize: FontSize.xs,
+      color: colors.error,
+      lineHeight: 16,
     },
     editBtn: {
       flexDirection: 'row',
