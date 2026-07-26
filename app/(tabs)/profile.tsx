@@ -30,7 +30,15 @@ export default function ProfileScreen() {
 
   const displayName = user ? `${user.firstName} ${user.lastName}` : 'Landrush User';
   const initials    = ((user?.firstName?.[0] ?? '') + (user?.lastName?.[0] ?? '')).toUpperCase();
-  const role        = user?.role === 'agent' ? 'Landrush Agent' : user?.role === 'landowner' ? 'Landowner' : 'Land Seeker';
+  const role        = user?.role === 'admin'
+    ? 'Landrush Administrator'
+    : user?.role === 'agent'
+      ? 'Landrush Agent'
+      : user?.role === 'landowner'
+        ? 'Landowner'
+        : 'Land Seeker';
+  const isDemoMode = !process.env.EXPO_PUBLIC_API_URL;
+  const hasAdminAccess = user?.role === 'admin' || isDemoMode;
 
   const handleLogout = () =>
     Alert.alert('Log out?', 'You will be returned to the login screen.', [
@@ -46,6 +54,16 @@ export default function ProfileScreen() {
     ]);
 
   const groups: MenuGroup[] = [
+    ...(hasAdminAccess
+      ? [{
+          title: 'Administration',
+          items: [{
+            icon: 'shield-outline' as IoniconsName,
+            label: isDemoMode && user?.role !== 'admin' ? 'Admin Console (Demo)' : 'Admin Console',
+            onPress: () => router.push('/admin' as any),
+          }],
+        }]
+      : []),
     {
       title: 'Account',
       items: [
