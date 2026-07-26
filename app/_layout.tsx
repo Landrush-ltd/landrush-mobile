@@ -79,6 +79,7 @@ function ThemedStack() {
         <Stack.Screen name="index" />
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="admin/index" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="listing/[id]" options={{ animation: 'slide_from_right' }} />
       </Stack>
     </>

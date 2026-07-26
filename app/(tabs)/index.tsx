@@ -33,9 +33,9 @@ interface Category {
 
 const CATEGORIES: Category[] = [
   { key: null,       label: 'All',       icon: 'grid-outline'       },
-  { key: 'sale',     label: 'Buy',       image: require('../../assets/categories/buy.png') },
-  { key: 'lease',    label: 'Lease',     image: require('../../assets/categories/lease.png') },
-  { key: 'distress', label: 'Distress Sale', image: require('../../assets/categories/distress-sale.png') },
+  { key: 'sale',     label: 'Buy',       image: require('../../assets/categories/buy-brand.png') },
+  { key: 'lease',    label: 'Lease',     image: require('../../assets/categories/lease-brand.png') },
+  { key: 'distress', label: 'Distress Sale', image: require('../../assets/categories/distress-sale-brand.png') },
 ];
 
 function Initials({ name, size = 32, colors }: { name: string; size?: number; colors: ThemeColors }) {

@@ -134,14 +134,15 @@ function delay(ms: number) {
 }
 
 function mockUser(emailOrPhone: string): User {
+  const isAdmin = emailOrPhone.toLowerCase().includes('admin');
   return {
     id: '1',
-    firstName: 'Kenneth',
-    lastName: 'Umoekpe',
+    firstName: isAdmin ? 'Landrush' : 'Kenneth',
+    lastName: isAdmin ? 'Admin' : 'Umoekpe',
     email: emailOrPhone.includes('@') ? emailOrPhone : 'kennethumoekpe@gmail.com',
     phone: emailOrPhone.includes('@') ? '' : emailOrPhone,
     avatar: 'https://i.pravatar.cc/150?img=11',
-    role: 'seeker',
+    role: isAdmin ? 'admin' : 'seeker',
     isVerified: true,
     createdAt: new Date().toISOString(),
   };

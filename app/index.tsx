@@ -12,7 +12,7 @@ const OVERSHOOT  = CELL * 3;
 
 export default function SplashScreen() {
   const router = useRouter();
-  const { isAuthenticated, hasCompletedOnboarding } = useAuthStore();
+  const { isAuthenticated, hasCompletedOnboarding, isLoading, hydrate } = useAuthStore();
 
   // One animated value per block — matches the 4-block logo structure
   const topLeftAnim     = useRef(new Animated.Value(-OVERSHOOT)).current; // slides from top
@@ -65,6 +65,15 @@ export default function SplashScreen() {
       }),
     ]).start();
 
+  }, []);
+
+  useEffect(() => {
+    void hydrate();
+  }, [hydrate]);
+
+  useEffect(() => {
+    if (isLoading) return;
+
     const timer = setTimeout(() => {
       if (isAuthenticated) {
         router.replace('/(tabs)');
@@ -73,10 +82,10 @@ export default function SplashScreen() {
       } else {
         router.replace('/(auth)/onboarding');
       }
-    }, 2900);
+    }, 1800);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [hasCompletedOnboarding, isAuthenticated, isLoading, router]);
 
   return (
     <View style={styles.container}>
