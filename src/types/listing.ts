@@ -25,6 +25,7 @@ export interface ListingAgent {
 
 export interface Listing {
   id: string;
+  viewCount?: number;
   title: string;
   description: string;
   category: ListingCategory;

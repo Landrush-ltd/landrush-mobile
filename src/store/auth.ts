@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { createAsyncStoragePersist } from '@react-native-async-storage/async-storage/lib/module';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { User } from '../types/user';
 

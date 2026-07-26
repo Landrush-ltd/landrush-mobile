@@ -114,7 +114,9 @@ export function ListingCard({ listing, onPress, variant = 'horizontal' }: Listin
             </View>
           )}
         </View>
-        <Text style={styles.subtitle} numberOfLines={1}>{listing.size} {listing.sizeUnit} · Registered survey</Text>
+        <Text style={styles.subtitle} numberOfLines={1}>
+          {listing.size} {listing.sizeUnit} · {listing.state}
+        </Text>
         <View style={styles.priceRow}>
           <Text style={styles.vPrice}>{price}</Text>
           {listing.priceUnit && <Text style={styles.priceUnit}> /{listing.priceUnit}</Text>}
@@ -140,7 +142,12 @@ function makeStyles(colors: ThemeColors) {
     },
     photoPlaceholder: { alignItems: 'center', justifyContent: 'center' },
 
-    saveBtn: { position: 'absolute', top: Spacing.md, right: Spacing.md },
+    saveBtn: {
+      position: 'absolute', top: Spacing.md, right: Spacing.md,
+      width: 34, height: 34, borderRadius: 17,
+      backgroundColor: 'rgba(0,0,0,0.32)',
+      alignItems: 'center', justifyContent: 'center',
+    },
     saveBtnCircle: {
       position: 'absolute', top: Spacing.md, right: Spacing.md,
       width: 34, height: 34, borderRadius: 17,

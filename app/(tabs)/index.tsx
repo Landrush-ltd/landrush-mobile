@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   Image,
+  type ImageSourcePropType,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,14 +27,15 @@ type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 interface Category {
   key:   ListingCategory | null;
   label: string;
-  icon:  IoniconsName;
+  icon?: IoniconsName;
+  image?: ImageSourcePropType;
 }
 
 const CATEGORIES: Category[] = [
   { key: null,       label: 'All',       icon: 'grid-outline'       },
-  { key: 'sale',     label: 'Buy',       icon: 'pricetag-outline'   },
-  { key: 'lease',    label: 'Lease',     icon: 'key-outline'        },
-  { key: 'distress', label: 'Distress',  icon: 'flame-outline'      },
+  { key: 'sale',     label: 'Buy',       image: require('../../assets/categories/buy.png') },
+  { key: 'lease',    label: 'Lease',     image: require('../../assets/categories/lease.png') },
+  { key: 'distress', label: 'Distress Sale', image: require('../../assets/categories/distress-sale.png') },
 ];
 
 function Initials({ name, size = 32, colors }: { name: string; size?: number; colors: ThemeColors }) {
@@ -69,9 +71,8 @@ export default function ExploreScreen() {
 
   const handlePress  = (l: Listing) => router.push(`/listing/${l.id}`);
   const displayName  = user ? `${user.firstName} ${user.lastName}` : 'Guest';
-  const firstName    = user?.firstName ?? 'there';
-  const hour         = new Date().getHours();
-  const greeting     = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const firstName    = user?.firstName ?? '';
+  const greeting     = user ? `WELCOME BACK, ${firstName.toUpperCase()}` : 'LANDRUSH MARKETPLACE';
   const horizontal   = filteredListings.slice(0, 6);
   const vertical     = filteredListings.slice(6);
 
@@ -84,8 +85,8 @@ export default function ExploreScreen() {
       {/* ── Top bar ─────────────────────────────────────── */}
       <View style={[styles.topBar, { paddingTop: insets.top + Spacing.sm }]}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.greeting}>{greeting} 👋</Text>
-          <Text style={styles.appName} numberOfLines={1}>{firstName}</Text>
+          <Text style={styles.greeting}>{greeting}</Text>
+          <Text style={styles.appName} numberOfLines={1}>Find land with confidence</Text>
         </View>
         <View style={styles.topBarRight}>
           <TouchableOpacity style={styles.iconBtn} onPress={() => router.push('/notifications')}>
@@ -107,7 +108,7 @@ export default function ExploreScreen() {
             <Ionicons name="search" size={16} color={colors.white} />
           </View>
           <View style={styles.searchText}>
-            <Text style={styles.searchPlaceholder}>{searchQuery || 'Search land — location, size, type'}</Text>
+            <Text style={styles.searchPlaceholder}>{searchQuery || 'Search by location, size, or listing type'}</Text>
           </View>
           <TouchableOpacity style={styles.filterBtn}>
             <Ionicons name="options-outline" size={18} color={colors.textPrimary} />
@@ -130,8 +131,16 @@ export default function ExploreScreen() {
               onPress={() => setActiveCategory(cat.key)}
               activeOpacity={0.7}
             >
-              <View style={[styles.catIconBox, active && styles.catIconBoxActive]}>
-                <Ionicons name={cat.icon} size={22} color={active ? colors.white : colors.textSecondary} />
+              <View style={[
+                styles.catIconBox,
+                cat.image != null && styles.catImageBox,
+                active && (cat.image != null ? styles.catImageBoxActive : styles.catIconBoxActive),
+              ]}>
+                {cat.image ? (
+                  <Image source={cat.image} style={styles.catImage} resizeMode="cover" />
+                ) : (
+                  <Ionicons name={cat.icon!} size={22} color={active ? colors.white : colors.textSecondary} />
+                )}
               </View>
               <Text style={[styles.catLabel, active && styles.catLabelActive]}>{cat.label}</Text>
               {active && <View style={styles.catUnderline} />}
@@ -140,12 +149,24 @@ export default function ExploreScreen() {
         })}
       </ScrollView>
 
+      <View style={styles.trustRow}>
+        <View style={styles.trustItem}>
+          <Ionicons name="shield-checkmark-outline" size={15} color={colors.success} />
+          <Text style={styles.trustText}>Verified agents</Text>
+        </View>
+        <View style={styles.trustDivider} />
+        <View style={styles.trustItem}>
+          <Ionicons name="document-text-outline" size={15} color={colors.primary} />
+          <Text style={styles.trustText}>Document visibility</Text>
+        </View>
+      </View>
+
       {/* ── Section: latest ─────────────────────────────── */}
       <View style={styles.sectionHead}>
         <Text style={styles.sectionTitle}>
           {activeCategory
             ? CATEGORIES.find((c) => c.key === activeCategory)?.label + ' listings'
-            : 'Latest listings'}
+            : 'New to the market'}
         </Text>
         <TouchableOpacity onPress={() => router.push('/search')}>
           <Text style={styles.seeAll}>Show all</Text>
@@ -166,8 +187,8 @@ export default function ExploreScreen() {
         <View style={styles.mapBannerLeft}>
           <Ionicons name="location-outline" size={26} color={colors.lime} />
           <View>
-            <Text style={styles.mapBannerTitle}>Explore location</Text>
-            <Text style={styles.mapBannerSub}>{filteredListings.length} listings visible</Text>
+            <Text style={styles.mapBannerTitle}>Explore by location</Text>
+            <Text style={styles.mapBannerSub}>Compare {filteredListings.length} available opportunities</Text>
           </View>
         </View>
         <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
@@ -180,7 +201,7 @@ export default function ExploreScreen() {
       {vertical.length > 0 && (
         <>
           <View style={styles.sectionHead}>
-            <Text style={styles.sectionTitle}>Recommended near you</Text>
+            <Text style={styles.sectionTitle}>Selected for you</Text>
             <TouchableOpacity onPress={() => router.push('/search')}>
               <Text style={styles.seeAll}>Show all</Text>
             </TouchableOpacity>
@@ -211,8 +232,8 @@ function makeStyles(colors: ThemeColors) {
       paddingBottom: Spacing.md,
       backgroundColor: colors.white,
     },
-    greeting: { fontSize: FontSize.md, color: colors.textSecondary, fontWeight: '500' },
-    appName: { fontSize: FontSize.xxl, fontFamily: FontFamily.extraBold, fontWeight: '800', color: colors.textPrimary, letterSpacing: LetterSpacing.tight, marginTop: 2 },
+    greeting: { fontSize: 10, color: colors.primary, fontWeight: '800', letterSpacing: 1.1 },
+    appName: { fontSize: FontSize.xl, fontFamily: FontFamily.extraBold, fontWeight: '800', color: colors.textPrimary, letterSpacing: LetterSpacing.tight, marginTop: 4 },
     topBarRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
     iconBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
     avatar: { width: 34, height: 34, borderRadius: 17, borderWidth: 2, borderColor: colors.lime },
@@ -246,8 +267,8 @@ function makeStyles(colors: ThemeColors) {
     },
 
     // Category row
-    catRow: { paddingHorizontal: Spacing.lg, gap: Spacing.xl, paddingBottom: Spacing.sm },
-    catItem: { alignItems: 'center', gap: Spacing.xs, width: 60 },
+    catRow: { paddingHorizontal: Spacing.lg, gap: Spacing.lg, paddingBottom: Spacing.md },
+    catItem: { alignItems: 'center', gap: 6, width: 72 },
     catIconBox: {
       width: 52, height: 52, borderRadius: 16,
       backgroundColor: colors.surface,
@@ -258,9 +279,36 @@ function makeStyles(colors: ThemeColors) {
       backgroundColor: colors.textPrimary,
       borderColor: colors.textPrimary,
     },
-    catLabel: { fontSize: 10, color: colors.textSecondary, fontWeight: '500', textAlign: 'center' },
+    catImageBox: {
+      overflow: 'hidden',
+      backgroundColor: colors.white,
+      borderColor: 'transparent',
+    },
+    catImageBoxActive: {
+      borderColor: colors.textPrimary,
+    },
+    catImage: {
+      width: '100%',
+      height: '100%',
+    },
+    catLabel: { fontSize: 11, color: colors.textSecondary, fontWeight: '600', textAlign: 'center' },
     catLabelActive: { color: colors.textPrimary, fontWeight: '700' },
     catUnderline: { width: 20, height: 2, borderRadius: 1, backgroundColor: colors.textPrimary, marginTop: -2 },
+    trustRow: {
+      marginHorizontal: Spacing.lg,
+      marginTop: Spacing.sm,
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.md,
+      borderRadius: BorderRadius.lg,
+      backgroundColor: colors.surface,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing.md,
+    },
+    trustItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    trustText: { fontSize: 10, color: colors.textSecondary, fontWeight: '700' },
+    trustDivider: { width: 1, height: 18, backgroundColor: colors.border },
 
     // Sections
     sectionHead: {
@@ -284,14 +332,14 @@ function makeStyles(colors: ThemeColors) {
       padding: Spacing.lg,
       borderRadius: BorderRadius.xl,
       borderWidth: 1,
-      borderColor: colors.border,
+      borderColor: colors.borderLight,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       backgroundColor: colors.white,
       ...Shadow.sm,
     },
-    mapBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
+    mapBannerLeft: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
     mapBannerTitle: { fontSize: FontSize.md, fontWeight: '700', color: colors.textPrimary },
     mapBannerSub: { fontSize: FontSize.xs, color: colors.textSecondary, marginTop: 2 },
 
