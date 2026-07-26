@@ -128,7 +128,7 @@ export default function ListingsManager() {
               <Text
                 style={[
                   styles.filterText,
-                  filterStatus === status && { color: colors.white },
+                  filterStatus === status && { color: colors.fixedWhite },
                 ]}
               >
                 {status === 'all' ? 'All' : getStatusLabel(status)}
@@ -231,7 +231,7 @@ export default function ListingsManager() {
           style={[styles.fab, { backgroundColor: colors.primary }]}
           onPress={() => router.push('/(tabs)/create')}
         >
-          <Ionicons name="add" size={28} color={colors.white} />
+          <Ionicons name="add" size={28} color={colors.fixedWhite} />
         </TouchableOpacity>
       )}
 
@@ -336,7 +336,7 @@ const makeStyles = (colors: ThemeColors) =>
     statusBadgeText: {
       fontSize: FontSize.xs,
       fontFamily: FontFamily.semibold,
-      color: colors.white,
+      color: colors.fixedWhite,
     },
     listingContent: {
       padding: Spacing.md,

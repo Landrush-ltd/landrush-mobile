@@ -258,7 +258,7 @@ function makeStyles(colors: ThemeColors) {
       color: colors.textSecondary,
     },
     tabTextActive: {
-      color: colors.white,
+      color: colors.fixedWhite,
     },
     tabBadge: {
       backgroundColor: colors.border,
@@ -278,7 +278,7 @@ function makeStyles(colors: ThemeColors) {
       color: colors.textSecondary,
     },
     tabBadgeTextActive: {
-      color: colors.white,
+      color: colors.fixedWhite,
     },
 
     // ── Scroll / Cards ────────────────────────────────────────────
@@ -324,7 +324,7 @@ function makeStyles(colors: ThemeColors) {
       right: Spacing.md,
       fontSize: FontSize.md,
       fontWeight: '800',
-      color: colors.white,
+      color: colors.fixedWhite,
       textShadowColor: 'rgba(0,0,0,0.5)',
       textShadowOffset: { width: 0, height: 1 },
       textShadowRadius: 3,

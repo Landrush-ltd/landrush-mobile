@@ -650,7 +650,7 @@ export default function CreateListingScreen() {
             <>
               {parseInt(price, 10) < parseInt(actualValue, 10) ? (
                 <View style={s.discountBadge}>
-                  <Ionicons name="flash-outline" size={14} color={colors.white} />
+                  <Ionicons name="flash-outline" size={14} color={colors.fixedWhite} />
                   <Text style={s.discountText}>
                     {Math.round(((parseInt(actualValue, 10) - parseInt(price, 10)) / parseInt(actualValue, 10)) * 100)}% OFF
                   </Text>
@@ -750,7 +750,7 @@ export default function CreateListingScreen() {
         <View style={s.headerRow}>
           {step > 0 ? (
             <TouchableOpacity style={s.headerBackBtn} onPress={goBack}>
-              <Ionicons name="chevron-back" size={20} color={colors.white} />
+              <Ionicons name="chevron-back" size={20} color={colors.fixedWhite} />
             </TouchableOpacity>
           ) : (
             <View style={{ width: 36 }} />
@@ -912,7 +912,7 @@ function makeStyles(colors: ThemeColors) {
     headerTitle: {
       fontSize: FontSize.lg,
       fontWeight: '800',
-      color: colors.white,
+      color: colors.fixedWhite,
     },
     draftPill: {
       flexDirection: 'row',
@@ -1175,7 +1175,7 @@ function makeStyles(colors: ThemeColors) {
       paddingVertical: 2,
       borderRadius: 4,
     },
-    coverBadgeText: { fontSize: 9, color: colors.white, fontWeight: '700' },
+    coverBadgeText: { fontSize: 9, color: colors.fixedWhite, fontWeight: '700' },
     removeBtn: {
       position: 'absolute',
       top: -6,
@@ -1435,7 +1435,7 @@ function makeStyles(colors: ThemeColors) {
     discountText: {
       fontSize: FontSize.lg,
       fontWeight: '700',
-      color: colors.white,
+      color: colors.fixedWhite,
     },
     priceWarning: {
       fontSize: FontSize.sm,

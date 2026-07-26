@@ -305,7 +305,7 @@ function makeStyles(colors: ThemeColors) {
     markerText: {
       fontSize: FontSize.xs,
       fontWeight: '800',
-      color: colors.white,
+      color: colors.fixedWhite,
     },
     countBadge: {
       backgroundColor: colors.white,

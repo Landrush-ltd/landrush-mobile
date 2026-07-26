@@ -116,7 +116,7 @@ export default function ProfileScreen() {
             : <View style={styles.avatarInitials}><Text style={styles.avatarInitialsText}>{initials}</Text></View>
           }
           <TouchableOpacity style={styles.editAvatarBtn}>
-            <Ionicons name="camera-outline" size={14} color={colors.white} />
+            <Ionicons name="camera-outline" size={14} color={colors.fixedWhite} />
           </TouchableOpacity>
         </View>
         <View style={styles.avatarInfo}>

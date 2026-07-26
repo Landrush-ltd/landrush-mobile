@@ -336,6 +336,6 @@ const makeStyles = (colors: ThemeColors) =>
     emptyButtonText: {
       fontSize: FontSize.sm,
       fontFamily: FontFamily.semibold,
-      color: colors.white,
+      color: colors.fixedWhite,
     },
   });

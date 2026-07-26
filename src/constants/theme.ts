@@ -15,6 +15,7 @@ export const LightColors = {
 
   // Surface hierarchy
   white:       '#FFFFFF',
+  fixedWhite:  '#FFFFFF',
   background:  '#FFFFFF',
   surface:     '#F7F7F7',
   card:        '#FFFFFF',
@@ -68,7 +69,8 @@ export const DarkColors = {
   distress: '#D93025',
 
   // Surface hierarchy
-  white:       '#FFFFFF',
+  white:       '#1E2421',
+  fixedWhite:  '#FFFFFF',
   background:  '#111714',
   surface:     '#181D1A',
   card:        '#1E2421',

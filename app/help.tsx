@@ -291,7 +291,7 @@ function makeStyles(colors: ThemeColors) {
     searchInput: {
       flex: 1,
       fontSize: FontSize.md,
-      color: colors.white,
+      color: colors.fixedWhite,
     },
     sectionTitle: {
       fontSize: FontSize.lg,

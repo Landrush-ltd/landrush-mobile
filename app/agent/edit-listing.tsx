@@ -131,7 +131,7 @@ export default function EditListing() {
               <Text
                 style={[
                   styles.categoryButtonText,
-                  category === cat && { color: colors.white },
+                  category === cat && { color: colors.fixedWhite },
                 ]}
               >
                 {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -296,9 +296,9 @@ export default function EditListing() {
           disabled={isSaving}
         >
           {isSaving ? (
-            <ActivityIndicator size="small" color={colors.white} />
+            <ActivityIndicator size="small" color={colors.fixedWhite} />
           ) : (
-            <Text style={[styles.buttonText, { color: colors.white }]}>Save Changes</Text>
+            <Text style={[styles.buttonText, { color: colors.fixedWhite }]}>Save Changes</Text>
           )}
         </TouchableOpacity>
       </View>

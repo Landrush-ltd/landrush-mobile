@@ -67,7 +67,7 @@ export default function AgentProfile() {
           )}
           {isEditing && (
             <TouchableOpacity style={styles.editAvatarBtn}>
-              <Ionicons name="camera-outline" size={14} color={colors.white} />
+              <Ionicons name="camera-outline" size={14} color={colors.fixedWhite} />
             </TouchableOpacity>
           )}
         </View>
@@ -142,7 +142,7 @@ export default function AgentProfile() {
               style={[styles.addBtn, { backgroundColor: colors.primary }]}
               onPress={handleAddSpecialization}
             >
-              <Ionicons name="add" size={20} color={colors.white} />
+              <Ionicons name="add" size={20} color={colors.fixedWhite} />
             </TouchableOpacity>
           </View>
         )}
@@ -256,7 +256,7 @@ const makeStyles = (colors: ThemeColors) =>
     avatarText: {
       fontSize: FontSize.lg,
       fontFamily: FontFamily.bold,
-      color: colors.white,
+      color: colors.fixedWhite,
     },
     editAvatarBtn: {
       position: 'absolute',

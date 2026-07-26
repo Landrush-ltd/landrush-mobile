@@ -265,7 +265,7 @@ export default function ListingDetailScreen() {
                 })
               }
             >
-              <Ionicons name="chatbubble-outline" size={18} color={colors.white} />
+              <Ionicons name="chatbubble-outline" size={18} color={colors.fixedWhite} />
               <Text style={styles.contactBtnFillText}>Message</Text>
             </TouchableOpacity>
           </View>
@@ -563,7 +563,7 @@ function makeStyles(colors: ThemeColors) {
       backgroundColor: colors.primary,
     },
     contactBtnFillText: {
-      fontSize: FontSize.md, fontFamily: FontFamily.bold, fontWeight: '700', color: colors.white,
+      fontSize: FontSize.md, fontFamily: FontFamily.bold, fontWeight: '700', color: colors.fixedWhite,
     },
 
     // Bottom bar

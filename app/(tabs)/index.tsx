@@ -105,7 +105,7 @@ export default function ExploreScreen() {
       <View style={styles.searchWrap}>
         <TouchableOpacity style={styles.searchBar} onPress={() => router.push('/search')} activeOpacity={0.85}>
           <View style={styles.searchIconCircle}>
-            <Ionicons name="search" size={16} color={colors.white} />
+            <Ionicons name="search" size={16} color={colors.fixedWhite} />
           </View>
           <View style={styles.searchText}>
             <Text style={styles.searchPlaceholder}>{searchQuery || 'Search by location, size, or listing type'}</Text>

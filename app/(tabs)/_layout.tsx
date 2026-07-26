@@ -3,7 +3,9 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, FontSize, Spacing } from '../../src/constants/theme';
+import { FontSize, Spacing } from '../../src/constants/theme';
+import type { ThemeColors } from '../../src/constants/theme';
+import { useColors } from '../../src/context/ThemeContext';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -28,6 +30,8 @@ const META: Record<string, TabMeta> = {
 
 function CustomTabBar({ state, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
+  const colors = useColors();
+  const styles = React.useMemo(() => makeStyles(colors), [colors]);
 
   const renderTab = (name: string) => {
     const meta = META[name];
@@ -45,7 +49,7 @@ function CustomTabBar({ state, navigation }: TabBarProps) {
         <Ionicons
           name={focused ? meta.activeIcon : meta.icon}
           size={22}
-          color={focused ? Colors.lime : Colors.textSecondary}
+          color={focused ? colors.lime : colors.textSecondary}
         />
         <Text style={[styles.tabLabel, focused && styles.tabLabelActive]}>
           {meta.label}
@@ -69,7 +73,7 @@ function CustomTabBar({ state, navigation }: TabBarProps) {
         activeOpacity={0.85}
       >
         <View style={[styles.fabInner, createFocused && styles.fabInnerActive]}>
-          <Ionicons name="add" size={28} color={Colors.white} />
+          <Ionicons name="add" size={28} color={colors.fixedWhite} />
         </View>
         <Text style={[styles.tabLabel, createFocused && styles.tabLabelActive]}>
           List
@@ -82,15 +86,16 @@ function CustomTabBar({ state, navigation }: TabBarProps) {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   bar: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     paddingTop: Spacing.sm,
     paddingHorizontal: Spacing.xs,
-    backgroundColor: Colors.white,
+    backgroundColor: colors.card,
     borderTopWidth: Platform.OS === 'android' ? 1 : 0.5,
-    borderTopColor: Colors.borderLight,
+    borderTopColor: colors.border,
   },
   tab: {
     flex: 1,
@@ -100,12 +105,12 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     fontSize: FontSize.xs,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontWeight: '500',
     marginTop: 1,
   },
   tabLabelActive: {
-    color: Colors.lime,
+    color: colors.lime,
     fontWeight: '700',
   },
   fab: {
@@ -117,7 +122,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: Colors.textPrimary,
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: -18,
@@ -128,9 +133,10 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   fabInnerActive: {
-    backgroundColor: Colors.lime,
+    backgroundColor: colors.lime,
   },
-});
+  });
+}
 
 export default function TabsLayout() {
   return (

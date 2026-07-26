@@ -126,7 +126,7 @@ export default function ShareModal({ visible, listing, onClose }: ShareModalProp
             handleShare('copy-link')
           }
         >
-          <Ionicons name="copy-outline" size={20} color={colors.white} />
+          <Ionicons name="copy-outline" size={20} color={colors.fixedWhite} />
           <Text style={styles.copyButtonText}>Copy Link to Clipboard</Text>
         </TouchableOpacity>
       </View>
@@ -223,6 +223,6 @@ const makeStyles = (colors: ThemeColors) =>
     copyButtonText: {
       fontSize: FontSize.sm,
       fontFamily: FontFamily.semibold,
-      color: colors.white,
+      color: colors.fixedWhite,
     },
   });

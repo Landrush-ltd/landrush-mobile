@@ -97,7 +97,7 @@ export default function MyListingsScreen() {
             <Text style={styles.subtitle}>{listings.length} listing{listings.length !== 1 ? 's' : ''}</Text>
           </View>
           <TouchableOpacity style={styles.addIconBtn} onPress={() => router.push('/(tabs)/create')}>
-            <Ionicons name="add" size={20} color={colors.white} />
+            <Ionicons name="add" size={20} color={colors.fixedWhite} />
           </TouchableOpacity>
         </View>
       </View>
@@ -501,7 +501,7 @@ function makeStyles(colors: ThemeColors) {
     modalDeleteText: {
       fontSize: FontSize.md,
       fontWeight: '700',
-      color: colors.white,
+      color: colors.fixedWhite,
     },
   });
 }

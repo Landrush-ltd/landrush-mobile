@@ -296,7 +296,7 @@ function makeStyles(colors: ThemeColors) {
       fontSize: FontSize.display,
       fontFamily: FontFamily.extraBold,
       fontWeight: '800',
-      color: colors.white,
+      color: colors.fixedWhite,
       letterSpacing: LetterSpacing.tight,
       marginTop: Spacing.md,
     },
