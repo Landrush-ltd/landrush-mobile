@@ -549,7 +549,7 @@ export default function CreateListingScreen() {
                       mediaTypes: ImagePicker.MediaTypeOptions.Images,
                       quality: 0.8,
                     });
-                    if (!result.cancelled && result.assets?.[0]) {
+                    if (!result.canceled && result.assets?.[0]) {
                       setDocuments([...documents, { type: docType.label, uri: result.assets[0].uri }]);
                     }
                   }}
@@ -731,8 +731,12 @@ export default function CreateListingScreen() {
     );
   };
 
+  // Invoke these as render helpers rather than mounting them as component
+  // types. Because they are declared inside this screen, their function
+  // identities change on every keystroke; mounting <StepComponent /> would
+  // therefore remount the active form and make its TextInput lose focus.
   const RENDERERS = [StepType, StepDetails, StepLocation, StepMedia, StepPrice, StepReview];
-  const StepComponent = RENDERERS[step];
+  const stepContent = RENDERERS[step]();
 
   return (
     <KeyboardAvoidingView
@@ -781,7 +785,7 @@ export default function CreateListingScreen() {
         contentContainerStyle={{ paddingBottom: 120 }}
       >
         <Animated.View style={{ transform: [{ translateX: slideAnim }] }}>
-          <StepComponent />
+          {stepContent}
         </Animated.View>
       </ScrollView>
 

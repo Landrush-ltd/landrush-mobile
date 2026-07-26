@@ -207,7 +207,9 @@ export default function OnboardingScreen() {
         <Text style={styles.title}>{slide.title}</Text>
         <Text style={styles.desc}>{slide.description}</Text>
         <TouchableOpacity style={styles.cta} onPress={next} activeOpacity={0.88}>
-          <Text style={styles.ctaText}>Get Started</Text>
+          <Text style={styles.ctaText}>
+            {idx === SLIDES.length - 1 ? 'Explore Landrush' : 'Continue'}
+          </Text>
           <Ionicons name="arrow-forward" size={15} color={colors.textPrimary} />
         </TouchableOpacity>
       </Animated.View>

@@ -29,6 +29,11 @@ export const LightColors = {
   textInverse:   '#FFFFFF',
   textLink:      '#2D6A4F',
 
+  // Legacy aliases used by the agent and listing-creation screens.
+  text:   '#222222',
+  orange: '#E47C18',
+  red:    '#C13515',
+
   // Chips
   chipActive:   '#E8EAC8',
   chipInactive: '#F7F7F7',
@@ -77,6 +82,11 @@ export const DarkColors = {
   textTertiary:  '#556159',
   textInverse:   '#111714',
   textLink:      '#55A87E',
+
+  // Legacy aliases used by the agent and listing-creation screens.
+  text:   '#EDEFEC',
+  orange: '#E47C18',
+  red:    '#E05C3A',
 
   // Chips
   chipActive:   '#2C3A2A',
@@ -135,6 +145,7 @@ export const FontFamily = {
   regular:   'Sora_400Regular',
   medium:    'Sora_500Medium',
   semiBold:  'Sora_600SemiBold',
+  semibold:  'Sora_600SemiBold',
   bold:      'Sora_700Bold',
   extraBold: 'Sora_800ExtraBold',
 } as const;
@@ -161,6 +172,13 @@ export const BorderRadius = {
 // Soft, diffuse shadows — low opacity + large radius reads as premium depth
 // rather than a hard drop shadow.
 export const Shadow = {
+  xs: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
   sm: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
