@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, FontSize, FontFamily, BorderRadius, Shadow } from '../../src/constants/theme';
 import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
-import { useListing } from '../../src/hooks/useListings';
+import { useListing, useUpdateListing } from '../../src/hooks/useListings';
 import type { ListingCategory } from '../../src/types/listing';
 
 const CATEGORIES = ['sale', 'lease', 'distress'] as ListingCategory[];
@@ -26,6 +26,7 @@ export default function EditListing() {
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const { data: listing, isLoading } = useListing(listingId ?? '');
+  const updateListing = useUpdateListing();
 
   // Form state
   const [category, setCategory] = useState<ListingCategory>('sale');
@@ -66,29 +67,28 @@ export default function EditListing() {
 
     setIsSaving(true);
     try {
-      // TODO: Call update mutation from useListings
-      // const result = await updateListing.mutate({
-      //   id: listingId,
-      //   category,
-      //   title,
-      //   description,
-      //   state,
-      //   location,
-      //   size: parseFloat(size),
-      //   sizeUnit,
-      //   price: parseFloat(price),
-      //   priceUnit,
-      //   leaseDuration: category === 'lease' ? leaseDuration : undefined,
-      // });
+      await updateListing.mutateAsync({
+        id: listingId,
+        category,
+        title: title.trim(),
+        description: description.trim(),
+        state,
+        location: location.trim(),
+        size: parseFloat(size) || 0,
+        sizeUnit,
+        price: parseFloat(price) || 0,
+        priceUnit,
+        leaseDuration: category === 'lease' ? leaseDuration : undefined,
+      });
 
-      Alert.alert('Success', 'Listing updated successfully', [
+      Alert.alert('Submitted for review', 'Your corrections were saved and the listing is back in the review queue.', [
         {
           text: 'OK',
           onPress: () => router.back(),
         },
       ]);
     } catch (error) {
-      Alert.alert('Error', 'Failed to update listing');
+      Alert.alert('Update failed', error instanceof Error ? error.message : 'Please try again.');
     } finally {
       setIsSaving(false);
     }

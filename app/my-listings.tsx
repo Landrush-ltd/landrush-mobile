@@ -164,7 +164,10 @@ export default function MyListingsScreen() {
                   <View style={styles.actionRow}>
                     <TouchableOpacity
                       style={styles.editBtn}
-                      onPress={() => router.push(`/listing/${item.id}`)}
+                      onPress={() => router.push({
+                        pathname: '/agent/edit-listing',
+                        params: { listingId: item.id },
+                      })}
                     >
                       <Ionicons name="create-outline" size={15} color={colors.primary} />
                       <Text style={styles.editBtnText}>Edit</Text>

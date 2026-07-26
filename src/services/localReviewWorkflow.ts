@@ -29,7 +29,8 @@ export async function getLocalOwnerListings(): Promise<Listing[]> {
     reviewStatus: (index === 0 ? 'approved' : index === 1 ? 'pending' : index === 2 ? 'rejected' : 'pending') as Listing['reviewStatus'],
     rejectionReason: index === 2 ? 'The survey-plan reference could not be verified. Upload a clearer registered copy.' : undefined,
   }));
-  return [...persisted, ...seeded];
+  const persistedIds = new Set(persisted.map((listing) => listing.id));
+  return [...persisted, ...seeded.filter((listing) => !persistedIds.has(listing.id))];
 }
 
 export async function getLocalPublicListings(): Promise<Listing[]> {
@@ -46,6 +47,57 @@ export async function deleteLocalOwnerListing(listingId: string): Promise<void> 
     [LISTINGS_KEY, JSON.stringify(listings.filter((listing) => listing.id !== listingId))],
     [REVIEWS_KEY, JSON.stringify(reviews.filter((review) => review.listingId !== listingId))],
   ]);
+}
+
+export async function updateLocalOwnerListing(listingId: string, payload: LocalListingInput): Promise<Listing> {
+  const [all, reviews] = await Promise.all([getLocalOwnerListings(), getLocalReviews()]);
+  const current = all.find((listing) => listing.id === listingId);
+  if (!current) throw new Error('Listing not found.');
+  const updated: Listing = {
+    ...current,
+    ...payload,
+    sizeUnit: normalizeSizeUnit(payload.sizeUnit),
+    reviewStatus: 'pending',
+    rejectionReason: undefined,
+    updatedAt: new Date().toISOString(),
+  };
+  const persisted = await readJson<Listing[]>(LISTINGS_KEY, []);
+  const existingReview = reviews.find((review) => review.listingId === listingId);
+  const refreshedReview: AdminListingReview = existingReview
+    ? {
+        ...existingReview,
+        title: updated.title,
+        category: updated.category,
+        location: `${updated.location}, ${updated.state}`,
+        price: updated.price,
+        status: 'pending',
+        rejectionReason: undefined,
+        submittedAt: updated.updatedAt,
+        documents: existingReview.documents.map((document) => ({ ...document, status: 'pending' })),
+      }
+    : {
+        id: `review-${Date.now()}`,
+        listingId,
+        title: updated.title,
+        category: updated.category,
+        location: `${updated.location}, ${updated.state}`,
+        price: updated.price,
+        thumbnail: updated.media[0]?.uri ?? '',
+        listerName: updated.agent.name,
+        listerRole: 'landowner',
+        submittedAt: updated.updatedAt,
+        status: 'pending',
+        documents: [],
+        flags: ['No ownership document was attached'],
+      };
+  await AsyncStorage.multiSet([
+    [LISTINGS_KEY, JSON.stringify([updated, ...persisted.filter((listing) => listing.id !== listingId)])],
+    [REVIEWS_KEY, JSON.stringify([
+      refreshedReview,
+      ...reviews.filter((review) => review.listingId !== listingId),
+    ])],
+  ]);
+  return updated;
 }
 
 export interface LocalListingInput {

@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { User } from '../types/user';
+import { getCurrentSupabaseAuth } from '../services/authService';
+import { supabase, supabaseEnabled } from '../services/supabase';
 
 const AUTH_TOKEN_KEY = 'auth_token';
 const AUTH_USER_KEY = 'auth_user';
@@ -34,11 +36,24 @@ export const useAuthStore = create<AuthStore>(
       set({ user, token, isAuthenticated: true, isLoading: false });
     },
     logout: async () => {
+      if (supabaseEnabled) await supabase?.auth.signOut();
       await AsyncStorage.multiRemove([AUTH_TOKEN_KEY, AUTH_USER_KEY]);
       set({ user: null, token: null, isAuthenticated: false, isLoading: false });
     },
     hydrate: async () => {
       try {
+        if (supabaseEnabled) {
+          const current = await getCurrentSupabaseAuth();
+          const hasCompletedOnboarding = await AsyncStorage.getItem(ONBOARDING_KEY) === 'true';
+          set({
+            user: current?.user ?? null,
+            token: current?.token ?? null,
+            isAuthenticated: Boolean(current),
+            hasCompletedOnboarding,
+            isLoading: false,
+          });
+          return;
+        }
         const entries = await AsyncStorage.multiGet([
           AUTH_TOKEN_KEY,
           AUTH_USER_KEY,

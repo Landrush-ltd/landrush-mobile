@@ -1,5 +1,6 @@
 import { api } from './api';
 import type { User } from '../types/user';
+import { requireSupabase, supabaseEnabled } from './supabase';
 
 interface AuthResponse {
   user: User;
@@ -9,6 +10,16 @@ interface AuthResponse {
 const apiEnabled = !!process.env.EXPO_PUBLIC_API_URL;
 
 export async function loginWithEmail(emailOrPhone: string, password: string): Promise<AuthResponse> {
+  if (supabaseEnabled) {
+    if (!emailOrPhone.includes('@')) throw new Error('Use your email address to sign in.');
+    const client = requireSupabase();
+    const { data, error } = await client.auth.signInWithPassword({ email: emailOrPhone.trim(), password });
+    if (error) throw error;
+    return {
+      user: await loadSupabaseUser(data.user),
+      token: data.session.access_token,
+    };
+  }
   if (!apiEnabled) {
     await delay(900);
     return {
@@ -24,6 +35,15 @@ export async function signupWithEmail(
   emailOrPhone: string,
   password: string,
 ): Promise<{ message: string }> {
+  if (supabaseEnabled) {
+    if (!emailOrPhone.includes('@')) throw new Error('Use an email address to create your account.');
+    const { error } = await requireSupabase().auth.signUp({
+      email: emailOrPhone.trim(),
+      password,
+    });
+    if (error) throw error;
+    return { message: 'Check your email for the verification code.' };
+  }
   if (!apiEnabled) {
     await delay(900);
     return { message: 'OTP sent' };
@@ -36,6 +56,21 @@ export async function verifyOtp(
   emailOrPhone: string,
   otp: string,
 ): Promise<AuthResponse> {
+  if (supabaseEnabled) {
+    if (!emailOrPhone.includes('@')) throw new Error('Use the email address you registered with.');
+    const client = requireSupabase();
+    const { data, error } = await client.auth.verifyOtp({
+      email: emailOrPhone.trim(),
+      token: otp,
+      type: 'signup',
+    });
+    if (error) throw error;
+    if (!data.session || !data.user) throw new Error('Verification succeeded. Please sign in.');
+    return {
+      user: await loadSupabaseUser(data.user),
+      token: data.session.access_token,
+    };
+  }
   if (!apiEnabled) {
     await delay(700);
     return { user: mockUser(emailOrPhone), token: 'mock-jwt-token' };
@@ -117,6 +152,12 @@ export async function loginWithSocial(
 }
 
 export async function refreshToken(token: string): Promise<{ token: string }> {
+  if (supabaseEnabled) {
+    const { data, error } = await requireSupabase().auth.refreshSession();
+    if (error) throw error;
+    if (!data.session) throw new Error('Session expired.');
+    return { token: data.session.access_token };
+  }
   const res = await api.post<{ token: string }>('/auth/refresh', {}, token);
   return res.data;
 }
@@ -145,5 +186,36 @@ function mockUser(emailOrPhone: string): User {
     role: isAdmin ? 'admin' : 'seeker',
     isVerified: true,
     createdAt: new Date().toISOString(),
+  };
+}
+
+export async function getCurrentSupabaseAuth(): Promise<AuthResponse | null> {
+  if (!supabaseEnabled) return null;
+  const { data, error } = await requireSupabase().auth.getSession();
+  if (error) throw error;
+  if (!data.session) return null;
+  return {
+    user: await loadSupabaseUser(data.session.user),
+    token: data.session.access_token,
+  };
+}
+
+async function loadSupabaseUser(authUser: { id: string; email?: string; phone?: string; created_at: string }): Promise<User> {
+  const { data: profile, error } = await requireSupabase()
+    .from('profiles')
+    .select('*')
+    .eq('id', authUser.id)
+    .single();
+  if (error) throw error;
+  return {
+    id: authUser.id,
+    firstName: profile.first_name,
+    lastName: profile.last_name,
+    email: authUser.email ?? '',
+    phone: profile.phone || authUser.phone || '',
+    avatar: profile.avatar_url ?? '',
+    role: profile.role,
+    isVerified: profile.is_verified,
+    createdAt: profile.created_at ?? authUser.created_at,
   };
 }

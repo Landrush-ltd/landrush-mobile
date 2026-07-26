@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Linking,
   Modal,
   ScrollView,
   StyleSheet,
@@ -29,6 +30,8 @@ import { useAdminReviewDecision, useAdminReviews } from '../../src/hooks/useAdmi
 import { useAuthStore } from '../../src/store/auth';
 import type { AdminListingReview, AdminReviewStatus } from '../../src/types/admin';
 import { formatDate, formatFullPrice, getCategoryLabel } from '../../src/utils/format';
+import { createDocumentSignedUrl } from '../../src/services/supabaseData';
+import { supabaseEnabled } from '../../src/services/supabase';
 
 type Filter = 'all' | AdminReviewStatus;
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
@@ -111,6 +114,19 @@ export default function AdminReviewScreen() {
         ? current.filter((id) => id !== documentId)
         : [...current, documentId],
     );
+  };
+
+  const viewDocument = async (uri?: string) => {
+    if (!uri) {
+      Alert.alert('Preview unavailable', 'This demo document contains metadata only.');
+      return;
+    }
+    try {
+      const url = supabaseEnabled ? await createDocumentSignedUrl(uri) : uri;
+      await Linking.openURL(url);
+    } catch (error) {
+      Alert.alert('Could not open document', error instanceof Error ? error.message : 'Please try again.');
+    }
   };
 
   const approveSelected = () => {
@@ -363,14 +379,7 @@ export default function AdminReviewScreen() {
                           <View style={styles.documentActions}>
                             <TouchableOpacity
                               style={styles.viewDocumentButton}
-                              onPress={() =>
-                                Alert.alert(
-                                  'Secure document preview',
-                                  isDemoMode
-                                    ? 'This demo shows document metadata. The uploaded file will open here when the admin API provides its secure URL.'
-                                    : 'The document preview is not available.',
-                                )
-                              }
+                              onPress={() => void viewDocument(document.uri)}
                             >
                               <Ionicons name="eye-outline" size={16} color={colors.primary} />
                               <Text style={styles.viewDocumentText}>View</Text>

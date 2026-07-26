@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../services/api';
 import { useAuthStore } from '../store/auth';
+import { supabaseEnabled } from '../services/supabase';
+import { fetchSupabaseNotifications, markSupabaseNotificationRead } from '../services/supabaseData';
 
 export interface AppNotification {
   id: string;
@@ -69,6 +71,7 @@ export function useNotificationsData() {
   return useQuery({
     queryKey: ['notifications'],
     queryFn: async () => {
+      if (supabaseEnabled) return fetchSupabaseNotifications();
       if (!apiEnabled) return MOCK_NOTIFICATIONS;
       const res = await api.get<AppNotification[]>('/notifications', token ?? undefined);
       return res.data;
@@ -81,11 +84,11 @@ export function useNotificationsData() {
 export function useMarkNotificationRead() {
   const { token } = useAuthStore();
   const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (notificationId: string) =>
-      apiEnabled
-        ? api.patch(`/notifications/${notificationId}/read`, {}, token ?? undefined)
-        : Promise.resolve({ data: null, message: 'ok', success: true }),
+  return useMutation<void, Error, string, { prev?: AppNotification[] }>({
+    mutationFn: async (notificationId: string) => {
+      if (supabaseEnabled) await markSupabaseNotificationRead(notificationId);
+      else if (apiEnabled) await api.patch(`/notifications/${notificationId}/read`, {}, token ?? undefined);
+    },
     onMutate: async (notificationId) => {
       await qc.cancelQueries({ queryKey: ['notifications'] });
       const prev = qc.getQueryData<AppNotification[]>(['notifications']);
@@ -103,11 +106,11 @@ export function useMarkNotificationRead() {
 export function useMarkAllRead() {
   const { token } = useAuthStore();
   const qc = useQueryClient();
-  return useMutation({
-    mutationFn: () =>
-      apiEnabled
-        ? api.post('/notifications/read-all', {}, token ?? undefined)
-        : Promise.resolve({ data: null, message: 'ok', success: true }),
+  return useMutation<void, Error, void>({
+    mutationFn: async () => {
+      if (supabaseEnabled) await markSupabaseNotificationRead();
+      else if (apiEnabled) await api.post('/notifications/read-all', {}, token ?? undefined);
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
   });
 }

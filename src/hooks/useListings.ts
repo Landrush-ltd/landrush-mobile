@@ -3,7 +3,14 @@ import { api } from '../services/api';
 import { mockListings } from '../services/mockData';
 import type { Listing, ListingCategory } from '../types/listing';
 import { useAuthStore } from '../store/auth';
-import { getLocalOwnerListings, getLocalPublicListings, submitLocalListing } from '../services/localReviewWorkflow';
+import {
+  getLocalOwnerListings,
+  getLocalPublicListings,
+  submitLocalListing,
+  updateLocalOwnerListing,
+} from '../services/localReviewWorkflow';
+import { supabaseEnabled } from '../services/supabase';
+import { createSupabaseListing, fetchSupabaseListings, updateSupabaseListing } from '../services/supabaseData';
 
 export interface CreateListingPayload {
   category: ListingCategory;
@@ -27,6 +34,7 @@ export function useListings() {
   return useQuery({
     queryKey: ['listings'],
     queryFn: async () => {
+      if (supabaseEnabled) return fetchSupabaseListings('public');
       if (!apiEnabled) return getLocalPublicListings();
       const res = await api.get<Listing[]>('/listings', token ?? undefined);
       return res.data;
@@ -41,6 +49,11 @@ export function useListing(id: string) {
   return useQuery({
     queryKey: ['listings', id],
     queryFn: async () => {
+      if (supabaseEnabled) {
+        const found = (await fetchSupabaseListings('public', id))[0];
+        if (!found) throw new Error('Listing not found');
+        return found;
+      }
       if (!apiEnabled) {
         const found = (await getLocalPublicListings()).find((l) => l.id === id);
         if (!found) throw new Error('Listing not found');
@@ -71,6 +84,7 @@ export function useMyListings() {
   return useQuery({
     queryKey: ['listings', 'mine'],
     queryFn: async () => {
+      if (supabaseEnabled) return fetchSupabaseListings('mine');
       if (!apiEnabled) return getLocalOwnerListings();
       const res = await api.get<Listing[]>('/listings/mine', token ?? undefined);
       return res.data;
@@ -108,6 +122,7 @@ export function useCreateListing() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (payload: CreateListingPayload) => {
+      if (supabaseEnabled) return createSupabaseListing(payload);
       if (!apiEnabled) {
         await new Promise((r) => setTimeout(r, 600));
         return submitLocalListing(payload, user);
@@ -117,6 +132,30 @@ export function useCreateListing() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['listings'] });
+      qc.invalidateQueries({ queryKey: ['listings', 'mine'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'listing-reviews'] });
+    },
+  });
+}
+
+export function useUpdateListing() {
+  const { token } = useAuthStore();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...payload }: CreateListingPayload & { id: string }) => {
+      if (supabaseEnabled) return updateSupabaseListing(id, payload);
+      if (apiEnabled) {
+        const res = await api.patch<Listing>(
+          `/listings/${id}`,
+          payload as unknown as Record<string, unknown>,
+          token ?? undefined,
+        );
+        return res.data;
+      }
+      return updateLocalOwnerListing(id, payload);
+    },
+    onSuccess: (listing) => {
+      qc.setQueryData(['listings', listing.id], listing);
       qc.invalidateQueries({ queryKey: ['listings', 'mine'] });
       qc.invalidateQueries({ queryKey: ['admin', 'listing-reviews'] });
     },

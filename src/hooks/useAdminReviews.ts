@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../services/api';
 import { decideLocalReview, getLocalReviews } from '../services/localReviewWorkflow';
+import { supabaseEnabled } from '../services/supabase';
+import { decideSupabaseReview, fetchSupabaseAdminReviews } from '../services/supabaseData';
 import { useAuthStore } from '../store/auth';
 import type { AdminListingReview, AdminReviewDecision } from '../types/admin';
 
@@ -13,6 +15,7 @@ export function useAdminReviews(enabled = true) {
     queryKey,
     enabled,
     queryFn: async () => {
+      if (supabaseEnabled) return fetchSupabaseAdminReviews();
       if (!apiEnabled) return getLocalReviews();
       const response = await api.get<AdminListingReview[]>('/admin/listing-reviews', token ?? undefined);
       return response.data;
@@ -26,6 +29,7 @@ export function useAdminReviewDecision() {
 
   return useMutation({
     mutationFn: async (payload: AdminReviewDecision) => {
+      if (supabaseEnabled) return decideSupabaseReview(payload);
       if (!apiEnabled) {
         await new Promise((resolve) => setTimeout(resolve, 350));
         return decideLocalReview(payload);
