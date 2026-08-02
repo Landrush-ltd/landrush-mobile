@@ -15,6 +15,7 @@ import { useAuthStore } from '../../src/store/auth';
 import { loginWithEmail, loginWithGoogle, loginWithApple } from '../../src/services/authService';
 import { useGoogleAuth, hasGoogleClientIds } from '../../src/services/googleAuth';
 import { signInWithApple, checkAppleAuthAvailable } from '../../src/services/appleAuth';
+import { goBackOr } from '../../src/utils/navigation';
 
 export default function LoginScreen() {
   const router  = useRouter();
@@ -113,7 +114,7 @@ export default function LoginScreen() {
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => goBackOr(router, '/(auth)/onboarding')}>
           <Ionicons name="chevron-back" size={22} color={colors.textPrimary} />
         </TouchableOpacity>
       </View>

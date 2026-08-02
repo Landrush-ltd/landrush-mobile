@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { goBackOr } from '../src/utils/navigation';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, FontSize, FontFamily, BorderRadius } from '../src/constants/theme';
@@ -64,7 +65,7 @@ export default function StateListingsScreen() {
               </Text>
               <TouchableOpacity
                 style={styles.browseBtn}
-                onPress={() => router.back()}
+                onPress={() => goBackOr(router, '/explore-location')}
               >
                 <Text style={styles.browseBtnText}>Browse other states</Text>
               </TouchableOpacity>

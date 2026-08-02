@@ -38,6 +38,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, FontSize, FontFamily, BorderRadius, Shadow, LetterSpacing } from '../../src/constants/theme';
 import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
+import { goBackOr } from '../../src/utils/navigation';
 import { mockListings } from '../../src/services/mockData';
 
 const { width } = Dimensions.get('window');
@@ -122,7 +123,7 @@ export default function ListingDetailScreen() {
 
           {/* Overlay nav */}
           <View style={[styles.heroNav, { paddingTop: insets.top + Spacing.md }]}>
-            <TouchableOpacity style={styles.heroBtn} onPress={() => router.back()}>
+            <TouchableOpacity style={styles.heroBtn} onPress={() => goBackOr(router, '/(tabs)')}>
               <Ionicons name="chevron-back" size={22} color="#1A1A1A" />
             </TouchableOpacity>
             <View style={styles.heroNavRight}>

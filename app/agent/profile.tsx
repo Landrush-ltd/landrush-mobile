@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
+import { goBackOr } from '../../src/utils/navigation';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, FontSize, FontFamily, BorderRadius, Shadow } from '../../src/constants/theme';
@@ -44,7 +45,7 @@ export default function AgentProfile() {
     <ScrollView style={styles.root} showsVerticalScrollIndicator={false}>
       {/* ── Header ─────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => goBackOr(router, '/(tabs)/profile')}>
           <Ionicons name="chevron-back" size={28} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Profile</Text>

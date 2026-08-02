@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Spacing, FontSize, FontFamily, BorderRadius, LetterSpacing } from '../../src/constants/theme';
 import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
+import { goBackOr } from '../../src/utils/navigation';
 import { useAuthStore } from '../../src/store/auth';
 import { verifyOtp, signupWithEmail } from '../../src/services/authService';
 
@@ -90,7 +91,7 @@ export default function VerifyOtpScreen() {
         <View style={styles.decoCircleLarge} />
         <View style={styles.decoCircleSmall} />
 
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => goBackOr(router, '/(auth)/signup')}>
           <Ionicons name="chevron-back" size={22} color={colors.textPrimary} />
         </TouchableOpacity>
 

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { goBackOr } from '../src/utils/navigation';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, FontSize, FontFamily, BorderRadius, Shadow, LetterSpacing } from '../src/constants/theme';
@@ -75,7 +76,7 @@ export default function NotificationsScreen() {
         <View style={styles.headerDecoB} />
 
         <View style={styles.headerRow}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => goBackOr(router, '/(tabs)')}>
             <Ionicons name="chevron-back" size={22} color={colors.textPrimary} />
           </TouchableOpacity>
 

@@ -16,6 +16,7 @@ import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../src/const
 import { ListingCard } from '../../src/components/ListingCard';
 import { mockListings } from '../../src/services/mockData';
 import type { Listing, ListingCategory } from '../../src/types/listing';
+import { goBackOr } from '../../src/utils/navigation';
 
 
 const CATEGORIES: { key: ListingCategory | null; label: string }[] = [
@@ -68,7 +69,7 @@ export default function SearchScreen() {
         <View style={styles.headerDecoA} />
 
         <View style={styles.headerRow}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => goBackOr(router, '/(tabs)')}>
             <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Search Land</Text>

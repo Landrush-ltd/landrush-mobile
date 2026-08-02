@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { goBackOr } from '../../src/utils/navigation';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, FontSize, FontFamily, BorderRadius, Shadow } from '../../src/constants/theme';
@@ -84,7 +85,7 @@ export default function EditListing() {
       Alert.alert('Submitted for review', 'Your corrections were saved and the listing is back in the review queue.', [
         {
           text: 'OK',
-          onPress: () => router.back(),
+          onPress: () => goBackOr(router, '/my-listings'),
         },
       ]);
     } catch (error) {
@@ -106,7 +107,7 @@ export default function EditListing() {
     <ScrollView style={styles.root} showsVerticalScrollIndicator={false}>
       {/* ── Header ─────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => goBackOr(router, '/my-listings')}>
           <Ionicons name="chevron-back" size={28} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Edit Listing</Text>
@@ -284,7 +285,7 @@ export default function EditListing() {
       <View style={styles.buttonGroup}>
         <TouchableOpacity
           style={[styles.button, { backgroundColor: colors.border }]}
-          onPress={() => router.back()}
+          onPress={() => goBackOr(router, '/my-listings')}
           disabled={isSaving}
         >
           <Text style={[styles.buttonText, { color: colors.text }]}>Cancel</Text>

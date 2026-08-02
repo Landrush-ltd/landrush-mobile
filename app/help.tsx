@@ -12,6 +12,7 @@ import {
   UIManager,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { goBackOr } from '../src/utils/navigation';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, FontSize, FontFamily, BorderRadius, Shadow, LetterSpacing } from '../src/constants/theme';
@@ -114,7 +115,7 @@ export default function HelpScreen() {
       <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
         <View style={styles.headerDecoA} />
         <View style={styles.headerRow}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => goBackOr(router, '/(tabs)/profile')}>
             <Ionicons name="chevron-back" size={20} color={colors.textPrimary} />
           </TouchableOpacity>
           <View style={{ alignItems: 'center' }}>

@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Spacing, FontSize, FontFamily, BorderRadius, LetterSpacing } from '../../src/constants/theme';
 import type { ThemeColors } from '../../src/constants/theme';
 import { useColors } from '../../src/context/ThemeContext';
+import { goBackOr } from '../../src/utils/navigation';
 import { LandrushLogo } from '../../src/components/LandrushLogo';
 import { useAuthStore } from '../../src/store/auth';
 import { signupWithEmail, loginWithGoogle, loginWithApple } from '../../src/services/authService';
@@ -108,7 +109,7 @@ export default function SignupScreen() {
       <View style={styles.header}>
         <View style={styles.decoCircleLarge} />
         <View style={styles.decoCircleSmall} />
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => goBackOr(router, '/(auth)/login')}>
           <Ionicons name="chevron-back" size={22} color={colors.textPrimary} />
         </TouchableOpacity>
         <LandrushLogo size={28} />

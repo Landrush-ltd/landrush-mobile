@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 import type { ChatMessage } from '../../src/types/chat';
 import { useConversation, useSendMessage } from '../../src/hooks/useConversations';
+import { goBackOr } from '../../src/utils/navigation';
 
 const MY_ID = 'me';
 
@@ -176,7 +177,7 @@ export default function ChatScreen() {
       <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
         <View style={styles.headerDecoA} />
 
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => goBackOr(router, '/(tabs)/messages')}>
           <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
         </TouchableOpacity>
 

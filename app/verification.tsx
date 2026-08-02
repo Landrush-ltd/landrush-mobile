@@ -4,6 +4,7 @@ import {
   ScrollView, ActivityIndicator, Animated, Dimensions, Image,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { goBackOr } from '../src/utils/navigation';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -321,7 +322,7 @@ export default function VerificationScreen() {
     <View style={s.root}>
       <View style={[s.header, { paddingTop: insets.top + Spacing.sm }]}>
         <View style={s.headerRow}>
-          <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
+          <TouchableOpacity style={s.backBtn} onPress={() => goBackOr(router, '/(tabs)/profile')}>
             <Ionicons name="chevron-back" size={20} color={Colors.textPrimary} />
           </TouchableOpacity>
           <View style={{ alignItems: 'center' }}>

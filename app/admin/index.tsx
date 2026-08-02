@@ -32,6 +32,7 @@ import type { AdminListingReview, AdminReviewStatus } from '../../src/types/admi
 import { formatDate, formatFullPrice, getCategoryLabel } from '../../src/utils/format';
 import { createDocumentSignedUrl } from '../../src/services/supabaseData';
 import { supabaseEnabled } from '../../src/services/supabase';
+import { goBackOr } from '../../src/utils/navigation';
 
 type Filter = 'all' | AdminReviewStatus;
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
@@ -202,7 +203,7 @@ export default function AdminReviewScreen() {
     <View style={styles.root}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
         <View style={styles.headerInner}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => goBackOr(router, '/(tabs)/profile')}>
             <Ionicons name="chevron-back" size={21} color="#FFFFFF" />
           </TouchableOpacity>
           <View style={styles.headerCopy}>
