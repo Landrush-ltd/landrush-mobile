@@ -14,6 +14,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -201,38 +202,100 @@ export default function AdminReviewScreen() {
 
   return (
     <View style={styles.root}>
-      <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
+      <LinearGradient
+        colors={['#0A3528', '#155B43', '#1F7152']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.header, { paddingTop: insets.top + Spacing.md }]}
+      >
+        <View style={styles.headerGlowLarge} />
+        <View style={styles.headerGlowSmall} />
         <View style={styles.headerInner}>
           <TouchableOpacity style={styles.backButton} onPress={() => goBackOr(router, '/(tabs)/profile')}>
             <Ionicons name="chevron-back" size={21} color="#FFFFFF" />
           </TouchableOpacity>
           <View style={styles.headerCopy}>
-            <Text style={styles.headerEyebrow}>LANDRUSH OPERATIONS</Text>
-            <Text style={styles.headerTitle}>Listing Review Console</Text>
-            <Text style={styles.headerSubtitle}>Verify ownership documents before listings go live.</Text>
-          </View>
-          {isDemoMode && (
-            <View style={styles.demoPill}>
-              <Text style={styles.demoPillText}>DEMO</Text>
+            <View style={styles.headerEyebrowRow}>
+              <View style={styles.brandMark}>
+                <View style={styles.brandMarkBlock} />
+                <View style={[styles.brandMarkBlock, styles.brandMarkBlockOffset]} />
+              </View>
+              <Text style={styles.headerEyebrow}>LANDRUSH OPERATIONS</Text>
             </View>
-          )}
+            <Text style={styles.headerTitle}>Listing Review Console</Text>
+            <Text style={styles.headerSubtitle}>A focused workspace for document verification and publishing decisions.</Text>
+          </View>
+          <View style={styles.headerActions}>
+            {isWide && (
+              <View style={styles.livePill}>
+                <View style={styles.liveDot} />
+                <Text style={styles.liveText}>SYSTEM ONLINE</Text>
+              </View>
+            )}
+            <View style={styles.adminIdentity}>
+              <View style={styles.adminAvatar}>
+                <Text style={styles.adminAvatarText}>{user?.firstName?.charAt(0) || 'A'}</Text>
+              </View>
+              {isWide && (
+                <View>
+                  <Text style={styles.adminName}>{user?.firstName || 'Admin'}</Text>
+                  <Text style={styles.adminRole}>Administrator</Text>
+                </View>
+              )}
+            </View>
+            {isDemoMode && (
+              <View style={styles.demoPill}>
+                <Text style={styles.demoPillText}>DEMO</Text>
+              </View>
+            )}
+          </View>
         </View>
-      </View>
+      </LinearGradient>
 
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, Spacing.xxl) + 40 }]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.statGrid}>
-          <StatCard label="Awaiting review" value={counts.pending} icon="time-outline" accent={colors.warning} styles={styles} />
-          <StatCard label="Approved" value={counts.approved} icon="checkmark-circle-outline" accent={colors.success} styles={styles} />
-          <StatCard label="Rejected" value={counts.rejected} icon="close-circle-outline" accent={colors.error} styles={styles} />
+        <View style={styles.sectionIntro}>
+          <View>
+            <Text style={styles.sectionKicker}>WORKSPACE OVERVIEW</Text>
+            <Text style={styles.sectionTitle}>Verification at a glance</Text>
+          </View>
+          <View style={styles.updatedPill}>
+            <Ionicons name="sync-outline" size={13} color={colors.success} />
+            <Text style={styles.updatedText}>Live queue</Text>
+          </View>
         </View>
 
+        <ScrollView
+          horizontal={!isWide}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.statScrollContent}
+        >
+          <View style={[styles.statGrid, isWide && styles.statGridWide]}>
+            <StatCard label="Total submissions" value={counts.all} hint="All-time queue" icon="layers-outline" accent={colors.primary} styles={styles} />
+            <StatCard label="Awaiting review" value={counts.pending} hint="Action required" icon="time-outline" accent={colors.warning} styles={styles} />
+            <StatCard label="Approved" value={counts.approved} hint="Ready and live" icon="checkmark-circle-outline" accent={colors.success} styles={styles} />
+            <StatCard label="Rejected" value={counts.rejected} hint="Needs correction" icon="close-circle-outline" accent={colors.error} styles={styles} />
+          </View>
+        </ScrollView>
+
         <View style={styles.toolbar}>
+          <View style={styles.queueHeadingRow}>
+            <View>
+              <Text style={styles.queueTitle}>Review queue</Text>
+              <Text style={styles.queueSubtitle}>Inspect ownership records and resolve submissions.</Text>
+            </View>
+            <View style={styles.queueCountPill}>
+              <Text style={styles.queueCountNumber}>{filteredReviews.length}</Text>
+              <Text style={styles.queueCountLabel}>SHOWING</Text>
+            </View>
+          </View>
           <View style={styles.searchBox}>
-            <Ionicons name="search-outline" size={18} color={colors.textTertiary} />
+            <View style={styles.searchIconBox}>
+              <Ionicons name="search-outline" size={17} color={colors.primary} />
+            </View>
             <TextInput
               value={search}
               onChangeText={setSearch}
@@ -283,9 +346,15 @@ export default function AdminReviewScreen() {
           </View>
         ) : filteredReviews.length === 0 ? (
           <View style={styles.stateCard}>
-            <Ionicons name="checkmark-done-circle-outline" size={40} color={colors.success} />
+            <View style={styles.emptyIconRing}>
+              <Ionicons name="checkmark-done" size={28} color={colors.success} />
+            </View>
             <Text style={styles.stateTitle}>Queue is clear</Text>
             <Text style={styles.stateText}>No listings match this filter.</Text>
+            <TouchableOpacity style={styles.resetFilterButton} onPress={() => setFilter('all')}>
+              <Text style={styles.resetFilterText}>View all submissions</Text>
+              <Ionicons name="arrow-forward" size={14} color={colors.primary} />
+            </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.reviewList}>
@@ -480,25 +549,31 @@ export default function AdminReviewScreen() {
 function StatCard({
   label,
   value,
+  hint,
   icon,
   accent,
   styles,
 }: {
   label: string;
   value: number;
+  hint: string;
   icon: IoniconsName;
   accent: string;
   styles: ReturnType<typeof makeStyles>;
 }) {
   return (
-    <View style={styles.statCard}>
-      <View style={[styles.statIcon, { backgroundColor: `${accent}16` }]}>
-        <Ionicons name={icon} size={19} color={accent} />
+    <View style={[styles.statCard, { borderTopColor: accent }]}>
+      <View style={styles.statTopRow}>
+        <View style={[styles.statIcon, { backgroundColor: `${accent}16` }]}>
+          <Ionicons name={icon} size={20} color={accent} />
+        </View>
+        <View style={[styles.statPulse, { backgroundColor: `${accent}18` }]}>
+          <View style={[styles.statPulseDot, { backgroundColor: accent }]} />
+        </View>
       </View>
-      <View>
-        <Text style={styles.statNumber}>{value}</Text>
-        <Text style={styles.statLabel}>{label}</Text>
-      </View>
+      <Text style={styles.statNumber}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+      <Text style={styles.statHint}>{hint}</Text>
     </View>
   );
 }
@@ -528,11 +603,16 @@ function ReviewCard({
       <Image source={{ uri: review.thumbnail }} style={[styles.reviewImage, isWide && styles.reviewImageWide]} />
       <View style={styles.reviewCopy}>
         <View style={styles.reviewTopRow}>
-          <View style={[styles.statusPill, { backgroundColor: `${status.color}14` }]}>
-            <Ionicons name={status.icon} size={13} color={status.color} />
-            <Text style={[styles.statusText, { color: status.color }]}>{status.label}</Text>
+          <View style={styles.statusCluster}>
+            <View style={[styles.statusPill, { backgroundColor: `${status.color}14` }]}>
+              <Ionicons name={status.icon} size={13} color={status.color} />
+              <Text style={[styles.statusText, { color: status.color }]}>{status.label}</Text>
+            </View>
+            <View style={styles.categoryPill}>
+              <Text style={styles.categoryPillText}>{getCategoryLabel(review.category)}</Text>
+            </View>
           </View>
-          <Text style={styles.submittedText}>{formatDate(review.submittedAt)}</Text>
+          {isWide && <Text style={styles.submittedText}>{formatDate(review.submittedAt)}</Text>}
         </View>
         <Text style={styles.reviewTitle} numberOfLines={2}>{review.title}</Text>
         <Text style={styles.reviewLocation}>{review.location}</Text>
@@ -564,65 +644,131 @@ function ReviewCard({
           </View>
         )}
       </View>
-      <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
+      <View style={styles.reviewArrow}>
+        <Ionicons name="arrow-forward" size={16} color={colors.primary} />
+      </View>
     </TouchableOpacity>
   );
 }
 
 function makeStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    root: { flex: 1, backgroundColor: colors.surface },
+    root: { flex: 1, backgroundColor: colors.background },
     scroll: { flex: 1 },
-    header: { backgroundColor: colors.primaryDark, paddingHorizontal: Spacing.lg, paddingBottom: Spacing.xxl },
+    header: {
+      paddingHorizontal: Spacing.lg,
+      paddingBottom: 42,
+      overflow: 'hidden',
+      position: 'relative',
+    },
+    headerGlowLarge: {
+      position: 'absolute', width: 280, height: 280, borderRadius: 140,
+      backgroundColor: 'rgba(173,211,75,0.10)', right: -100, top: -150,
+    },
+    headerGlowSmall: {
+      position: 'absolute', width: 130, height: 130, borderRadius: 65,
+      borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', left: '35%', bottom: -75,
+    },
     headerInner: {
       width: '100%', maxWidth: 980, alignSelf: 'center',
-      flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.md,
+      flexDirection: 'row', alignItems: 'center', gap: Spacing.md,
     },
     backButton: {
-      width: 38, height: 38, borderRadius: 19,
-      backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center',
+      width: 42, height: 42, borderRadius: 14,
+      backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center',
+      borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)',
     },
     headerCopy: { flex: 1 },
-    headerEyebrow: { fontSize: 10, color: colors.lime, fontWeight: '800', letterSpacing: 1.2, marginBottom: 4 },
+    headerEyebrowRow: { flexDirection: 'row', alignItems: 'center', gap: 7, marginBottom: 5 },
+    brandMark: { width: 16, height: 16, position: 'relative' },
+    brandMarkBlock: { position: 'absolute', width: 7, height: 7, borderRadius: 2, backgroundColor: colors.lime, top: 0, left: 0 },
+    brandMarkBlockOffset: { top: 8, left: 8, backgroundColor: '#FFFFFF' },
+    headerEyebrow: { fontSize: 9, color: colors.limeLight, fontWeight: '900', letterSpacing: 1.5 },
     headerTitle: {
-      fontSize: FontSize.xxl, color: '#FFFFFF', fontFamily: FontFamily.extraBold,
+      fontSize: 24, color: '#FFFFFF', fontFamily: FontFamily.extraBold,
       fontWeight: '800', letterSpacing: LetterSpacing.tight,
     },
-    headerSubtitle: { fontSize: FontSize.sm, color: 'rgba(255,255,255,0.65)', marginTop: 4, lineHeight: 19 },
+    headerSubtitle: { fontSize: FontSize.sm, color: 'rgba(255,255,255,0.72)', marginTop: 5, lineHeight: 19, maxWidth: 520 },
+    headerActions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
+    livePill: {
+      flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10,
+      paddingVertical: 7, borderRadius: BorderRadius.full, backgroundColor: 'rgba(255,255,255,0.10)',
+      borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)',
+    },
+    liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.lime },
+    liveText: { fontSize: 8, color: '#FFFFFF', fontWeight: '900', letterSpacing: 0.7 },
+    adminIdentity: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+    adminAvatar: {
+      width: 36, height: 36, borderRadius: 12, backgroundColor: colors.lime,
+      alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'rgba(255,255,255,0.35)',
+    },
+    adminAvatarText: { fontSize: 13, color: colors.primaryDark, fontWeight: '900' },
+    adminName: { fontSize: 10, color: '#FFFFFF', fontWeight: '800' },
+    adminRole: { fontSize: 8, color: 'rgba(255,255,255,0.58)', marginTop: 1 },
     demoPill: {
-      paddingHorizontal: 9, paddingVertical: 5, borderRadius: BorderRadius.full,
-      backgroundColor: colors.lime,
+      paddingHorizontal: 8, paddingVertical: 5, borderRadius: BorderRadius.full,
+      backgroundColor: 'rgba(173,211,75,0.16)', borderWidth: 1, borderColor: 'rgba(173,211,75,0.35)',
     },
-    demoPillText: { fontSize: 9, color: colors.textPrimary, fontWeight: '900', letterSpacing: 0.8 },
-    content: { width: '100%', maxWidth: 980, alignSelf: 'center', padding: Spacing.lg },
-    statGrid: { flexDirection: 'row', gap: Spacing.sm, marginTop: -34, marginBottom: Spacing.lg },
+    demoPillText: { fontSize: 8, color: colors.limeLight, fontWeight: '900', letterSpacing: 0.8 },
+    content: { width: '100%', maxWidth: 1040, alignSelf: 'center', padding: Spacing.lg },
+    sectionIntro: {
+      flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',
+      marginTop: -24, marginBottom: Spacing.md,
+    },
+    sectionKicker: { fontSize: 8, color: colors.primary, fontWeight: '900', letterSpacing: 1.2 },
+    sectionTitle: { fontSize: FontSize.xl, color: colors.textPrimary, fontWeight: '800', marginTop: 3 },
+    updatedPill: {
+      flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 9, paddingVertical: 6,
+      backgroundColor: `${colors.success}10`, borderRadius: BorderRadius.full,
+    },
+    updatedText: { fontSize: 9, color: colors.success, fontWeight: '800' },
+    statScrollContent: { paddingBottom: Spacing.lg },
+    statGrid: { flexDirection: 'row', gap: Spacing.sm },
+    statGridWide: { width: '100%' },
     statCard: {
-      flex: 1, minWidth: 0, backgroundColor: colors.white, borderRadius: BorderRadius.xl,
-      padding: Spacing.md, flexDirection: 'row', alignItems: 'center', gap: Spacing.sm,
-      borderWidth: 1, borderColor: colors.borderLight, ...Shadow.sm,
+      width: 164, flexGrow: 1, minWidth: 150, backgroundColor: colors.white, borderRadius: BorderRadius.xl,
+      padding: Spacing.lg, borderWidth: 1, borderColor: colors.borderLight, borderTopWidth: 3, ...Shadow.sm,
     },
-    statIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+    statTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: Spacing.md },
+    statIcon: { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+    statPulse: { width: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+    statPulseDot: { width: 6, height: 6, borderRadius: 3 },
     statNumber: {
-      fontSize: FontSize.xl, fontFamily: FontFamily.extraBold, fontWeight: '800',
-      color: colors.textPrimary, lineHeight: 22,
+      fontSize: 27, fontFamily: FontFamily.extraBold, fontWeight: '800',
+      color: colors.textPrimary, lineHeight: 31,
     },
-    statLabel: { fontSize: 9, color: colors.textSecondary, fontWeight: '700' },
+    statLabel: { fontSize: 11, color: colors.textPrimary, fontWeight: '800', marginTop: 2 },
+    statHint: { fontSize: 9, color: colors.textTertiary, fontWeight: '600', marginTop: 3 },
     toolbar: {
-      backgroundColor: colors.white, borderRadius: BorderRadius.xl, padding: Spacing.md,
-      borderWidth: 1, borderColor: colors.borderLight, marginBottom: Spacing.lg, gap: Spacing.md,
+      backgroundColor: colors.white, borderRadius: BorderRadius.xxl, padding: Spacing.lg,
+      borderWidth: 1, borderColor: colors.borderLight, marginBottom: Spacing.lg, gap: Spacing.md, ...Shadow.xs,
     },
+    queueHeadingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
+    queueTitle: { fontSize: FontSize.lg, color: colors.textPrimary, fontWeight: '800' },
+    queueSubtitle: { fontSize: FontSize.xs, color: colors.textSecondary, marginTop: 3, lineHeight: 17 },
+    queueCountPill: {
+      minWidth: 48, alignItems: 'center', paddingHorizontal: 9, paddingVertical: 6,
+      borderRadius: BorderRadius.lg, backgroundColor: `${colors.primary}10`,
+    },
+    queueCountNumber: { fontSize: FontSize.md, color: colors.primary, fontWeight: '900' },
+    queueCountLabel: { fontSize: 7, color: colors.textTertiary, fontWeight: '800', letterSpacing: 0.6 },
     searchBox: {
-      height: 46, borderRadius: BorderRadius.lg, borderWidth: 1, borderColor: colors.border,
+      height: 50, borderRadius: BorderRadius.xl, borderWidth: 1, borderColor: colors.border,
       backgroundColor: colors.background, flexDirection: 'row', alignItems: 'center',
-      paddingHorizontal: Spacing.md, gap: Spacing.sm,
+      paddingHorizontal: Spacing.sm, gap: Spacing.sm,
+    },
+    searchIconBox: {
+      width: 34, height: 34, borderRadius: 11, alignItems: 'center', justifyContent: 'center',
+      backgroundColor: `${colors.primary}10`,
     },
     searchInput: { flex: 1, fontSize: FontSize.md, color: colors.textPrimary },
     filterRow: { gap: Spacing.sm },
     filterButton: {
-      flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12,
-      paddingVertical: 8, borderRadius: BorderRadius.full, backgroundColor: colors.surface,
+      flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 13,
+      paddingVertical: 9, borderRadius: BorderRadius.full, backgroundColor: colors.surface,
+      borderWidth: 1, borderColor: colors.borderLight,
     },
-    filterButtonActive: { backgroundColor: colors.primaryDark },
+    filterButtonActive: { backgroundColor: colors.primaryDark, borderColor: colors.primaryDark },
     filterText: { fontSize: FontSize.sm, color: colors.textSecondary, fontWeight: '700' },
     filterTextActive: { color: '#FFFFFF' },
     filterCount: {
@@ -634,20 +780,26 @@ function makeStyles(colors: ThemeColors) {
     filterCountTextActive: { color: colors.textPrimary },
     reviewList: { gap: Spacing.md },
     reviewCard: {
-      backgroundColor: colors.white, borderRadius: BorderRadius.xl, padding: Spacing.md,
+      backgroundColor: colors.white, borderRadius: BorderRadius.xxl, padding: Spacing.md,
       borderWidth: 1, borderColor: colors.borderLight, flexDirection: 'row',
-      alignItems: 'center', gap: Spacing.md, ...Shadow.xs,
+      alignItems: 'center', gap: Spacing.md, ...Shadow.sm,
     },
     reviewCardWide: { padding: Spacing.lg },
-    reviewImage: { width: 86, height: 108, borderRadius: BorderRadius.lg, backgroundColor: colors.surface },
+    reviewImage: { width: 86, height: 116, borderRadius: BorderRadius.xl, backgroundColor: colors.surface },
     reviewImageWide: { width: 132, height: 132 },
-    reviewCopy: { flex: 1, minWidth: 0 },
+    reviewCopy: { flex: 1, minWidth: 0, paddingRight: 28 },
     reviewTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.sm },
+    statusCluster: { flexDirection: 'row', alignItems: 'center', gap: 5, flexWrap: 'wrap' },
     statusPill: {
       flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8,
       paddingVertical: 4, borderRadius: BorderRadius.full,
     },
     statusText: { fontSize: 10, fontWeight: '800' },
+    categoryPill: {
+      paddingHorizontal: 7, paddingVertical: 4, borderRadius: BorderRadius.full,
+      backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.borderLight,
+    },
+    categoryPillText: { fontSize: 8, color: colors.textSecondary, fontWeight: '800', textTransform: 'uppercase' },
     submittedText: { fontSize: 10, color: colors.textTertiary },
     reviewTitle: {
       fontSize: FontSize.lg, color: colors.textPrimary, fontFamily: FontFamily.bold,
@@ -656,7 +808,10 @@ function makeStyles(colors: ThemeColors) {
     reviewLocation: { fontSize: FontSize.xs, color: colors.textSecondary, marginTop: 3 },
     reviewPrice: { fontSize: FontSize.md, color: colors.textPrimary, fontWeight: '800', marginTop: 5 },
     reviewDivider: { height: 1, backgroundColor: colors.borderLight, marginVertical: Spacing.sm },
-    reviewBottomRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.sm },
+    reviewBottomRow: {
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+      gap: Spacing.sm, flexWrap: 'wrap',
+    },
     listerInfo: { flexDirection: 'row', alignItems: 'center', gap: 7, flex: 1 },
     listerAvatar: {
       width: 28, height: 28, borderRadius: 14, backgroundColor: `${colors.primary}18`,
@@ -673,13 +828,29 @@ function makeStyles(colors: ThemeColors) {
       borderRadius: BorderRadius.full, marginTop: Spacing.sm,
     },
     flagChipText: { fontSize: 9, color: colors.warning, fontWeight: '800' },
+    reviewArrow: {
+      width: 34, height: 34, borderRadius: 12, backgroundColor: `${colors.primary}10`,
+      alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: `${colors.primary}18`,
+      position: 'absolute', right: 13, top: 52,
+    },
     stateCard: {
-      minHeight: 220, backgroundColor: colors.white, borderRadius: BorderRadius.xl,
+      minHeight: 250, backgroundColor: colors.white, borderRadius: BorderRadius.xxl,
       alignItems: 'center', justifyContent: 'center', padding: Spacing.xxl, gap: Spacing.sm,
-      borderWidth: 1, borderColor: colors.borderLight,
+      borderWidth: 1, borderColor: colors.borderLight, ...Shadow.xs,
+    },
+    emptyIconRing: {
+      width: 64, height: 64, borderRadius: 22, backgroundColor: `${colors.success}10`,
+      alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.xs,
+      borderWidth: 1, borderColor: `${colors.success}22`,
     },
     stateTitle: { fontSize: FontSize.lg, fontWeight: '800', color: colors.textPrimary },
     stateText: { fontSize: FontSize.sm, color: colors.textSecondary, textAlign: 'center' },
+    resetFilterButton: {
+      flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.sm, borderRadius: BorderRadius.full, backgroundColor: `${colors.primary}0D`,
+      marginTop: Spacing.sm,
+    },
+    resetFilterText: { fontSize: FontSize.xs, color: colors.primary, fontWeight: '800' },
     secondaryButton: {
       paddingHorizontal: Spacing.xl, paddingVertical: Spacing.sm, borderRadius: BorderRadius.full,
       borderWidth: 1, borderColor: colors.primary, marginTop: Spacing.sm,
