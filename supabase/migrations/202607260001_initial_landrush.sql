@@ -70,6 +70,7 @@ create table public.notifications (
   title text not null,
   body text not null,
   type text not null default 'listing',
+  action_route text,
   read_at timestamptz,
   created_at timestamptz not null default now()
 );
@@ -140,7 +141,8 @@ security definer set search_path = ''
 as $$
 begin
   if old.review_status = new.review_status then return new; end if;
-  insert into public.notifications (user_id, listing_id, title, body)
+  if new.review_status not in ('approved', 'rejected') then return new; end if;
+  insert into public.notifications (user_id, listing_id, title, body, action_route)
   values (
     new.owner_id,
     new.id,
@@ -148,7 +150,8 @@ begin
     case when new.review_status = 'approved'
       then new.title || ' is now live on Landrush.'
       else coalesce(new.rejection_reason, 'Review the listing and submit your corrections.')
-    end
+    end,
+    case when new.review_status = 'approved' then '/listing/' || new.id::text else '/my-listings' end
   );
   return new;
 end;
@@ -157,6 +160,44 @@ $$;
 create trigger listing_review_notification
 after update of review_status on public.listings
 for each row execute procedure public.notify_listing_review();
+
+create or replace function public.notify_admin_listing_queue()
+returns trigger
+language plpgsql
+security definer set search_path = ''
+as $$
+begin
+  insert into public.notifications (user_id, listing_id, title, body, action_route)
+  values (
+    new.owner_id,
+    new.id,
+    case when tg_op = 'INSERT' then 'Listing submitted' else 'Listing resubmitted' end,
+    new.title || case when tg_op = 'INSERT' then ' is now in the verification queue.' else ' has been returned to the verification queue.' end,
+    '/my-listings'
+  );
+
+  insert into public.notifications (user_id, listing_id, title, body, action_route)
+  select
+    profile.id,
+    new.id,
+    case when tg_op = 'INSERT' then 'New listing awaiting review' else 'Listing resubmitted' end,
+    new.title || case when tg_op = 'INSERT' then ' was submitted for verification.' else ' is ready for another review.' end,
+    '/admin'
+  from public.profiles as profile
+  where profile.role = 'admin';
+  return new;
+end;
+$$;
+
+create trigger new_listing_admin_notification
+after insert on public.listings
+for each row execute procedure public.notify_admin_listing_queue();
+
+create trigger resubmitted_listing_admin_notification
+after update of review_status on public.listings
+for each row
+when (new.review_status = 'pending' and old.review_status is distinct from new.review_status)
+execute procedure public.notify_admin_listing_queue();
 
 create or replace function public.review_listing(
   p_listing_id uuid,

@@ -4,6 +4,7 @@ import type { Listing } from '../types/listing';
 import type { User } from '../types/user';
 import { mockAdminReviews } from './mockAdminData';
 import { mockListings } from './mockData';
+import { addLocalNotification } from './localNotifications';
 
 const REVIEWS_KEY = 'landrush_demo_admin_reviews_v1';
 const LISTINGS_KEY = 'landrush_demo_owner_listings_v1';
@@ -97,6 +98,10 @@ export async function updateLocalOwnerListing(listingId: string, payload: LocalL
       ...reviews.filter((review) => review.listingId !== listingId),
     ])],
   ]);
+  await addLocalNotification({
+    type: 'listing', audience: 'admin', listingId, actionRoute: '/admin',
+    title: 'Listing resubmitted', subtitle: `${updated.title} is ready for another document review.`,
+  });
   return updated;
 }
 
@@ -185,6 +190,16 @@ export async function submitLocalListing(payload: LocalListingInput, user: User 
     [LISTINGS_KEY, JSON.stringify([listing, ...listings])],
     [REVIEWS_KEY, JSON.stringify([review, ...reviews])],
   ]);
+  await Promise.all([
+    addLocalNotification({
+      type: 'listing', audience: 'admin', listingId: id, actionRoute: '/admin',
+      title: 'New listing awaiting review', subtitle: `${listing.title} was submitted by ${listing.agent.name}.`,
+    }),
+    addLocalNotification({
+      type: 'listing', audience: 'owner', listingId: id, actionRoute: '/my-listings',
+      title: 'Listing submitted', subtitle: `${listing.title} is now in the verification queue.`,
+    }),
+  ]);
   return listing;
 }
 
@@ -220,6 +235,14 @@ export async function decideLocalReview(payload: AdminReviewDecision): Promise<A
         }
       : listing))],
   ]);
+  await addLocalNotification({
+    type: 'listing', audience: 'owner', listingId: updated.listingId,
+    actionRoute: updated.status === 'approved' ? `/listing/${updated.listingId}` : '/my-listings',
+    title: updated.status === 'approved' ? 'Listing approved' : 'Listing needs changes',
+    subtitle: updated.status === 'approved'
+      ? `${updated.title} is now live on Landrush.`
+      : (updated.rejectionReason || `Review ${updated.title} and submit the requested corrections.`),
+  });
   return updated;
 }
 

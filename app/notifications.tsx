@@ -118,7 +118,11 @@ export default function NotificationsScreen() {
                       ii < group.items.length - 1 && styles.itemBorder,
                       isUnread && styles.itemUnread,
                     ]}
-                    onPress={() => { if (isUnread) markRead.mutate(item.id); }}
+                    onPress={() => {
+                      if (isUnread) markRead.mutate(item.id);
+                      if (item.actionRoute) router.push(item.actionRoute as never);
+                      else if (item.listingId) router.push(`/listing/${item.listingId}`);
+                    }}
                     activeOpacity={0.7}
                   >
                     {/* Unread dot */}

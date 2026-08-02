@@ -134,6 +134,7 @@ export function useCreateListing() {
       qc.invalidateQueries({ queryKey: ['listings'] });
       qc.invalidateQueries({ queryKey: ['listings', 'mine'] });
       qc.invalidateQueries({ queryKey: ['admin', 'listing-reviews'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
 }
@@ -158,6 +159,7 @@ export function useUpdateListing() {
       qc.setQueryData(['listings', listing.id], listing);
       qc.invalidateQueries({ queryKey: ['listings', 'mine'] });
       qc.invalidateQueries({ queryKey: ['admin', 'listing-reviews'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
 }

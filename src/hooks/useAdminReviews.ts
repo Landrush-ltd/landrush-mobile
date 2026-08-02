@@ -43,6 +43,7 @@ export function useAdminReviewDecision() {
     },
     onSuccess: (result, payload) => {
       queryClient.invalidateQueries({ queryKey: ['listings', 'mine'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.setQueryData<AdminListingReview[]>(queryKey, (reviews = []) =>
         reviews.map((review) =>
           review.id === payload.reviewId

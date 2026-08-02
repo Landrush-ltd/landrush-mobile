@@ -1,7 +1,7 @@
 import type { AdminListingReview, AdminReviewDecision } from '../types/admin';
 import type { Listing } from '../types/listing';
 import type { CreateListingPayload } from '../hooks/useListings';
-import type { AppNotification } from '../hooks/useNotificationsData';
+import type { AppNotification } from '../types/notification';
 import { requireSupabase } from './supabase';
 
 const LISTING_SELECT = `
@@ -181,6 +181,7 @@ export async function fetchSupabaseNotifications(): Promise<AppNotification[]> {
     time: relativeTime(row.created_at),
     unread: !row.read_at,
     listingId: row.listing_id ?? undefined,
+    actionRoute: row.action_route ?? undefined,
   }));
 }
 

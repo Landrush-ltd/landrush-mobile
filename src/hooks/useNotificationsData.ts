@@ -3,22 +3,10 @@ import { api } from '../services/api';
 import { useAuthStore } from '../store/auth';
 import { supabaseEnabled } from '../services/supabase';
 import { fetchSupabaseNotifications, markSupabaseNotificationRead } from '../services/supabaseData';
+import { getLocalNotifications, markLocalNotificationRead } from '../services/localNotifications';
+import type { AppNotification, NotificationGroup } from '../types/notification';
 
-export interface AppNotification {
-  id: string;
-  type: 'inspection' | 'payment' | 'message' | 'listing' | 'system';
-  title: string;
-  subtitle: string;
-  time: string;
-  unread: boolean;
-  listingId?: string;
-  bookingId?: string;
-}
-
-export interface NotificationGroup {
-  label: string;
-  items: AppNotification[];
-}
+export type { AppNotification, NotificationGroup } from '../types/notification';
 
 const MOCK_NOTIFICATIONS: AppNotification[] = [
   {
@@ -67,12 +55,15 @@ const MOCK_NOTIFICATIONS: AppNotification[] = [
 const apiEnabled = !!process.env.EXPO_PUBLIC_API_URL;
 
 export function useNotificationsData() {
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
   return useQuery({
-    queryKey: ['notifications'],
+    queryKey: ['notifications', user?.role ?? 'guest'],
     queryFn: async () => {
       if (supabaseEnabled) return fetchSupabaseNotifications();
-      if (!apiEnabled) return MOCK_NOTIFICATIONS;
+      if (!apiEnabled) {
+        const lifecycle = await getLocalNotifications(user?.role);
+        return user?.role === 'admin' ? lifecycle : [...lifecycle, ...MOCK_NOTIFICATIONS];
+      }
       const res = await api.get<AppNotification[]>('/notifications', token ?? undefined);
       return res.data;
     },
@@ -82,23 +73,25 @@ export function useNotificationsData() {
 }
 
 export function useMarkNotificationRead() {
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
   const qc = useQueryClient();
+  const key = ['notifications', user?.role ?? 'guest'];
   return useMutation<void, Error, string, { prev?: AppNotification[] }>({
     mutationFn: async (notificationId: string) => {
       if (supabaseEnabled) await markSupabaseNotificationRead(notificationId);
       else if (apiEnabled) await api.patch(`/notifications/${notificationId}/read`, {}, token ?? undefined);
+      else await markLocalNotificationRead(notificationId);
     },
     onMutate: async (notificationId) => {
-      await qc.cancelQueries({ queryKey: ['notifications'] });
-      const prev = qc.getQueryData<AppNotification[]>(['notifications']);
-      qc.setQueryData<AppNotification[]>(['notifications'], (old) =>
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData<AppNotification[]>(key);
+      qc.setQueryData<AppNotification[]>(key, (old) =>
         old?.map((n) => (n.id === notificationId ? { ...n, unread: false } : n)),
       );
       return { prev };
     },
     onError: (_err, _id, ctx) => {
-      if (ctx?.prev) qc.setQueryData(['notifications'], ctx.prev);
+      if (ctx?.prev) qc.setQueryData(key, ctx.prev);
     },
   });
 }
@@ -110,6 +103,7 @@ export function useMarkAllRead() {
     mutationFn: async () => {
       if (supabaseEnabled) await markSupabaseNotificationRead();
       else if (apiEnabled) await api.post('/notifications/read-all', {}, token ?? undefined);
+      else await markLocalNotificationRead();
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
   });

@@ -21,6 +21,7 @@ import { useListingsStore } from '../../src/store/listings';
 import { useAuthStore } from '../../src/store/auth';
 import { useListings } from '../../src/hooks/useListings';
 import type { Listing, ListingCategory } from '../../src/types/listing';
+import { useUnreadCount } from '../../src/hooks/useNotificationsData';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -58,6 +59,7 @@ export default function ExploreScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const unreadCount = useUnreadCount();
 
   useEffect(() => {
     if (apiListings) setListings(apiListings);
@@ -91,6 +93,11 @@ export default function ExploreScreen() {
         <View style={styles.topBarRight}>
           <TouchableOpacity style={styles.iconBtn} onPress={() => router.push('/notifications')}>
             <Ionicons name="notifications-outline" size={22} color={colors.textPrimary} />
+            {unreadCount > 0 && (
+              <View style={styles.notificationBadge}>
+                <Text style={styles.notificationBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push('/(tabs)/profile')}>
             {user?.avatar
@@ -235,7 +242,13 @@ function makeStyles(colors: ThemeColors) {
     greeting: { fontSize: 10, color: colors.primary, fontWeight: '800', letterSpacing: 1.1 },
     appName: { fontSize: FontSize.xl, fontFamily: FontFamily.extraBold, fontWeight: '800', color: colors.textPrimary, letterSpacing: LetterSpacing.tight, marginTop: 4 },
     topBarRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
-    iconBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+    iconBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', position: 'relative' },
+    notificationBadge: {
+      position: 'absolute', top: -3, right: -4, minWidth: 17, height: 17,
+      paddingHorizontal: 4, borderRadius: 9, alignItems: 'center', justifyContent: 'center',
+      backgroundColor: colors.primary, borderWidth: 2, borderColor: colors.white,
+    },
+    notificationBadgeText: { color: colors.fixedWhite, fontSize: 9, fontWeight: '800' },
     avatar: { width: 34, height: 34, borderRadius: 17, borderWidth: 2, borderColor: colors.lime },
 
     // Search bar — Airbnb pill style
